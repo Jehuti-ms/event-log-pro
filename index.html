@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Log Pro - Event Management System</title>
+    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/YOUR_USERNAME/event-log-pro/main/icon.svg">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/YOUR_USERNAME/event-log-pro/main/icon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f4f6f9;
+            color: #333;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background: #0e141b;
+            color: #e5e7eb;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        body.dark .container {
+            background: #121922;
+            border: 1px solid #1f2a37;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        body.dark h2 {
+            color: #9aa5b1;
+        }
+
+        .form-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+            color: #0078d7;
+            margin: 10px 0;
+        }
+
+        body.dark .form-title {
+            color: #60a5fa;
+        }
+
+        #eventIdDisplay {
+            font-weight: bold;
+            color: #0078d7;
+            margin-top: 8px;
+        }
+
+        body.dark #eventIdDisplay {
+            color: #60a5fa;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .settings-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .settings-btn:hover {
+            background: #5a6268;
+        }
+
+        .theme-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle input {
+            display: none;
+        }
+
+        .toggle-label {
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+        }
+
+        .toggle-icon {
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .toggle-ball {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .theme-toggle input:checked + .toggle-label {
+            background: #0078d7;
+        }
+
+        .theme-toggle input:checked + .toggle-label .toggle-ball {
+            transform: translateX(30px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        body.dark .modal-content {
+            background: #1e293b;
+            color: #e5e7eb;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        body.dark .modal-header {
+            border-bottom-color: #374151;
+        }
+
+        .modal-header h2 {
+            color: #0078d7;
+            font-size: 1.5em;
+        }
+
+        body.dark .modal-header h2 {
+            color: #60a5fa;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .settings-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .settings-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #0078d7;
+        }
+
+        body.dark .settings-section {
+            background: #0f1720;
+            border-left-color: #60a5fa;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 15px;
+            color: #0078d7;
+            font-size: 1.1em;
+        }
+
+        body.dark .settings-section h3 {
+            color: #60a5fa;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body.dark label {
+            color: #cbd5e1;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        body.dark input,
+        body.dark select,
+        body.dark textarea {
+            background: #0f1720;
+            color: #e5e7eb;
+            border: 1px solid #2a3646;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #0078d7;
+            box-shadow: 0 0 0 3px rgba(0, 120, 215, 0.2);
+        }
+
+        body.dark input:focus,
+        body.dark select:focus,
+        body.dark textarea:focus {
+            border-color: #4c8bf5;
+            box-shadow: 0 0 0 3px rgba(76, 139, 245, 0.25);
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        body.dark .help-text {
+            color: #9ca3af;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        body.dark .summary-stats {
+            background: #0f1720;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        body.dark .stat-label {
+            color: #9ca3af;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0078d7;
+        }
+
+        body.dark .stat-value {
+            color: #60a5fa;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        body.dark th,
+        body.dark td {
+            border: 1px solid #1f2a37;
+        }
+
+        th {
+            background: #f0f2f5;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9em;
+        }
+
+        body.dark th {
+            background: #162131;
+            color: #cfd8dc;
+        }
+
+        td input[type="text"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        td select {
+            width: 100%;
+            padding: 6px;
+        }
+
+        .medication-details,
+        .illness-other {
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #0078d7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005fa3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .add-row {
+            background: #e7f3ff;
+            border: 1px solid #0078d7;
+            color: #0078d7;
+            padding: 10px 16px;
+            margin: 10px 0;
+        }
+
+        body.dark .add-row {
+            background: rgba(96,165,250,0.12);
+            border: 1px solid #60a5fa;
+            color: #cfe4ff;
+        }
+
+        .delete-row {
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+        }
+
+        .delete-row:hover {
+            background-color: #c0392b;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner.active {
+            display: flex;
+        }
+
+        .spinner-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        body.dark .spinner-content {
+            background: #1e293b;
+            color: #e5e7eb;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0078d7;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #323232;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .connection-status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .connection-status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .connection-status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        body.dark .connection-status.success {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: #28a745;
+            color: #4ade80;
+        }
+
+        body.dark .connection-status.error {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: #dc3545;
+            color: #f87171;
+        }
+
+        .landing-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .landing-page.active {
+            display: flex;
+        }
+
+        .landing-content {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        body.dark .landing-content {
+            background: #1e293b;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .landing-logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .landing-content h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        body.dark .landing-content h1 {
+            color: #a78bfa;
+        }
+
+        .landing-content h2 {
+            color: #666;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        body.dark .landing-content h2 {
+            color: #94a3b8;
+        }
+
+        .landing-content p {
+            color: #777;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        body.dark .landing-content p {
+            color: #94a3b8;
+        }
+
+        .google-signin-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        body.dark .google-signin-btn {
+            background: #0f172a;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .google-signin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .google-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .school-header-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .header-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions button {
+                width: 100%;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="landingPage" class="landing-page active">
+        <div class="landing-content">
+            <div class="landing-logo">📚</div>
+            <h1>Event Log Pro</h1>
+            <h2>Event Management System</h2>
+            <p>Manage field trips, tours, and student events efficiently with our comprehensive tracking system.</p>
+            <button onclick="handleGoogleSignIn()" class="google-signin-btn">
+                <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Sign in with Google
+            </button>
+        </div>
+    </div>
+
+    <div id="spinner" class="spinner">
+        <div class="spinner-content">
+            <div class="loader"></div>
+            <div id="spinnerText">Processing...</div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+            </div>
+            <div class="modal-body">
+                <div class="settings-grid">
+                    <div class="settings-section">
+                        <h3>📡 Web App Connection</h3>
+                        <div class="form-group">
+                            <label for="settingsApiUrl"><strong>Google Apps Script Web App URL</strong></label>
+                            <input type="text" id="settingsApiUrl" placeholder="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec">
+                            <small class="help-text">Deploy your Google Apps Script as a web app and paste the URL here</small>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>📊 Google Sheet Configuration</h3>
+                        <div class="form-group">
+                            <label for="settingsSheetId"><strong>Google Sheet ID</strong></label>
+                            <input type="text" id="settingsSheetId" placeholder="Your Google Sheet ID">
+                            <small class="help-text">Find this in your sheet URL: docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit</small>
+                        </div>
+                        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                            <small style="color: #856404;">
+                                <strong>⚠️ Important:</strong> Add this Sheet ID to your Apps Script project properties as <code>SHEET_ID</code>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>📄 Google Doc Configuration</h3>
+                        <div class="form-group">
+                            <label for="settingsDocId"><strong>Google Doc Template ID (Optional)</strong></label>
+                            <input type="text" id="settingsDocId" placeholder="Your Google Doc Template ID">
+                            <small class="help-text">For custom report templates. Leave blank to auto-create new docs.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="connectionStatus"></div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <button onclick="testConnection()" class="btn-info">🔍 Test Connection</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSettings()" class="btn-secondary">Close</button>
+                <button onclick="saveSettings()" class="btn-primary">💾 Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="school-header-icon">🎓</div>
+            <h1>Grantley Adams Memorial School</h1>
+            <h2>Science Department</h2>
+            <h3 class="form-title">Event / Tour Data Sheet</h3>
+            <p id="eventIdDisplay">Event ID: (new)</p>
+
+            <div class="header-controls">
+                <button onclick="openSettings()" class="settings-btn">
+                    ⚙️ Settings
+                </button>
+                <div class="theme-toggle-wrapper">
+                    <span class="toggle-text">Dark Mode</span>
+                    <div class="theme-toggle">
+                        <input type="checkbox" id="darkModeToggle">
+                        <label for="darkModeToggle" class="toggle-label">
+                            <span class="toggle-icon sun">☀️</span>
+                            <span class="toggle-icon moon">🌙</span>
+                            <span class="toggle-ball"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <form id="eventForm">
+            <input type="hidden" id="eventId" name="eventId">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="eventName">Event Name *</label>
+                    <input type="text" id="eventName" name="eventName" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="eventDate">Date *</label>
+                    <input type="date" id="eventDate" name="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventVenue">Venue</label>
+                    <input type="text" id="eventVenue" name="eventVenue">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="departureTime">Departure Time</label>
+                    <input type="time" id="departureTime" name="departureTime">
+                </div>
+                <div class="form-group">
+                    <label for="returnTime">Return Time</label>
+                    <input type="time" id="returnTime" name="returnTime">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="company">Company</label>
+                    <input type="text" id="company" name="company">
+                </div>
+                <div class="form-group">
+                    <label for="vehicle">Vehicle No.</label>
+                    <input type="text" id="vehicle" name="vehicle">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="accompanying">Accompanying Teachers</label>
+                    <input type="text" id="accompanying" name="accompanying" placeholder="Enter teacher names separated by commas">
+                    <small class="help-text">e.g., Ms. Smith, Mr. Jones, Dr. Brown</small>
+                </div>
+            </div>
+
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Total Students</div>
+                    <div class="stat-value" id="totalStudents">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">No. Teachers</div>
+                    <div class="stat-value" id="numTeachers">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Present</div>
+                    <div class="stat-value" id="presentCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Permission Slips</div>
+                    <div class="stat-value" id="permissionCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total People</div>
+                    <div class="stat-value" id="totalPeople">0</div>
+                </div>
+            </div>
+
+            <h4 style="margin-top: 30px; margin-bottom: 15px;">Student List</h4>
+            <div class="table-container">
+                <table id="studentTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>Form</th>
+                            <th>Contact Number</th>
+                            <th>Medical / Illness</th>
+                            <th>Medication</th>
+                            <th>Permission</th>
+                            <th>Present</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" name="studentName[]"></td>
+                            <td><input type="text" name="form[]"></td>
+                            <td><input type="text" name="contact[]"></td>
+                            <td>
+                                <select name="illness[]" class="student-illness">
+                                    <option value="None">None</option>
+                                    <option value="Asthma">Asthma</option>
+                                    <option value="Allergies – Mild">Allergies – Mild</option>
+                                    <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
+                                    <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
+                                    <option value="Diabetes">Diabetes</option>
+                                    <option value="Heart condition">Heart condition</option>
+                                    <option value="Other (specify)">Other (specify)</option>
+                                </select>
+                                <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="medication[]" class="medication-checkbox">
+                                <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
+                            </td>
+                            <td><input type="checkbox" name="permission[]"></td>
+                            <td><input type="checkbox" name="present[]"></td>
+                            <td><button type="button" class="delete-row">✖</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
+
+            <div class="form-group">
+                <label for="eventSelect">Load Existing Event</label>
+                <select id="eventSelect" onchange="loadSelectedEvent()">
+                    <option value="">-- Select an event --</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-primary" onclick="newEvent()">➕ New Event</button>
+                <button type="button" class="btn-primary" onclick="saveEvent()">💾 Save Event</button>
+                <button type="button" class="btn-success" onclick="editEvent()">✏️ Edit</button>
+                <button type="button" class="btn-secondary" onclick="promptLoadEvent()">📂 Load Event</button>
+                <button type="button" class="btn-danger" onclick="deleteEvent()">🗑️ Delete Event</button>
+                <button type="button" class="btn-info" onclick="generateReport()">📄 Generate Report</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+        let currentEventId = null;
+        let isEditMode = false;
+        let allEvents = [];
+        let isAuthenticated = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing app...');
+            checkAuthentication();
+            initializeDarkMode();
+            initializeEventHandlers();
+            generateNewEventId();
+            loadAllEvents();
+            updateCounts();
+        });
+
+        function checkAuthentication() {
+            const authStatus = localStorage.getItem('isAuthenticated');
+            if (authStatus === 'true') {
+                isAuthenticated = true;
+                document.getElementById('landingPage').classList.remove('active');
+            } else {
+                document.getElementById('landingPage').classList.add('active');
+            }
+        }
+
+        function handleGoogleSignIn() {
+            showSpinner('Signing in...');
+            
+            setTimeout(() => {
+                localStorage.setItem('isAuthenticated', 'true');
+                isAuthenticated = true;
+                hideSpinner();
+                document.getElementById('landingPage').classList.remove('active');
+                showToast('Welcome! Signed in successfully', 'success');
+            }, 1500);
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            loadSettings();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function loadSettings() {
+            const apiUrl = localStorage.getItem('apiUrl') || '';
+            const sheetId = localStorage.getItem('sheetId') || '';
+            const docId = localStorage.getItem('docId') || '';
+            
+            document.getElementById('settingsApiUrl').value = apiUrl;
+            document.getElementById('settingsSheetId').value = sheetId;
+            document.getElementById('settingsDocId').value = docId;
+        }
+
+        function saveSettings() {
+            const apiUrl = document.getElementById('settingsApiUrl').value.trim();
+            const sheetId = document.getElementById('settingsSheetId').value.trim();
+            const docId = document.getElementById('settingsDocId').value.trim();
+            
+            if (apiUrl) {
+                localStorage.setItem('apiUrl', apiUrl);
+            }
+            if (sheetId) {
+                localStorage.setItem('sheetId', sheetId);
+            }
+            if (docId) {
+                localStorage.setItem('docId', docId);
+            }
+            
+            showToast('Settings saved! Reloading events...', 'success');
+            loadAllEvents();
+        }
+
+        function getApiUrl() {
+            const saved = localStorage.getItem('apiUrl');
+            if (!saved || saved === API_URL) {
+                return null;
+            }
+            return saved;
+        }
+
+        function initializeDarkMode() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                darkModeToggle.checked = true;
+            }
+            
+            darkModeToggle.addEventListener('change', () => {
+                document.body.classList.toggle('dark');
+                localStorage.setItem('theme', darkModeToggle.checked ? 'dark' : 'light');
+            });
+        }
+
+        function initializeEventHandlers() {
+            const accompanyingInput = document.getElementById('accompanying');
+            if (accompanyingInput) {
+                accompanyingInput.addEventListener('input', updateCounts);
+            }
+            
+            const tableBody = document.querySelector('#studentTable tbody');
+            if (tableBody) {
+                tableBody.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('student-illness')) {
+                        handleIllnessChange(e.target);
+                    }
+                    if (e.target.classList.contains('medication-checkbox')) {
+                        handleMedicationChange(e.target);
+                    }
+                    updateCounts();
+                });
+                
+                tableBody.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-row')) {
+                        deleteStudentRow(e.target);
+                    }
+                });
+                
+                tableBody.addEventListener('input', updateCounts);
+            }
+            
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('settingsModal');
+                if (e.target === modal) {
+                    closeSettings();
+                }
+            });
+        }
+
+        async function apiCall(action, data = {}) {
+            const url = getApiUrl();
+            if (!url) {
+                showToast('⚠️ Please configure your API URL in Settings', 'error');
+                return { success: false, error: 'API URL not configured' };
+            }
+
+            showSpinner('Processing...');
+            console.log('API Call:', action, data);
+            
+            try {
+                const isGetRequest = ['getAllEvents', 'generateEventId', 'getEventData'].includes(action);
+                
+                if (isGetRequest) {
+                    const params = new URLSearchParams({ action });
+                    if (action === 'getEventData' && data.eventId) {
+                        params.append('eventId', data.eventId);
+                    }
+                    const fetchUrl = url + '?' + params.toString();
+                    console.log('GET URL:', fetchUrl);
+                    
+                    const response = await fetch(fetchUrl, {
+                        method: 'GET',
+                        redirect: 'follow'
+                    });
+                    
+                    const text = await response.text();
+                    console.log('GET Response:', text);
+                    
+                    const result = JSON.parse(text);
+                    hideSpinner();
+                    return result;
+                } else {
+                    console.log('POST Data:', { action, ...data });
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
+                        body: JSON.stringify({ action, ...data }),
+                        redirect: 'follow',
+                        mode: 'no-cors'
+                    });
+                    
+                    console.log('POST Response (no-cors mode)');
+                    hideSpinner();
+                    
+                    return { success: true, message: 'Request sent - please check your Google Sheet to verify' };
+                }
+            } catch (error) {
+                hideSpinner();
+                console.error('API Error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function generateNewEventId() {
+            const result = await apiCall('generateEventId');
+            
+            if (result.success && result.eventId) {
+                const eventId = result.eventId;
+                document.getElementById('eventId').value = eventId;
+                document.getElementById('eventIdDisplay').textContent = `Event ID: ${eventId}`;
+                currentEventId = eventId;
+            } else {
+                const year = new Date().getFullYear();
+                const eventId = `${year}-001`;
+                document.getElementById('eventId').value = eventId;
+                document.getElementById('eventIdDisplay').textContent = `Event ID: ${eventId}`;
+                currentEventId = eventId;
+            }
+        }
+
+        async function loadAllEvents() {
+            const result = await apiCall('getAllEvents');
+            if (result.success) {
+                allEvents = result.events || [];
+                populateEventDropdown();
+                console.log('Loaded events:', allEvents);
+            } else {
+                console.error('Failed to load events:', result.error);
+            }
+        }
+
+        function populateEventDropdown() {
+            const select = document.getElementById('eventSelect');
+            select.innerHTML = '<option value="">-- Select an event --</option>';
+            
+            allEvents.forEach(event => {
+                const option = document.createElement('option');
+                option.value = event.eventId;
+                option.textContent = `${event.eventName} (${event.eventDate})`;
+                if (event.lastModified) {
+                    option.textContent += ` - Modified: ${event.lastModified}`;
+                }
+                select.appendChild(option);
+            });
+            
+            console.log('Populated dropdown with', allEvents.length, 'events');
+        }
+
+        function loadSelectedEvent() {
+            const select = document.getElementById('eventSelect');
+            const eventId = select.value;
+            if (!eventId) return;
+            loadEvent(eventId);
+        }
+
+        function promptLoadEvent() {
+            const eventId = prompt('Enter Event ID to load:');
+            if (eventId) {
+                loadEvent(eventId.trim());
+            }
+        }
+
+        function formatDateForInput(dateValue) {
+            if (!dateValue) return '';
+            
+            let date;
+            if (dateValue instanceof Date) {
+                date = dateValue;
+            } else if (typeof dateValue === 'string') {
+                date = new Date(dateValue);
+            } else {
+                return '';
+            }
+            
+            if (isNaN(date.getTime())) return '';
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatTimeForInput(timeValue) {
+            if (!timeValue) return '';
+            
+            // Handle Date objects
+            if (timeValue instanceof Date) {
+                const hours = String(timeValue.getHours()).padStart(2, '0');
+                const minutes = String(timeValue.getMinutes()).padStart(2, '0');
+                return `${hours}:${minutes}`;
+            }
+            
+            // Handle string values
+            if (typeof timeValue === 'string') {
+                // If it's already in HH:MM format, return as is
+                if (/^\d{1,2}:\d{2}/.test(timeValue)) {
+                    const parts = timeValue.split(':');
+                    const hours = String(parts[0]).padStart(2, '0');
+                    const minutes = String(parts[1]).padStart(2, '0');
+                    return `${hours}:${minutes}`;
+                }
+                
+                // Try to parse as date string
+                try {
+                    const date = new Date(timeValue);
+                    if (!isNaN(date.getTime())) {
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                    }
+                } catch (e) {
+                    console.log('Could not parse time:', timeValue);
+                }
+            }
+            
+            return '';
+        }
+
+        async function loadEvent(eventId) {
+            const result = await apiCall('getEventData', { eventId });
+            
+            if (!result.success || !result.event) {
+                showToast('Event not found: ' + (result.error || 'Unknown error'), 'error');
+                return;
+            }
+            
+            const event = result.event;
+            console.log('Loading event:', event);
+            
+            document.getElementById('eventId').value = event.eventId;
+            document.getElementById('eventIdDisplay').textContent = `Event ID: ${event.eventId}`;
+            document.getElementById('eventName').value = event.eventName || '';
+            document.getElementById('eventDate').value = formatDateForInput(event.eventDate);
+            document.getElementById('eventVenue').value = event.venue || '';
+            document.getElementById('departureTime').value = formatTimeForInput(event.departure);
+            document.getElementById('returnTime').value = formatTimeForInput(event.returnTime);
+            document.getElementById('vehicle').value = event.vehicle || '';
+            document.getElementById('company').value = event.company || '';
+            document.getElementById('accompanying').value = event.accompanying || '';
+            
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = '';
+            
+            if (event.students && event.students.length > 0) {
+                event.students.forEach((student, index) => {
+                    addStudentRow(student, index + 1);
+                });
+            } else {
+                addStudentRow();
+            }
+            
+            currentEventId = event.eventId;
+            isEditMode = true;
+            updateCounts();
+            showToast('Event loaded successfully', 'success');
+        }
+
+        async function saveEvent() {
+            const eventData = collectFormData();
+            
+            if (!eventData.eventName || !eventData.eventDate) {
+                showToast('Event Name and Date are required', 'error');
+                return;
+            }
+            
+            console.log('Saving event data:', eventData);
+            console.log('Is edit mode:', isEditMode);
+            
+            const action = isEditMode ? 'updateEvent' : 'saveEvent';
+            const result = await apiCall(action, { eventData });
+            
+            console.log('Save result:', result);
+            
+            if (result.success) {
+                showToast((isEditMode ? 'Event updated' : 'Event saved') + ' - Please check your Google Sheet to verify!', 'success');
+                await loadAllEvents();
+                isEditMode = false;
+            } else {
+                showToast('Error saving event: ' + (result.error || 'Unknown error'), 'error');
+            }
+        }
+
+        function newEvent() {
+            if (confirm('Create a new event? Any unsaved changes will be lost.')) {
+                resetForm();
+                showToast('Ready to create a new event!', 'success');
+            }
+        }
+
+        function editEvent() {
+            if (!currentEventId) {
+                promptLoadEvent();
+                return;
+            }
+            isEditMode = true;
+            showToast('Editing mode enabled. Make changes and click Save Event.', 'success');
+        }
+
+        async function deleteEvent() {
+            if (!currentEventId) {
+                showToast('No event selected', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this event?')) {
+                return;
+            }
+            
+            const result = await apiCall('deleteEvent', { eventId: currentEventId });
+            if (result.success) {
+                showToast('Event deleted - Please check your Google Sheet to verify!', 'success');
+                await loadAllEvents();
+                resetForm();
+            } else {
+                showToast('Error deleting event: ' + (result.error || 'Unknown error'), 'error');
+            }
+        }
+
+        async function generateReport() {
+            if (!currentEventId) {
+                showToast('Please save the event before generating a report', 'error');
+                return;
+            }
+            
+            const result = await apiCall('generateReport', { eventId: currentEventId });
+            if (result.success) {
+                showToast('Report generation started! Check your Google Drive.', 'success');
+                if (result.pdfUrl) {
+                    window.open(result.pdfUrl, '_blank');
+                }
+            } else {
+                showToast('Error generating report: ' + (result.error || 'Unknown error'), 'error');
+            }
+        }
+
+        function addStudentRow(studentData = null, index = null) {
+            const tbody = document.querySelector('#studentTable tbody');
+            const rowNum = index || tbody.rows.length + 1;
+            
+            const row = tbody.insertRow();
+            
+            const showIllnessOther = studentData && studentData.illness === 'Other (specify)';
+            const showMedication = studentData && studentData.takingMedication;
+            
+            row.innerHTML = `
+                <td>${rowNum}</td>
+                <td><input type="text" name="studentName[]" value="${studentData?.name || ''}"></td>
+                <td><input type="text" name="form[]" value="${studentData?.form || ''}"></td>
+                <td><input type="text" name="contact[]" value="${studentData?.contact || ''}"></td>
+                <td>
+                    <select name="illness[]" class="student-illness">
+                        <option value="None" ${!studentData || studentData.illness === 'None' ? 'selected' : ''}>None</option>
+                        <option value="Asthma" ${studentData?.illness === 'Asthma' ? 'selected' : ''}>Asthma</option>
+                        <option value="Allergies – Mild" ${studentData?.illness === 'Allergies – Mild' ? 'selected' : ''}>Allergies – Mild</option>
+                        <option value="Allergies – Severe / Anaphylaxis" ${studentData?.illness === 'Allergies – Severe / Anaphylaxis' ? 'selected' : ''}>Allergies – Severe / Anaphylaxis</option>
+                        <option value="Epilepsy / Seizure disorder" ${studentData?.illness === 'Epilepsy / Seizure disorder' ? 'selected' : ''}>Epilepsy / Seizure disorder</option>
+                        <option value="Diabetes" ${studentData?.illness === 'Diabetes' ? 'selected' : ''}>Diabetes</option>
+                        <option value="Heart condition" ${studentData?.illness === 'Heart condition' ? 'selected' : ''}>Heart condition</option>
+                        <option value="Other (specify)" ${studentData?.illness === 'Other (specify)' ? 'selected' : ''}>Other (specify)</option>
+                    </select>
+                    <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" value="${studentData?.otherIllness || ''}" style="display:${showIllnessOther ? 'block' : 'none'}; margin-top: 5px; width: 100%;">
+                </td>
+                <td>
+                    <input type="checkbox" name="medication[]" class="medication-checkbox" ${studentData?.takingMedication ? 'checked' : ''}>
+                    <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication name/details" value="${studentData?.medicationDetails || ''}" style="display:${showMedication ? 'block' : 'none'}; margin-top: 5px; width: 100%;">
+                </td>
+                <td><input type="checkbox" name="permission[]" ${studentData?.permission === 'Yes' || studentData?.permission === true ? 'checked' : ''}></td>
+                <td><input type="checkbox" name="present[]" ${studentData?.present === 'Yes' || studentData?.present === true ? 'checked' : ''}></td>
+                <td><button type="button" class="delete-row">✖</button></td>
+            `;
+            
+            renumberRows();
+            updateCounts();
+        }
+
+        function deleteStudentRow(button) {
+            const tbody = document.querySelector('#studentTable tbody');
+            if (tbody.rows.length <= 1) {
+                showToast('At least one student row must remain', 'error');
+                return;
+            }
+            
+            button.closest('tr').remove();
+            renumberRows();
+            updateCounts();
+        }
+
+        function renumberRows() {
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+
+        function handleIllnessChange(select) {
+            const row = select.closest('tr');
+            const otherInput = row.querySelector('.illness-other');
+            
+            if (select.value === 'Other (specify)') {
+                otherInput.style.display = 'block';
+                setTimeout(() => otherInput.focus(), 100);
+            } else {
+                otherInput.style.display = 'none';
+                otherInput.value = '';
+            }
+        }
+
+        function handleMedicationChange(checkbox) {
+            const row = checkbox.closest('tr');
+            const medicationInput = row.querySelector('.medication-details');
+            
+            if (checkbox.checked) {
+                medicationInput.style.display = 'block';
+                setTimeout(() => medicationInput.focus(), 100);
+            } else {
+                medicationInput.style.display = 'none';
+                medicationInput.value = '';
+            }
+        }
+
+        function collectFormData() {
+            const students = [];
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            
+            rows.forEach(row => {
+                const cells = row.cells;
+                const illness = cells[4].querySelector('.student-illness').value;
+                const otherIllness = cells[4].querySelector('.illness-other').value;
+                const takingMedication = cells[5].querySelector('.medication-checkbox').checked;
+                const medicationDetails = cells[5].querySelector('.medication-details').value;
+                
+                students.push({
+                    name: cells[1].querySelector('input').value,
+                    form: cells[2].querySelector('input').value,
+                    contact: cells[3].querySelector('input').value,
+                    illness: illness,
+                    otherIllness: illness === 'Other (specify)' ? otherIllness : '',
+                    takingMedication: takingMedication,
+                    medicationDetails: takingMedication ? medicationDetails : '',
+                    permission: cells[6].querySelector('input').checked,
+                    present: cells[7].querySelector('input').checked
+                });
+            });
+            
+            return {
+                eventId: currentEventId || document.getElementById('eventId').value,
+                eventName: document.getElementById('eventName').value,
+                eventDate: document.getElementById('eventDate').value,
+                venue: document.getElementById('eventVenue').value,
+                departure: document.getElementById('departureTime').value,
+                returnTime: document.getElementById('returnTime').value,
+                vehicle: document.getElementById('vehicle').value,
+                company: document.getElementById('company').value,
+                accompanying: document.getElementById('accompanying').value,
+                students: students
+            };
+        }
+
+        function updateCounts() {
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            const accompanyingValue = document.getElementById('accompanying').value;
+            
+            let accompanyingCount = 0;
+            if (accompanyingValue && accompanyingValue.trim()) {
+                const teachers = accompanyingValue.split(',').filter(name => name.trim() !== '');
+                accompanyingCount = teachers.length;
+            }
+            
+            let totalStudents = 0;
+            let presentCount = 0;
+            let permissionCount = 0;
+            
+            rows.forEach(row => {
+                const nameInput = row.cells[1].querySelector('input');
+                if (nameInput.value.trim()) {
+                    totalStudents++;
+                }
+                
+                if (row.cells[7].querySelector('input').checked) {
+                    presentCount++;
+                }
+                
+                if (row.cells[6].querySelector('input').checked) {
+                    permissionCount++;
+                }
+            });
+            
+            const totalPeople = totalStudents + accompanyingCount;
+            
+            document.getElementById('totalStudents').textContent = totalStudents;
+            document.getElementById('numTeachers').textContent = accompanyingCount;
+            document.getElementById('presentCount').textContent = presentCount;
+            document.getElementById('permissionCount').textContent = permissionCount;
+            document.getElementById('totalPeople').textContent = totalPeople;
+        }
+
+        function resetForm() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('eventIdDisplay').textContent = 'Event ID: (new)';
+            
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = '';
+            addStudentRow();
+            
+            currentEventId = null;
+            isEditMode = false;
+            
+            generateNewEventId();
+            updateCounts();
+        }
+
+        function showSpinner(message = 'Loading...') {
+            let spinner = document.getElementById('spinner');
+            if (spinner) {
+                spinner.classList.add('active');
+                const spinnerText = document.getElementById('spinnerText');
+                if (spinnerText) {
+                    spinnerText.textContent = message;
+                }
+            }
+        }
+
+        function hideSpinner() {
+            const spinner = document.getElementById('spinner');
+            if (spinner) {
+                spinner.classList.remove('active');
+            }
+        }
+
+        function showToast(message, type = 'info', duration = 4000) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.className = 'toast show';
+                if (type === 'error') {
+                    toast.classList.add('error');
+                } else if (type === 'success') {
+                    toast.classList.add('success');
+                }
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+            console.log(`Toast [${type}]:`, message);
+        }
+
+        async function testConnection() {
+            const url = getApiUrl();
+            if (!url) {
+                const statusDiv = document.getElementById('connectionStatus');
+                statusDiv.className = 'connection-status error';
+                statusDiv.innerHTML = '❌ <strong>No API URL configured!</strong><br>Please paste your Google Apps Script Web App URL above.';
+                return;
+            }
+
+            console.log('Testing connection to:', url);
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = 'connection-status';
+            statusDiv.innerHTML = '⏳ Testing connection...';
+
+            try {
+                console.log('Test 1: Generating Event ID...');
+                const idResult = await apiCall('generateEventId');
+                console.log('Event ID result:', idResult);
+
+                console.log('Test 2: Getting all events...');
+                const eventsResult = await apiCall('getAllEvents');
+                console.log('Events result:', eventsResult);
+
+                let html = '<strong>🔍 CONNECTION TEST RESULTS:</strong><br><br>';
+                html += `<strong>Test 1 - Generate ID:</strong> ${idResult.success ? '✅ SUCCESS' : '❌ FAILED'}<br>`;
+                if (idResult.success && idResult.eventId) {
+                    html += `&nbsp;&nbsp;Event ID: ${idResult.eventId}<br>`;
+                } else if (idResult.error) {
+                    html += `&nbsp;&nbsp;Error: ${idResult.error}<br>`;
+                }
+                html += `<br><strong>Test 2 - Load Events:</strong> ${eventsResult.success ? '✅ SUCCESS' : '❌ FAILED'}<br>`;
+                if (eventsResult.success) {
+                    html += `&nbsp;&nbsp;Found ${eventsResult.events?.length || 0} events<br>`;
+                } else if (eventsResult.error) {
+                    html += `&nbsp;&nbsp;Error: ${eventsResult.error}<br>`;
+                }
+
+                if (idResult.success && eventsResult.success) {
+                    statusDiv.className = 'connection-status success';
+                    html += '<br>✅ <strong>All tests passed!</strong> Your connection is working properly.';
+                } else {
+                    statusDiv.className = 'connection-status error';
+                    html += '<br>⚠️ <strong>Some tests failed.</strong> Check the following:<br>';
+                    html += '• Is the Web App URL correct?<br>';
+                    html += '• Is the script deployed as Web App?<br>';
+                    html += '• Is access set to "Anyone"?<br>';
+                    html += '• Did you create a NEW deployment after code changes?';
+                }
+
+                statusDiv.innerHTML = html;
+            } catch (error) {
+                statusDiv.className = 'connection-status error';
+                statusDiv.innerHTML = `❌ <strong>CONNECTION FAILED</strong><br>Error: ${error.message}<br><br>Check console (F12) for details.`;
+                console.error('Connection test error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

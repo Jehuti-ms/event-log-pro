@@ -1,0 +1,415 @@
+// ============================================
+// GOOGLE APPS SCRIPT - Code.gs
+// ============================================
+
+// Serve the HTML page
+function doGet(e) {
+  const action = e.parameter.action;
+  
+  // Handle API requests
+  if (action === 'getAllEvents') {
+    return ContentService.createTextOutput(JSON.stringify(getAllEvents()))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  if (action === 'generateEventId') {
+    return ContentService.createTextOutput(JSON.stringify(generateEventId()))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  if (action === 'getEventData') {
+    return ContentService.createTextOutput(JSON.stringify(getEventData(e.parameter.eventId)))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // Serve the main HTML page
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Event Management System')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// Handle POST requests
+function doPost(e) {
+  try {
+    Logger.log('POST request received');
+    Logger.log('Request body: ' + e.postData.contents);
+    
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    
+    Logger.log('Action: ' + action);
+    
+    let result;
+    
+    if (action === 'saveEvent') {
+      result = saveEvent(data.eventData);
+    } else if (action === 'updateEvent') {
+      result = updateEvent(data.eventData);
+    } else if (action === 'deleteEvent') {
+      result = deleteEvent(data.eventId);
+    } else if (action === 'generateReport') {
+      result = generateReport(data.eventId);
+    } else {
+      result = { success: false, error: 'Unknown action' };
+    }
+    
+    Logger.log('Result: ' + JSON.stringify(result));
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    Logger.log('Error in doPost: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: false, 
+      error: error.toString() 
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ============================================
+// SPREADSHEET FUNCTIONS
+// ============================================
+
+function getSpreadsheet() {
+  // Try multiple methods to get the spreadsheet
+  try {
+    // Method 1: Try script properties
+    const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+    if (sheetId && sheetId !== 'YOUR_SHEET_ID_HERE') {
+      return SpreadsheetApp.openById(sheetId);
+    }
+  } catch (e) {
+    Logger.log('Method 1 failed: ' + e);
+  }
+  
+  try {
+    // Method 2: Try to get the active spreadsheet (if script is bound to a sheet)
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (ss) {
+      return ss;
+    }
+  } catch (e) {
+    Logger.log('Method 2 failed: ' + e);
+  }
+  
+  // Method 3: If all else fails, throw a helpful error
+  throw new Error('No spreadsheet configured. Please set SHEET_ID in Script Properties or bind this script to a spreadsheet.');
+}
+
+function getEventsSheet() {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName('Admin');
+  if (!sheet) {
+    sheet = ss.insertSheet('Admin');
+    // Updated header to match your sheet layout
+    sheet.appendRow(['Event ID', 'Event Name', 'Date', 'Venue', 'Departure Time', 'Return Time', 'Vehicle', 'Company', 'Accompanying Teachers', 'Teachers Count', 'Students Count', 'Last Modified']);
+  }
+  return sheet;
+}
+
+function getStudentsSheet() {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName('Students');
+  if (!sheet) {
+    sheet = ss.insertSheet('Students');
+    // Updated header to match your sheet layout
+    sheet.appendRow(['No', 'Student Name', 'Form', 'Contact Number', 'Medical / Illness', 'Other Illness', 'Medication', 'Permission Slip', 'Present', 'Event ID']);
+  }
+  return sheet;
+}
+
+// ============================================
+// EVENT OPERATIONS
+// ============================================
+
+function generateEventId() {
+  const eventsSheet = getEventsSheet();
+  const data = eventsSheet.getDataRange().getValues();
+  
+  // Get current year (full 4 digits)
+  const year = new Date().getFullYear();
+  
+  // Find the highest sequential number for this year
+  let maxNum = 0;
+  for (let i = 1; i < data.length; i++) {
+    const eventId = data[i][0];
+    if (eventId && typeof eventId === 'string' && eventId.startsWith(year.toString())) {
+      const parts = eventId.split('-');
+      if (parts.length === 2) {
+        const num = parseInt(parts[1]);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+  }
+  
+  // Increment and format as 3-digit number
+  const nextNum = (maxNum + 1).toString().padStart(3, '0');
+  const eventId = `${year}-${nextNum}`;
+  
+  return {
+    success: true,
+    eventId: eventId
+  };
+}
+
+function getAllEvents() {
+  try {
+    const sheet = getEventsSheet();
+    const data = sheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      return { success: true, events: [] };
+    }
+    
+    const events = [];
+    for (let i = 1; i < data.length; i++) {
+      events.push({
+        eventId: data[i][0],
+        eventName: data[i][1],
+        eventDate: data[i][2],
+        venue: data[i][3],
+        lastModified: data[i][11]
+      });
+    }
+    
+    return { success: true, events: events };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function getEventData(eventId) {
+  try {
+    const eventsSheet = getEventsSheet();
+    const studentsSheet = getStudentsSheet();
+    
+    // Find event
+    const eventData = eventsSheet.getDataRange().getValues();
+    let eventRow = null;
+    
+    for (let i = 1; i < eventData.length; i++) {
+      if (eventData[i][0] === eventId) {
+        eventRow = eventData[i];
+        break;
+      }
+    }
+    
+    if (!eventRow) {
+      return { success: false, error: 'Event not found' };
+    }
+    
+    // Get students - Column layout: No, Student Name, Form, Contact Number, Medical/Illness, Other Illness, Medication, Permission Slip, Present, Event ID
+    const studentData = studentsSheet.getDataRange().getValues();
+    const students = [];
+    
+    for (let i = 1; i < studentData.length; i++) {
+      if (studentData[i][9] === eventId) { // Event ID is now in column 9 (index 9)
+        students.push({
+          name: studentData[i][1],
+          form: studentData[i][2],
+          contact: studentData[i][3],
+          illness: studentData[i][4],
+          otherIllness: studentData[i][5],
+          takingMedication: studentData[i][6] ? true : false,
+          medicationDetails: studentData[i][6],
+          permission: studentData[i][7],
+          present: studentData[i][8]
+        });
+      }
+    }
+    
+    // Column layout: Event ID, Event Name, Date, Venue, Departure Time, Return Time, Vehicle, Company, Accompanying Teachers, Teachers Count, Students Count, Last Modified
+    return {
+      success: true,
+      event: {
+        eventId: eventRow[0],
+        eventName: eventRow[1],
+        eventDate: eventRow[2],
+        venue: eventRow[3],
+        departure: eventRow[4],
+        returnTime: eventRow[5],
+        vehicle: eventRow[6],
+        company: eventRow[7],
+        accompanying: eventRow[8],
+        students: students
+      }
+    };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function saveEvent(eventData) {
+  try {
+    const eventsSheet = getEventsSheet();
+    const studentsSheet = getStudentsSheet();
+    
+    // Calculate counts
+    const accompanyingTeachers = eventData.accompanying ? eventData.accompanying.split(',').filter(t => t.trim()).length : 0;
+    const studentsCount = eventData.students.filter(s => s.name && s.name.trim()).length;
+    
+    // Save event - Column layout: Event ID, Event Name, Date, Venue, Departure Time, Return Time, Vehicle, Company, Accompanying Teachers, Teachers Count, Students Count, Last Modified
+    eventsSheet.appendRow([
+      eventData.eventId,
+      eventData.eventName,
+      eventData.eventDate,
+      eventData.venue,
+      eventData.departure,
+      eventData.returnTime,
+      eventData.vehicle,
+      eventData.company,
+      eventData.accompanying,
+      accompanyingTeachers,
+      studentsCount,
+      new Date().toLocaleString()
+    ]);
+    
+    // Save students - Column layout: No, Student Name, Form, Contact Number, Medical/Illness, Other Illness, Medication, Permission Slip, Present, Event ID
+    let studentNo = 1;
+    eventData.students.forEach(student => {
+      if (student.name && student.name.trim()) {
+        studentsSheet.appendRow([
+          studentNo,
+          student.name,
+          student.form,
+          student.contact,
+          student.illness,
+          student.otherIllness || '',
+          student.takingMedication ? student.medicationDetails : '',
+          student.permission ? 'Yes' : 'No',
+          student.present ? 'Yes' : 'No',
+          eventData.eventId
+        ]);
+        studentNo++;
+      }
+    });
+    
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function updateEvent(eventData) {
+  try {
+    // Delete existing data
+    deleteEvent(eventData.eventId);
+    // Save new data
+    return saveEvent(eventData);
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function deleteEvent(eventId) {
+  try {
+    const eventsSheet = getEventsSheet();
+    const studentsSheet = getStudentsSheet();
+    
+    // Delete event
+    const eventData = eventsSheet.getDataRange().getValues();
+    for (let i = eventData.length - 1; i >= 1; i--) {
+      if (eventData[i][0] === eventId) {
+        eventsSheet.deleteRow(i + 1);
+        break;
+      }
+    }
+    
+    // Delete students - Event ID is now in column 9 (index 9)
+    const studentData = studentsSheet.getDataRange().getValues();
+    for (let i = studentData.length - 1; i >= 1; i--) {
+      if (studentData[i][9] === eventId) {
+        studentsSheet.deleteRow(i + 1);
+      }
+    }
+    
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
+
+function generateReport(eventId) {
+  try {
+    const eventData = getEventData(eventId);
+    
+    if (!eventData.success) {
+      return eventData;
+    }
+    
+    const event = eventData.event;
+    
+    // Create a new Google Doc
+    const doc = DocumentApp.create(`Event Report - ${event.eventName} - ${event.eventDate}`);
+    const body = doc.getBody();
+    
+    // Add title
+    body.appendParagraph('GRANTLEY ADAMS MEMORIAL SCHOOL')
+      .setHeading(DocumentApp.ParagraphHeading.HEADING1)
+      .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    
+    body.appendParagraph('Science Department')
+      .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    
+    body.appendParagraph('Event / Tour Data Sheet')
+      .setHeading(DocumentApp.ParagraphHeading.HEADING2)
+      .setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    
+    body.appendParagraph(''); // Blank line
+    
+    // Event details
+    body.appendParagraph(`Event ID: ${event.eventId}`).setBold(true);
+    body.appendParagraph(`Event Name: ${event.eventName}`);
+    body.appendParagraph(`Date: ${event.eventDate}`);
+    body.appendParagraph(`Venue: ${event.venue}`);
+    body.appendParagraph(`Departure Time: ${event.departure}`);
+    body.appendParagraph(`Return Time: ${event.returnTime}`);
+    body.appendParagraph(`Vehicle: ${event.vehicle}`);
+    body.appendParagraph(`Company: ${event.company}`);
+    body.appendParagraph(`Accompanying Teachers: ${event.accompanying}`);
+    
+    body.appendParagraph(''); // Blank line
+    
+    // Student list
+    body.appendParagraph('Student List')
+      .setHeading(DocumentApp.ParagraphHeading.HEADING3);
+    
+    const table = body.appendTable();
+    const headerRow = table.appendTableRow();
+    headerRow.appendTableCell('No');
+    headerRow.appendTableCell('Name');
+    headerRow.appendTableCell('Form');
+    headerRow.appendTableCell('Contact');
+    headerRow.appendTableCell('Illness');
+    headerRow.appendTableCell('Medication');
+    headerRow.appendTableCell('Permission');
+    headerRow.appendTableCell('Present');
+    
+    let studentNo = 1;
+    event.students.forEach(student => {
+      const row = table.appendTableRow();
+      row.appendTableCell(studentNo.toString());
+      row.appendTableCell(student.name);
+      row.appendTableCell(student.form);
+      row.appendTableCell(student.contact);
+      row.appendTableCell(student.illness + (student.otherIllness ? ': ' + student.otherIllness : ''));
+      row.appendTableCell(student.takingMedication ? student.medicationDetails : 'No');
+      row.appendTableCell(student.permission ? 'Yes' : 'No');
+      row.appendTableCell(student.present ? 'Yes' : 'No');
+      studentNo++;
+    });
+    
+    doc.saveAndClose();
+    
+    return {
+      success: true,
+      pdfUrl: doc.getUrl()
+    };
+  } catch (error) {
+    return { success: false, error: error.toString() };
+  }
+}
