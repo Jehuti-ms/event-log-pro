@@ -34,6 +34,11 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .container.active {
+            display: block;
         }
 
         body.dark .container {
@@ -614,7 +619,7 @@
         }
 
         .landing-page {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0;
             left: 0;
@@ -626,8 +631,8 @@
             align-items: center;
         }
 
-        .landing-page.active {
-            display: flex;
+        .landing-page.hidden {
+            display: none;
         }
 
         .landing-content {
@@ -761,7 +766,7 @@
     </style>
 </head>
 <body>
-    <div id="landingPage" class="landing-page active">
+    <div id="landingPage" class="landing-page">
         <div class="landing-content">
             <div class="landing-logo">📚</div>
             <h1>Event Log Pro</h1>
@@ -841,11 +846,11 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="container" id="mainContainer">
         <header>
             <div class="school-header-icon">🎓</div>
-            <h1>Grantley Adams Memorial School</h1>
-            <h2>Science Department</h2>
+            <h1>Event Log Pro</h1>
+            <h2>Comprehensive Event Management</h2>
             <h3 class="form-title">Event / Tour Data Sheet</h3>
             <p id="eventIdDisplay">Event ID: (new)</p>
 
@@ -1020,18 +1025,25 @@
             checkAuthentication();
             initializeDarkMode();
             initializeEventHandlers();
-            generateNewEventId();
-            loadAllEvents();
-            updateCounts();
+            
+            // Only initialize event operations if authenticated
+            if (isAuthenticated) {
+                generateNewEventId();
+                loadAllEvents();
+                updateCounts();
+            }
         });
 
         function checkAuthentication() {
-            const authStatus = localStorage.getItem('isAuthenticated');
+            const authStatus = sessionStorage.getItem('isAuthenticated');
             if (authStatus === 'true') {
                 isAuthenticated = true;
-                document.getElementById('landingPage').classList.remove('active');
+                document.getElementById('landingPage').classList.add('hidden');
+                document.getElementById('mainContainer').classList.add('active');
             } else {
-                document.getElementById('landingPage').classList.add('active');
+                isAuthenticated = false;
+                document.getElementById('landingPage').classList.remove('hidden');
+                document.getElementById('mainContainer').classList.remove('active');
             }
         }
 
@@ -1039,11 +1051,17 @@
             showSpinner('Signing in...');
             
             setTimeout(() => {
-                localStorage.setItem('isAuthenticated', 'true');
+                sessionStorage.setItem('isAuthenticated', 'true');
                 isAuthenticated = true;
                 hideSpinner();
-                document.getElementById('landingPage').classList.remove('active');
+                document.getElementById('landingPage').classList.add('hidden');
+                document.getElementById('mainContainer').classList.add('active');
                 showToast('Welcome! Signed in successfully', 'success');
+                
+                // Initialize after sign in
+                generateNewEventId();
+                loadAllEvents();
+                updateCounts();
             }, 1500);
         }
 
@@ -1283,16 +1301,13 @@
         function formatTimeForInput(timeValue) {
             if (!timeValue) return '';
             
-            // Handle Date objects
             if (timeValue instanceof Date) {
                 const hours = String(timeValue.getHours()).padStart(2, '0');
                 const minutes = String(timeValue.getMinutes()).padStart(2, '0');
                 return `${hours}:${minutes}`;
             }
             
-            // Handle string values
             if (typeof timeValue === 'string') {
-                // If it's already in HH:MM format, return as is
                 if (/^\d{1,2}:\d{2}/.test(timeValue)) {
                     const parts = timeValue.split(':');
                     const hours = String(parts[0]).padStart(2, '0');
@@ -1300,7 +1315,6 @@
                     return `${hours}:${minutes}`;
                 }
                 
-                // Try to parse as date string
                 try {
                     const date = new Date(timeValue);
                     if (!isNaN(date.getTime())) {
@@ -1704,5 +1718,4 @@
         }
     </script>
 </body>
-
 </html>
