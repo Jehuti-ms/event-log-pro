@@ -38,7 +38,7 @@
         }
 
         .container.active {
-            display: block;
+            display: block !important;
         }
 
         body.dark .container {
@@ -632,7 +632,7 @@
         }
 
         .landing-page.hidden {
-            display: none;
+            display: none !important;
         }
 
         .landing-content {
@@ -855,6 +855,9 @@
             <p id="eventIdDisplay">Event ID: (new)</p>
 
             <div class="header-controls">
+                <button onclick="handleLogout()" class="settings-btn">
+                    🚪 Logout
+                </button>
                 <button onclick="openSettings()" class="settings-btn">
                     ⚙️ Settings
                 </button>
@@ -1051,7 +1054,7 @@
             showSpinner('Signing in...');
             
             setTimeout(() => {
-                sessionStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('isAuthenticated', 'true');
                 isAuthenticated = true;
                 hideSpinner();
                 document.getElementById('landingPage').classList.add('hidden');
@@ -1719,4 +1722,3 @@
     </script>
 </body>
 </html>
-
