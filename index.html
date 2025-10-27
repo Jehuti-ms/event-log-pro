@@ -629,10 +629,23 @@
             z-index: 20000;
             justify-content: center;
             align-items: center;
+            opacity: 1;
+            transition: opacity 0.3s ease-out;
         }
 
         .landing-page.hidden {
+            opacity: 0;
+            pointer-events: none;
             display: none !important;
+        }
+
+        /* Hide landing page initially if authenticated */
+        body.authenticated .landing-page {
+            display: none !important;
+        }
+
+        body.authenticated .container {
+            display: block;
         }
 
         .landing-content {
@@ -766,6 +779,14 @@
     </style>
 </head>
 <body>
+    <script>
+        // CRITICAL: Check auth IMMEDIATELY to prevent flash
+        (function() {
+            if (localStorage.getItem('isAuthenticated') === 'true') {
+                document.body.classList.add('authenticated');
+            }
+        })();
+    </script>
     <div id="landingPage" class="landing-page">
         <div class="landing-content">
             <div class="landing-logo">📚</div>
@@ -1024,13 +1045,20 @@
         let allEvents = [];
         let isAuthenticated = false;
 
+        // Check auth BEFORE DOMContentLoaded to prevent flash
+        const authStatus = localStorage.getItem('isAuthenticated');
+        if (authStatus === 'true') {
+            isAuthenticated = true;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Initializing app...');
             console.log('Landing page element:', document.getElementById('landingPage'));
             console.log('Main container element:', document.getElementById('mainContainer'));
-            console.log('Auth status:', localStorage.getItem('isAuthenticated'));
+            console.log('Auth status:', isAuthenticated);
             
-            checkAuthentication();
+            // Apply auth state immediately
+            applyAuthState();
             initializeDarkMode();
             initializeEventHandlers();
             
@@ -1042,16 +1070,16 @@
             }
         });
 
-        function checkAuthentication() {
-            const authStatus = localStorage.getItem('isAuthenticated');
-            if (authStatus === 'true') {
-                isAuthenticated = true;
-                document.getElementById('landingPage').classList.add('hidden');
-                document.getElementById('mainContainer').classList.add('active');
+        function applyAuthState() {
+            const landingPage = document.getElementById('landingPage');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            if (isAuthenticated) {
+                landingPage.classList.add('hidden');
+                mainContainer.classList.add('active');
             } else {
-                isAuthenticated = false;
-                document.getElementById('landingPage').classList.remove('hidden');
-                document.getElementById('mainContainer').classList.remove('active');
+                landingPage.classList.remove('hidden');
+                mainContainer.classList.remove('active');
             }
         }
 
@@ -1062,8 +1090,7 @@
                 localStorage.setItem('isAuthenticated', 'true');
                 isAuthenticated = true;
                 hideSpinner();
-                document.getElementById('landingPage').classList.add('hidden');
-                document.getElementById('mainContainer').classList.add('active');
+                applyAuthState();
                 showToast('Welcome! Signed in successfully', 'success');
                 
                 // Initialize after sign in
@@ -1077,8 +1104,7 @@
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('isAuthenticated');
                 isAuthenticated = false;
-                document.getElementById('landingPage').classList.remove('hidden');
-                document.getElementById('mainContainer').classList.remove('active');
+                applyAuthState();
                 showToast('Logged out successfully', 'success');
             }
         }
