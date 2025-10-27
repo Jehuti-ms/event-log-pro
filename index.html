@@ -1035,7 +1035,7 @@
         });
 
         function checkAuthentication() {
-            const authStatus = sessionStorage.getItem('isAuthenticated');
+            const authStatus = localStorage.getItem('isAuthenticated');
             if (authStatus === 'true') {
                 isAuthenticated = true;
                 document.getElementById('landingPage').classList.add('hidden');
