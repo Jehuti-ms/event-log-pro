@@ -781,6 +781,7 @@
                 </svg>
                 Sign in with Google
             </button>
+            <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">First time? Just click the button to get started!</p>
         </div>
     </div>
 
@@ -1025,6 +1026,10 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Initializing app...');
+            console.log('Landing page element:', document.getElementById('landingPage'));
+            console.log('Main container element:', document.getElementById('mainContainer'));
+            console.log('Auth status:', localStorage.getItem('isAuthenticated'));
+            
             checkAuthentication();
             initializeDarkMode();
             initializeEventHandlers();
@@ -1066,6 +1071,16 @@
                 loadAllEvents();
                 updateCounts();
             }, 1500);
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('isAuthenticated');
+                isAuthenticated = false;
+                document.getElementById('landingPage').classList.remove('hidden');
+                document.getElementById('mainContainer').classList.remove('active');
+                showToast('Logged out successfully', 'success');
+            }
         }
 
         function openSettings() {
