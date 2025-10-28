@@ -1,35 +1,62 @@
 {
-  "webAppUrl": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
-  "sheetId": "YOUR_GOOGLE_SHEET_ID",
-  "schoolName": "Your School Name",
-  "schoolLogo": "",
-  "name": "Attendance Track",
-  "short_name": "Attendance",
-  "description": "Student Attendance Tracking System",
-  "start_url": "/Attendance-Track/",
-  "scope": "/Attendance-Track/",
+  "name": "Event Log Pro - Event Management System",
+  "short_name": "Event Log Pro",
+  "description": "Comprehensive event management system for field trips, tours, and student events with Google Sheets integration",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#2563eb",
-  "theme_color": "#2563eb",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
   "orientation": "portrait-primary",
+  "categories": ["education", "productivity", "business"],
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "icon-192.png",
+      "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Event management dashboard"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Student tracking interface"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Event",
+      "short_name": "New Event",
+      "description": "Create a new event",
+      "url": "/?action=new",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
