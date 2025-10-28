@@ -53,10 +53,17 @@
       "url": "/?action=new",
       "icons": [
         {
-          "src": "icon-192.png",
+          "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-192.png",
           "sizes": "192x192"
         }
       ]
     }
-  ]
+  ],
+  "_config": {
+    "webAppUrl": "https://script.google.com/macros/s/AKfycbwKrhPBJnYyE4R0DgAyNT8p9PqUZobqoARP_coNsO8fZR-okc7_5bjM95xWETo8LaI0/exec",
+    "sheetId": "1uq_BRuF2Ne2nwZjkG9eF-amxiax0e2Bv6ajhrFV7byM",
+    "docId": "1E3jHR_vijAJIQL0eiDv6iTFajAMwDQ9-_DPzjux-wRk",
+    "schoolName": "Grantley Adams Memorial School",
+    "schoolLogo": ""
+  }
 }
