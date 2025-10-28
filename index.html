@@ -4,9 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Log Pro - Event Management System</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon.svg">
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon.svg">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-192.png">
+    
+    <!-- Apple Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Event Log Pro">
+    
+    <!-- Description -->
+    <meta name="description" content="Comprehensive event management system for field trips, tours, and student events with Google Sheets integration">
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -1763,3 +1797,4 @@
     </script>
 </body>
 </html>
+
