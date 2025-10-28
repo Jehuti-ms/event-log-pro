@@ -1,12 +1,16 @@
 {
-  "name": "Event Log Pro",
-  "short_name": "EventLog",
-  "description": "Event Management System for Schools",
-  "start_url": "/event-log-pro/",
-  "scope": "/event-log-pro/",
+  "webAppUrl": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
+  "sheetId": "YOUR_GOOGLE_SHEET_ID",
+  "schoolName": "Your School Name",
+  "schoolLogo": "",
+  "name": "Attendance Track",
+  "short_name": "Attendance",
+  "description": "Student Attendance Tracking System",
+  "start_url": "/Attendance-Track/",
+  "scope": "/Attendance-Track/",
   "display": "standalone",
-  "background_color": "#667eea",
-  "theme_color": "#667eea",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -27,11 +31,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "appName": "Event Log Pro",
-  "version": "1.0.0",
-  "webAppUrl": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
-  "sheetId": "YOUR_GOOGLE_SHEET_ID",
-  "docTemplateId": "YOUR_GOOGLE_DOC_TEMPLATE_ID",
-  "theme": "light"
+  ]
 }
