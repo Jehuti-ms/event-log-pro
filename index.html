@@ -46,6 +46,22 @@
 </head>
 <body>
     <script>
+         console.log('🔧 Script loading check:');
+    console.log('📍 window.collectFormData:', typeof window.collectFormData);
+    console.log('📍 window.initializeAutoSync:', typeof window.initializeAutoSync);
+    console.log('📍 window.AutoSync:', typeof window.AutoSync);
+    
+    // Test if we can manually initialize
+    setTimeout(() => {
+        console.log('🧪 Testing manual AutoSync initialization...');
+        if (typeof initializeAutoSync === 'function') {
+            console.log('✅ initializeAutoSync is available, calling it...');
+            initializeAutoSync();
+        } else {
+            console.error('❌ initializeAutoSync is NOT available');
+        }
+    }, 3000);
+        
         // CRITICAL: Check auth IMMEDIATELY to prevent flash
         (function() {
             if (localStorage.getItem('isAuthenticated') === 'true') {
@@ -313,4 +329,5 @@
     <script src="autosync.js"></script>
 </body>
 </html>
+
 
