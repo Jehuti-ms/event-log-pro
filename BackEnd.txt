@@ -413,8 +413,3 @@ function generateReport(eventId) {
     return { success: false, error: error.toString() };
   }
 }
-
-[file name]: autosync.js
-[file content begin]
-// ALL AUTOSYNC CODE HERE
-[file content end]
