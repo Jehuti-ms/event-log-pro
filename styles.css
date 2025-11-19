@@ -830,3 +830,130 @@ body.dark .google-signin-btn {
         padding: 6px;
     }
 }
+
+/* Sync Status Styles */
+.sync-status-bar {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+body.dark .sync-status-bar {
+    background: #0d47a1;
+    border-color: #1976d2;
+    color: #e3f2fd;
+}
+
+.sync-status-bar.syncing {
+    background: #fff3e0;
+    border-color: #ffb74d;
+}
+
+body.dark .sync-status-bar.syncing {
+    background: #e65100;
+    border-color: #ff9800;
+}
+
+.sync-status-bar.error {
+    background: #ffebee;
+    border-color: #ef5350;
+}
+
+body.dark .sync-status-bar.error {
+    background: #b71c1c;
+    border-color: #f44336;
+}
+
+.sync-status-bar.success {
+    background: #e8f5e8;
+    border-color: #4caf50;
+}
+
+body.dark .sync-status-bar.success {
+    background: #1b5e20;
+    border-color: #4caf50;
+}
+
+#syncStatusText {
+    font-weight: 500;
+}
+
+#lastSyncTime {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+/* Sync Indicator */
+.sync-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.sync-indicator.offline {
+    background: #6c757d;
+}
+
+.sync-indicator.syncing {
+    background: #ffc107;
+    animation: pulse 1.5s infinite;
+}
+
+.sync-indicator.success {
+    background: #28a745;
+}
+
+.sync-indicator.error {
+    background: #dc3545;
+    animation: pulse 2s infinite;
+}
+
+/* Sync Button States */
+#syncButton.syncing {
+    background: #ffc107;
+    animation: pulse 1.5s infinite;
+}
+
+#syncButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Network Status */
+.network-status {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #dc3545;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    z-index: 10001;
+    animation: slideDown 0.3s ease-out;
+}
+
+.network-status.online {
+    background: #28a745;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
