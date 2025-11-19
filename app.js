@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Landing page element:', document.getElementById('landingPage'));
     console.log('Main container element:', document.getElementById('mainContainer'));
     console.log('Auth status:', isAuthenticated);
+
+     console.log('🚀 DOM Content Loaded - Starting initialization');
+    console.log('📍 Debug: Landing page element:', document.getElementById('landingPage'));
+    console.log('📍 Debug: Main container element:', document.getElementById('mainContainer'));
+    console.log('📍 Debug: Auth status:', isAuthenticated);
     
     // Apply auth state immediately
     applyAuthState();
