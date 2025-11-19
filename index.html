@@ -143,11 +143,11 @@
             <h3 class="form-title">Event / Tour Data Sheet</h3>
             <p id="eventIdDisplay">Event ID: (new)</p>
 
-            <div class="header-controls">
+                        <div class="header-controls">
                 <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
                 <button onclick="openSettings()" class="settings-btn">⚙️ Settings</button>
-                <button onclick="autoSync.forceSync()" class="settings-btn" title="Force Sync">🔄 Sync Now</button>
-                <div id="syncIndicator" class="sync-indicator offline" title="Checking connection..."></div>
+                <button onclick="autoSync.forceSync()" class="settings-btn" title="Force Sync" id="syncButton">🔄 Sync Now</button>
+                <div id="syncIndicator" class="sync-indicator offline" title="Offline"></div>
                 <div class="theme-toggle-wrapper">
                     <span class="toggle-text">Dark Mode</span>
                     <div class="theme-toggle">
@@ -161,7 +161,12 @@
                 </div>
             </div>
         </header>
-
+        <!-- Sync Status Bar -->
+        <div id="syncStatusBar" class="sync-status-bar">
+            <span id="syncStatusText">Checking connection...</span>
+            <span id="lastSyncTime"></span>
+        </div>
+        
         <form id="eventForm">
             <input type="hidden" id="eventId" name="eventId">
 
@@ -308,3 +313,4 @@
     <script src="autosync.js"></script>
 </body>
 </html>
+
