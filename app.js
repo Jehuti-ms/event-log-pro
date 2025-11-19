@@ -27,7 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
         generateNewEventId();
         loadAllEvents();
         updateCounts();
-        initializeAutoSync();
+
+         // Initialize AutoSync
+        setTimeout(() => {
+            initializeAutoSync();
+        }, 1000);
     }
 });
 
