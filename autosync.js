@@ -1,7 +1,4 @@
-// ============================================
-// AUTOSYNC SYSTEM - autosync.js
-// ============================================
-
+// autosync.js
 class AutoSync {
     constructor() {
         this.isOnline = navigator.onLine;
@@ -422,10 +419,6 @@ class AutoSync {
     }
 }
 
-// ============================================
-// AUTOSYNC INTEGRATION
-// ============================================
-
 // Initialize autosync when app loads
 let autoSync;
 
@@ -444,86 +437,3 @@ function initializeAutoSync() {
         return autoSync;
     }
 }
-
-// Add to your existing DOMContentLoaded event
-document.addEventListener('DOMContentLoaded', () => {
-    // ... your existing initialization code ...
-    
-    // Initialize autosync
-    initializeAutoSync();
-});
-
-// Add CSS for sync indicators
-const syncStyles = `
-.sync-status {
-    transition: all 0.3s ease;
-}
-
-.sync-status.success {
-    background: #28a745 !important;
-}
-
-.sync-status.error {
-    background: #dc3545 !important;
-}
-
-.sync-status.info {
-    background: #17a2b8 !important;
-}
-
-.sync-indicator {
-    transition: background-color 0.3s ease;
-}
-
-.sync-indicator.success {
-    background: #28a745;
-}
-
-.sync-indicator.error {
-    background: #dc3545;
-    animation: pulse 2s infinite;
-}
-
-.sync-indicator.syncing {
-    background: #ffc107;
-    animation: spin 1s linear infinite;
-}
-
-.sync-indicator.offline {
-    background: #6c757d;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.offline-warning {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: #dc3545;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    z-index: 10001;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
-}
-`;
-
-// Inject styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = syncStyles;
-document.head.appendChild(styleSheet);
