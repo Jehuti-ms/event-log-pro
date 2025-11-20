@@ -257,54 +257,59 @@
                 </div>
             </div>
 
-            <h4 style="margin-top: 30px; margin-bottom: 15px;">Student List</h4>
-            <div class="table-container">
-                <table id="studentTable">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Student Name</th>
-                            <th>Form</th>
-                            <th>Contact Number</th>
-                            <th>Medical / Illness</th>
-                            <th>Medication</th>
-                            <th>Permission</th>
-                            <th>Present</th>
-                            <th>Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td><input type="text" name="studentName[]"></td>
-                            <td><input type="text" name="form[]"></td>
-                            <td><input type="text" name="contact[]"></td>
-                            <td>
-                                <select name="illness[]" class="student-illness">
-                                    <option value="None">None</option>
-                                    <option value="Asthma">Asthma</option>
-                                    <option value="Allergies – Mild">Allergies – Mild</option>
-                                    <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
-                                    <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
-                                    <option value="Diabetes">Diabetes</option>
-                                    <option value="Heart condition">Heart condition</option>
-                                    <option value="Other (specify)">Other (specify)</option>
-                                </select>
-                                <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
-                            </td>
-                            <td>
-                                <input type="checkbox" name="medication[]" class="medication-checkbox">
-                                <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
-                            </td>
-                            <td><input type="checkbox" name="permission[]"></td>
-                            <td><input type="checkbox" name="present[]"></td>
-                            <td><button type="button" class="delete-row">✖</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+           <h4 style="margin-top: 30px; margin-bottom: 15px;">
+    Student List 
+    <small id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</small>
+</h4>
 
-            <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
+<div class="table-scroll-container" id="studentTableContainer">
+    <table id="studentTable">
+        <thead class="sticky-header">
+            <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Form</th>
+                <th>Contact Number</th>
+                <th>Medical / Illness</th>
+                <th>Medication</th>
+                <th>Permission</th>
+                <th>Present</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td><input type="text" name="studentName[]"></td>
+                <td><input type="text" name="form[]"></td>
+                <td><input type="text" name="contact[]"></td>
+                <td>
+                    <select name="illness[]" class="student-illness">
+                        <option value="None">None</option>
+                        <option value="Asthma">Asthma</option>
+                        <option value="Allergies – Mild">Allergies – Mild</option>
+                        <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
+                        <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
+                        <option value="Diabetes">Diabetes</option>
+                        <option value="Heart condition">Heart condition</option>
+                        <option value="Other (specify)">Other (specify)</option>
+                    </select>
+                    <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
+                </td>
+                <td>
+                    <input type="checkbox" name="medication[]" class="medication-checkbox">
+                    <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
+                </td>
+                <td><input type="checkbox" name="permission[]"></td>
+                <td><input type="checkbox" name="present[]"></td>
+                <td><button type="button" class="delete-row">✖</button></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="student-counter" id="studentCounter">Total Students: 0</div>
+</div>
+
+<button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
 
             <div class="form-group">
                 <label for="eventSelect">Load Existing Event</label>
@@ -329,5 +334,6 @@
     <script src="autosync.js"></script>
 </body>
 </html>
+
 
 
