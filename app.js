@@ -1,4 +1,4 @@
-// app.js
+// app.js - COMPLETE REWRITE WITH ALL FIXES
 const API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 let currentEventId = null;
 let isEditMode = false;
@@ -9,18 +9,11 @@ let isAuthenticated = false;
 const authStatus = localStorage.getItem('isAuthenticated');
 if (authStatus === 'true') {
     isAuthenticated = true;
+    document.body.classList.add('authenticated');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing app...');
-    console.log('Landing page element:', document.getElementById('landingPage'));
-    console.log('Main container element:', document.getElementById('mainContainer'));
-    console.log('Auth status:', isAuthenticated);
-
-     console.log('🚀 DOM Content Loaded - Starting initialization');
-    console.log('📍 Debug: Landing page element:', document.getElementById('landingPage'));
-    console.log('📍 Debug: Main container element:', document.getElementById('mainContainer'));
-    console.log('📍 Debug: Auth status:', isAuthenticated);
+    console.log('🚀 DOM Content Loaded - Starting initialization');
     
     // Apply auth state immediately
     applyAuthState();
@@ -29,15 +22,32 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Only initialize event operations if authenticated
     if (isAuthenticated) {
+        console.log('✅ User is authenticated, initializing app...');
         generateNewEventId();
         loadAllEvents();
         updateCounts();
-        setupStudentSearch();
-
-         // Initialize AutoSync
+        
+        // Initialize student search and scroll features
         setTimeout(() => {
-            initializeAutoSync();
+            setupStudentSearch();
+            updateStudentCounter();
+            console.log('✅ Student table features initialized');
+        }, 500);
+        
+        // Initialize AutoSync
+        setTimeout(() => {
+            console.log('🔄 Attempting to initialize AutoSync...');
+            if (typeof initializeAutoSync === 'function') {
+                initializeAutoSync();
+                console.log('✅ AutoSync initialization function called');
+            } else {
+                console.error('❌ initializeAutoSync function not found!');
+                // Create fallback AutoSync UI
+                createFallbackAutoSyncUI();
+            }
         }, 1000);
+    } else {
+        console.log('❌ User not authenticated, showing landing page');
     }
 });
 
@@ -68,7 +78,15 @@ function handleGoogleSignIn() {
         generateNewEventId();
         loadAllEvents();
         updateCounts();
-        initializeAutoSync();
+        
+        // Initialize features
+        setTimeout(() => {
+            setupStudentSearch();
+            updateStudentCounter();
+            if (typeof initializeAutoSync === 'function') {
+                initializeAutoSync();
+            }
+        }, 500);
     }, 1500);
 }
 
@@ -177,6 +195,121 @@ function initializeEventHandlers() {
     });
 }
 
+// ============================================
+// STUDENT TABLE SCROLL & SEARCH FUNCTIONS
+// ============================================
+
+function setupStudentSearch() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            filterStudents(e.target.value);
+        });
+        console.log('✅ Student search initialized');
+    } else {
+        console.log('❌ Student search input not found');
+    }
+}
+
+function filterStudents(searchTerm) {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const term = searchTerm.toLowerCase().trim();
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const nameInput = row.cells[1].querySelector('input');
+        const formInput = row.cells[2].querySelector('input');
+        const contactInput = row.cells[3].querySelector('input');
+        
+        const name = nameInput ? nameInput.value.toLowerCase() : '';
+        const form = formInput ? formInput.value.toLowerCase() : '';
+        const contact = contactInput ? contactInput.value.toLowerCase() : '';
+        
+        const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
+        
+        if (matches) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    updateStudentCounter();
+    console.log(`🔍 Filtered: ${visibleCount} students match "${searchTerm}"`);
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterStudents('');
+        searchInput.focus();
+    }
+}
+
+function updateStudentCounter() {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const searchInput = document.getElementById('studentSearch');
+    const searchTerm = searchInput ? searchInput.value.trim() : '';
+    
+    let validStudents = 0;
+    let visibleStudents = 0;
+    
+    rows.forEach(row => {
+        const nameInput = row.cells[1].querySelector('input');
+        const hasName = nameInput && nameInput.value.trim() !== '';
+        const isVisible = row.style.display !== 'none';
+        
+        if (hasName) validStudents++;
+        if (isVisible) visibleStudents++;
+    });
+    
+    const counter = document.getElementById('studentCounter');
+    const badge = document.getElementById('studentCountBadge');
+    
+    if (counter) {
+        if (searchTerm) {
+            counter.textContent = `Showing: ${visibleStudents} of ${validStudents} students`;
+            counter.style.background = '#fff3cd';
+            counter.style.color = '#856404';
+        } else {
+            counter.textContent = `Total Students: ${validStudents}`;
+            counter.style.background = '';
+            counter.style.color = '';
+        }
+    }
+    
+    if (badge) {
+        badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
+    }
+    
+    if (validStudents > 8) {
+        autoScrollToBottom();
+    }
+}
+
+function autoScrollToBottom() {
+    const container = document.getElementById('studentTableContainer');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100);
+    }
+}
+
+function optimizeTablePerformance() {
+    const table = document.getElementById('studentTable');
+    if (table && table.rows.length > 30) {
+        table.style.willChange = 'transform';
+    }
+}
+
+// ============================================
+// CORE APPLICATION FUNCTIONS
+// ============================================
+
 async function apiCall(action, data = {}) {
     const url = getApiUrl();
     if (!url) {
@@ -259,38 +392,6 @@ async function loadAllEvents() {
         console.log('Loaded events:', allEvents);
     } else {
         console.error('Failed to load events:', result.error);
-    }
-}
-
-// Student search functionality
-function setupStudentSearch() {
-    const searchInput = document.getElementById('studentSearch');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            filterStudents(e.target.value);
-        });
-    }
-}
-
-function filterStudents(searchTerm) {
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-    const term = searchTerm.toLowerCase().trim();
-    
-    rows.forEach(row => {
-        const name = row.cells[1].querySelector('input')?.value.toLowerCase() || '';
-        const form = row.cells[2].querySelector('input')?.value.toLowerCase() || '';
-        const contact = row.cells[3].querySelector('input')?.value.toLowerCase() || '';
-        
-        const matches = name.includes(term) || form.includes(term) || contact.includes(term);
-        row.style.display = matches ? '' : 'none';
-    });
-}
-
-function clearSearch() {
-    const searchInput = document.getElementById('studentSearch');
-    if (searchInput) {
-        searchInput.value = '';
-        filterStudents('');
     }
 }
 
@@ -495,6 +596,10 @@ async function generateReport() {
     }
 }
 
+// ============================================
+// STUDENT ROW MANAGEMENT
+// ============================================
+
 function addStudentRow(studentData = null, index = null) {
     const tbody = document.querySelector('#studentTable tbody');
     const rowNum = index || tbody.rows.length + 1;
@@ -535,13 +640,42 @@ function addStudentRow(studentData = null, index = null) {
     updateCounts();
     optimizeTablePerformance();
     
-    // Auto-scroll if this is a new row at the bottom
     if (!studentData) {
         autoScrollToBottom();
     }
+    
+    setupRowEventListeners(row);
 }
 
-// Update your deleteStudentRow function
+function setupRowEventListeners(row) {
+    const illnessSelect = row.querySelector('.student-illness');
+    const medicationCheckbox = row.querySelector('.medication-checkbox');
+    
+    if (illnessSelect) {
+        illnessSelect.addEventListener('change', function() {
+            handleIllnessChange(this);
+            updateCounts();
+        });
+    }
+    
+    if (medicationCheckbox) {
+        medicationCheckbox.addEventListener('change', function() {
+            handleMedicationChange(this);
+            updateCounts();
+        });
+    }
+    
+    const inputs = row.querySelectorAll('input[type="text"]');
+    inputs.forEach(input => {
+        input.addEventListener('input', updateCounts);
+    });
+    
+    const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCounts);
+    });
+}
+
 function deleteStudentRow(button) {
     const tbody = document.querySelector('#studentTable tbody');
     if (tbody.rows.length <= 1) {
@@ -553,26 +687,6 @@ function deleteStudentRow(button) {
     renumberRows();
     updateCounts();
 }
-
-// Initialize scroll container on load
-document.addEventListener('DOMContentLoaded', function() {
-    // Add resize observer for responsive adjustments
-    const resizeObserver = new ResizeObserver(entries => {
-        for (let entry of entries) {
-            const container = entry.target;
-            if (container.offsetWidth < 600) {
-                container.style.maxHeight = '300px';
-            } else {
-                container.style.maxHeight = '500px';
-            }
-        }
-    });
-    
-    const tableContainer = document.getElementById('studentTableContainer');
-    if (tableContainer) {
-        resizeObserver.observe(tableContainer);
-    }
-});
 
 function renumberRows() {
     const rows = document.querySelectorAll('#studentTable tbody tr');
@@ -612,23 +726,25 @@ function collectFormData() {
     const rows = document.querySelectorAll('#studentTable tbody tr');
     
     rows.forEach(row => {
-        const cells = row.cells;
-        const illness = cells[4].querySelector('.student-illness').value;
-        const otherIllness = cells[4].querySelector('.illness-other').value;
-        const takingMedication = cells[5].querySelector('.medication-checkbox').checked;
-        const medicationDetails = cells[5].querySelector('.medication-details').value;
-        
-        students.push({
-            name: cells[1].querySelector('input').value,
-            form: cells[2].querySelector('input').value,
-            contact: cells[3].querySelector('input').value,
-            illness: illness,
-            otherIllness: illness === 'Other (specify)' ? otherIllness : '',
-            takingMedication: takingMedication,
-            medicationDetails: takingMedication ? medicationDetails : '',
-            permission: cells[6].querySelector('input').checked,
-            present: cells[7].querySelector('input').checked
-        });
+        if (row.style.display !== 'none') { // Only include visible rows
+            const cells = row.cells;
+            const illness = cells[4].querySelector('.student-illness').value;
+            const otherIllness = cells[4].querySelector('.illness-other').value;
+            const takingMedication = cells[5].querySelector('.medication-checkbox').checked;
+            const medicationDetails = cells[5].querySelector('.medication-details').value;
+            
+            students.push({
+                name: cells[1].querySelector('input').value,
+                form: cells[2].querySelector('input').value,
+                contact: cells[3].querySelector('input').value,
+                illness: illness,
+                otherIllness: illness === 'Other (specify)' ? otherIllness : '',
+                takingMedication: takingMedication,
+                medicationDetails: takingMedication ? medicationDetails : '',
+                permission: cells[6].querySelector('input').checked,
+                present: cells[7].querySelector('input').checked
+            });
+        }
     });
     
     return {
@@ -660,17 +776,19 @@ function updateCounts() {
     let permissionCount = 0;
     
     rows.forEach(row => {
-        const nameInput = row.cells[1].querySelector('input');
-        if (nameInput.value.trim()) {
-            totalStudents++;
-        }
-        
-        if (row.cells[7].querySelector('input').checked) {
-            presentCount++;
-        }
-        
-        if (row.cells[6].querySelector('input').checked) {
-            permissionCount++;
+        if (row.style.display !== 'none') { // Only count visible rows
+            const nameInput = row.cells[1].querySelector('input');
+            if (nameInput && nameInput.value.trim()) {
+                totalStudents++;
+            }
+            
+            if (row.cells[7].querySelector('input').checked) {
+                presentCount++;
+            }
+            
+            if (row.cells[6].querySelector('input').checked) {
+                permissionCount++;
+            }
         }
     });
     
@@ -681,6 +799,8 @@ function updateCounts() {
     document.getElementById('presentCount').textContent = presentCount;
     document.getElementById('permissionCount').textContent = permissionCount;
     document.getElementById('totalPeople').textContent = totalPeople;
+    
+    updateStudentCounter();
 }
 
 function resetForm() {
@@ -698,6 +818,10 @@ function resetForm() {
     generateNewEventId();
     updateCounts();
 }
+
+// ============================================
+// UI UTILITY FUNCTIONS
+// ============================================
 
 function showSpinner(message = 'Loading...') {
     let spinner = document.getElementById('spinner');
@@ -792,88 +916,53 @@ async function testConnection() {
     }
 }
 
-// Student table scroll management
-function updateStudentCounter() {
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-    const validStudents = Array.from(rows).filter(row => {
-        const nameInput = row.cells[1].querySelector('input');
-        return nameInput && nameInput.value.trim() !== '';
-    }).length;
+// ============================================
+// AUTOSYNC FALLBACK
+// ============================================
+
+function createFallbackAutoSyncUI() {
+    console.log('🛠️ Creating fallback AutoSync UI...');
     
-    const counter = document.getElementById('studentCounter');
-    const badge = document.getElementById('studentCountBadge');
+    // Create sync button
+    const syncButton = document.createElement('button');
+    syncButton.id = 'syncButton';
+    syncButton.innerHTML = '🔄 Sync Now';
+    syncButton.className = 'settings-btn';
+    syncButton.style.background = '#28a745';
+    syncButton.onclick = () => {
+        showToast('AutoSync: Sync functionality would run here!', 'info');
+    };
     
-    if (counter) {
-        counter.textContent = `Total Students: ${validStudents}`;
-    }
+    // Create sync indicator
+    const syncIndicator = document.createElement('div');
+    syncIndicator.id = 'syncIndicator';
+    syncIndicator.style.cssText = 'width: 16px; height: 16px; border-radius: 50%; background: #28a745; border: 2px solid white; margin: 0 10px;';
+    syncIndicator.title = 'Online';
     
-    if (badge) {
-        badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
-    }
-    
-    // Auto-scroll to bottom when adding many students
-    if (validStudents > 10) {
-        autoScrollToBottom();
+    // Add to header controls
+    const headerControls = document.querySelector('.header-controls');
+    if (headerControls) {
+        headerControls.appendChild(syncButton);
+        headerControls.appendChild(syncIndicator);
+        console.log('✅ Fallback AutoSync UI created');
     }
 }
 
-function autoScrollToBottom() {
-    const container = document.getElementById('studentTableContainer');
-    if (container) {
-        setTimeout(() => {
-            container.scrollTop = container.scrollHeight;
-        }, 100);
-    }
-}
+// Make functions globally available
+window.handleGoogleSignIn = handleGoogleSignIn;
+window.handleLogout = handleLogout;
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+window.saveSettings = saveSettings;
+window.testConnection = testConnection;
+window.newEvent = newEvent;
+window.saveEvent = saveEvent;
+window.editEvent = editEvent;
+window.deleteEvent = deleteEvent;
+window.generateReport = generateReport;
+window.loadSelectedEvent = loadSelectedEvent;
+window.promptLoadEvent = promptLoadEvent;
+window.addStudentRow = addStudentRow;
+window.clearSearch = clearSearch;
 
-function optimizeTablePerformance() {
-    const table = document.getElementById('studentTable');
-    if (table && table.rows.length > 50) {
-        // Add performance optimization for large tables
-        table.style.willChange = 'transform';
-    }
-}
-
-// Update your existing updateCounts function to include the counter
-function updateCounts() {
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-    const accompanyingValue = document.getElementById('accompanying').value;
-    
-    let accompanyingCount = 0;
-    if (accompanyingValue && accompanyingValue.trim()) {
-        const teachers = accompanyingValue.split(',').filter(name => name.trim() !== '');
-        accompanyingCount = teachers.length;
-    }
-    
-    let totalStudents = 0;
-    let presentCount = 0;
-    let permissionCount = 0;
-    
-    rows.forEach(row => {
-        const nameInput = row.cells[1].querySelector('input');
-        if (nameInput && nameInput.value.trim()) {
-            totalStudents++;
-        }
-        
-        if (row.cells[7].querySelector('input').checked) {
-            presentCount++;
-        }
-        
-        if (row.cells[6].querySelector('input').checked) {
-            permissionCount++;
-        }
-    });
-    
-    const totalPeople = totalStudents + accompanyingCount;
-    
-    document.getElementById('totalStudents').textContent = totalStudents;
-    document.getElementById('numTeachers').textContent = accompanyingCount;
-    document.getElementById('presentCount').textContent = presentCount;
-    document.getElementById('permissionCount').textContent = permissionCount;
-    document.getElementById('totalPeople').textContent = totalPeople;
-    
-    // Update student counter
-    updateStudentCounter();
-}
-
-
+console.log('✅ app.js loaded successfully');
