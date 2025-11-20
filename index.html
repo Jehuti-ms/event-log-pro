@@ -340,8 +340,292 @@
     <!-- JavaScript Files -->
     <script src="app.js"></script>
     <script src="autosync.js"></script>
+    <script>
+// ============================================
+// PERMANENT STUDENT TABLE ENHANCEMENTS
+// ============================================
+
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Installing permanent student table enhancements...');
+    
+    // Add CSS for enhancements
+    addTableEnhancementCSS();
+    
+    // Initialize after a short delay to ensure everything is loaded
+    setTimeout(initializeTableEnhancements, 1000);
+});
+
+function addTableEnhancementCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Search bar styles */
+        .search-container {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        /* Scroll container styles */
+        .table-scroll-container {
+            max-height: 500px;
+            overflow-y: auto;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        body.dark .table-scroll-container {
+            border-color: #1f2a37;
+            background: #121922;
+        }
+        
+        /* Sticky header styles */
+        .table-scroll-container thead th {
+            position: sticky;
+            top: 0;
+            background: #f0f2f5;
+            z-index: 10;
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+        }
+        
+        body.dark .table-scroll-container thead th {
+            background: #162131;
+        }
+        
+        /* Student counter styles */
+        .student-counter {
+            position: sticky;
+            bottom: 0;
+            background: #f8f9fa;
+            padding: 12px;
+            border-top: 2px solid #dee2e6;
+            font-weight: bold;
+            text-align: center;
+            z-index: 5;
+        }
+        
+        body.dark .student-counter {
+            background: #1a2332;
+            border-top: 2px solid #2d3748;
+            color: #e9ecef;
+        }
+        
+        #studentCountBadge {
+            font-size: 0.7em;
+            background: #0078d7;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function initializeTableEnhancements() {
+    console.log('🔄 Initializing table enhancements...');
+    
+    // 1. Create search bar
+    createSearchBar();
+    
+    // 2. Create scroll container
+    createScrollContainer();
+    
+    // 3. Make headers sticky
+    makeHeadersSticky();
+    
+    // 4. Initialize student counter
+    initializeStudentCounter();
+    
+    console.log('✅ All enhancements installed!');
+}
+
+function createSearchBar() {
+    // Check if search bar already exists
+    if (document.getElementById('studentSearch')) {
+        console.log('✅ Search bar already exists');
+        return;
+    }
+    
+    // Create search container
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'search-container';
+    
+    // Create search input
+    const searchInput = document.createElement('input');
+    searchInput.id = 'studentSearch';
+    searchInput.type = 'text';
+    searchInput.placeholder = '🔍 Search students by name, form, or contact...';
+    searchInput.style.cssText = 'padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;';
+    
+    // Create clear button
+    const clearButton = document.createElement('button');
+    clearButton.textContent = 'Clear Search';
+    clearButton.className = 'btn-secondary';
+    clearButton.style.cssText = 'padding: 10px 15px; white-space: nowrap;';
+    clearButton.onclick = clearSearch;
+    
+    // Add to container
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(clearButton);
+    
+    // Insert after student list header
+    const studentHeader = document.querySelector('h4');
+    if (studentHeader) {
+        studentHeader.parentNode.insertBefore(searchContainer, studentHeader.nextElementSibling);
+        console.log('✅ Search bar created');
+    }
+    
+    // Add search functionality
+    searchInput.addEventListener('input', function(e) {
+        filterStudents(e.target.value);
+    });
+}
+
+function createScrollContainer() {
+    // Check if scroll container already exists
+    if (document.getElementById('studentTableContainer')) {
+        console.log('✅ Scroll container already exists');
+        return;
+    }
+    
+    const table = document.getElementById('studentTable');
+    if (!table) {
+        console.log('❌ Student table not found');
+        return;
+    }
+    
+    // Create scroll container
+    const scrollContainer = document.createElement('div');
+    scrollContainer.id = 'studentTableContainer';
+    scrollContainer.className = 'table-scroll-container';
+    
+    // Wrap the table
+    const tableParent = table.parentNode;
+    tableParent.insertBefore(scrollContainer, table);
+    scrollContainer.appendChild(table);
+    
+    console.log('✅ Scroll container created');
+}
+
+function makeHeadersSticky() {
+    const thead = document.querySelector('#studentTable thead');
+    if (thead) {
+        const thElements = thead.querySelectorAll('th');
+        thElements.forEach(th => {
+            th.style.position = 'sticky';
+            th.style.top = '0';
+            th.style.zIndex = '10';
+        });
+        console.log(`✅ Made ${thElements.length} headers sticky`);
+    }
+}
+
+function initializeStudentCounter() {
+    // Create counter badge in header
+    const studentHeader = document.querySelector('h4');
+    if (studentHeader && !document.getElementById('studentCountBadge')) {
+        const badge = document.createElement('span');
+        badge.id = 'studentCountBadge';
+        badge.textContent = '0 students';
+        studentHeader.appendChild(badge);
+    }
+    
+    // Create counter at bottom
+    const scrollContainer = document.getElementById('studentTableContainer');
+    if (scrollContainer && !document.getElementById('studentCounter')) {
+        const counter = document.createElement('div');
+        counter.id = 'studentCounter';
+        counter.className = 'student-counter';
+        counter.textContent = 'Total Students: 0';
+        scrollContainer.appendChild(counter);
+    }
+    
+    console.log('✅ Student counter initialized');
+}
+
+function filterStudents(searchTerm) {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const term = searchTerm.toLowerCase().trim();
+    
+    rows.forEach(row => {
+        const nameInput = row.cells[1]?.querySelector('input');
+        const formInput = row.cells[2]?.querySelector('input');
+        const contactInput = row.cells[3]?.querySelector('input');
+        
+        const name = nameInput ? nameInput.value.toLowerCase() : '';
+        const form = formInput ? formInput.value.toLowerCase() : '';
+        const contact = contactInput ? contactInput.value.toLowerCase() : '';
+        
+        const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
+        row.style.display = matches ? '' : 'none';
+    });
+    
+    updateStudentCounter();
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterStudents('');
+    }
+}
+
+function updateStudentCounter() {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const searchInput = document.getElementById('studentSearch');
+    const searchTerm = searchInput ? searchInput.value.trim() : '';
+    
+    let validStudents = 0;
+    let visibleStudents = 0;
+    
+    rows.forEach(row => {
+        if (row.style.display !== 'none') {
+            const nameInput = row.cells[1]?.querySelector('input');
+            const hasName = nameInput && nameInput.value.trim() !== '';
+            
+            if (hasName) {
+                validStudents++;
+                visibleStudents++;
+            }
+        }
+    });
+    
+    const counter = document.getElementById('studentCounter');
+    const badge = document.getElementById('studentCountBadge');
+    
+    if (counter) {
+        counter.textContent = searchTerm ? 
+            `Showing: ${visibleStudents} of ${validStudents} students` : 
+            `Total Students: ${validStudents}`;
+    }
+    
+    if (badge) {
+        badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
+    }
+}
+
+// Update counter when students change
+const observer = new MutationObserver(function() {
+    setTimeout(updateStudentCounter, 100);
+});
+
+const tableBody = document.querySelector('#studentTable tbody');
+if (tableBody) {
+    observer.observe(tableBody, { childList: true, subtree: true });
+}
+
+console.log('🎉 Permanent enhancements ready!');
+</script>
 </body>
 </html>
+
 
 
 
