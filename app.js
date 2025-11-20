@@ -261,6 +261,38 @@ async function loadAllEvents() {
     }
 }
 
+// Student search functionality
+function setupStudentSearch() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            filterStudents(e.target.value);
+        });
+    }
+}
+
+function filterStudents(searchTerm) {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const term = searchTerm.toLowerCase().trim();
+    
+    rows.forEach(row => {
+        const name = row.cells[1].querySelector('input')?.value.toLowerCase() || '';
+        const form = row.cells[2].querySelector('input')?.value.toLowerCase() || '';
+        const contact = row.cells[3].querySelector('input')?.value.toLowerCase() || '';
+        
+        const matches = name.includes(term) || form.includes(term) || contact.includes(term);
+        row.style.display = matches ? '' : 'none';
+    });
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterStudents('');
+    }
+}
+
 function populateEventDropdown() {
     const select = document.getElementById('eventSelect');
     select.innerHTML = '<option value="">-- Select an event --</option>';
