@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generateNewEventId();
         loadAllEvents();
         updateCounts();
+        setupStudentSearch();
 
          // Initialize AutoSync
         setTimeout(() => {
