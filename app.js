@@ -731,3 +731,168 @@ async function testConnection() {
         console.error('Connection test error:', error);
     }
 }
+
+// Student table scroll management
+function updateStudentCounter() {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const validStudents = Array.from(rows).filter(row => {
+        const nameInput = row.cells[1].querySelector('input');
+        return nameInput && nameInput.value.trim() !== '';
+    }).length;
+    
+    const counter = document.getElementById('studentCounter');
+    const badge = document.getElementById('studentCountBadge');
+    
+    if (counter) {
+        counter.textContent = `Total Students: ${validStudents}`;
+    }
+    
+    if (badge) {
+        badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
+    }
+    
+    // Auto-scroll to bottom when adding many students
+    if (validStudents > 10) {
+        autoScrollToBottom();
+    }
+}
+
+function autoScrollToBottom() {
+    const container = document.getElementById('studentTableContainer');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100);
+    }
+}
+
+function optimizeTablePerformance() {
+    const table = document.getElementById('studentTable');
+    if (table && table.rows.length > 50) {
+        // Add performance optimization for large tables
+        table.style.willChange = 'transform';
+    }
+}
+
+// Update your existing updateCounts function to include the counter
+function updateCounts() {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const accompanyingValue = document.getElementById('accompanying').value;
+    
+    let accompanyingCount = 0;
+    if (accompanyingValue && accompanyingValue.trim()) {
+        const teachers = accompanyingValue.split(',').filter(name => name.trim() !== '');
+        accompanyingCount = teachers.length;
+    }
+    
+    let totalStudents = 0;
+    let presentCount = 0;
+    let permissionCount = 0;
+    
+    rows.forEach(row => {
+        const nameInput = row.cells[1].querySelector('input');
+        if (nameInput && nameInput.value.trim()) {
+            totalStudents++;
+        }
+        
+        if (row.cells[7].querySelector('input').checked) {
+            presentCount++;
+        }
+        
+        if (row.cells[6].querySelector('input').checked) {
+            permissionCount++;
+        }
+    });
+    
+    const totalPeople = totalStudents + accompanyingCount;
+    
+    document.getElementById('totalStudents').textContent = totalStudents;
+    document.getElementById('numTeachers').textContent = accompanyingCount;
+    document.getElementById('presentCount').textContent = presentCount;
+    document.getElementById('permissionCount').textContent = permissionCount;
+    document.getElementById('totalPeople').textContent = totalPeople;
+    
+    // Update student counter
+    updateStudentCounter();
+}
+
+// Update your addStudentRow function
+function addStudentRow(studentData = null, index = null) {
+    const tbody = document.querySelector('#studentTable tbody');
+    const rowNum = index || tbody.rows.length + 1;
+    
+    const row = tbody.insertRow();
+    
+    const showIllnessOther = studentData && studentData.illness === 'Other (specify)';
+    const showMedication = studentData && studentData.takingMedication;
+    
+    row.innerHTML = `
+        <td>${rowNum}</td>
+        <td><input type="text" name="studentName[]" value="${studentData?.name || ''}"></td>
+        <td><input type="text" name="form[]" value="${studentData?.form || ''}"></td>
+        <td><input type="text" name="contact[]" value="${studentData?.contact || ''}"></td>
+        <td>
+            <select name="illness[]" class="student-illness">
+                <option value="None" ${!studentData || studentData.illness === 'None' ? 'selected' : ''}>None</option>
+                <option value="Asthma" ${studentData?.illness === 'Asthma' ? 'selected' : ''}>Asthma</option>
+                <option value="Allergies – Mild" ${studentData?.illness === 'Allergies – Mild' ? 'selected' : ''}>Allergies – Mild</option>
+                <option value="Allergies – Severe / Anaphylaxis" ${studentData?.illness === 'Allergies – Severe / Anaphylaxis' ? 'selected' : ''}>Allergies – Severe / Anaphylaxis</option>
+                <option value="Epilepsy / Seizure disorder" ${studentData?.illness === 'Epilepsy / Seizure disorder' ? 'selected' : ''}>Epilepsy / Seizure disorder</option>
+                <option value="Diabetes" ${studentData?.illness === 'Diabetes' ? 'selected' : ''}>Diabetes</option>
+                <option value="Heart condition" ${studentData?.illness === 'Heart condition' ? 'selected' : ''}>Heart condition</option>
+                <option value="Other (specify)" ${studentData?.illness === 'Other (specify)' ? 'selected' : ''}>Other (specify)</option>
+            </select>
+            <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" value="${studentData?.otherIllness || ''}" style="display:${showIllnessOther ? 'block' : 'none'}; margin-top: 5px; width: 100%;">
+        </td>
+        <td>
+            <input type="checkbox" name="medication[]" class="medication-checkbox" ${studentData?.takingMedication ? 'checked' : ''}>
+            <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication name/details" value="${studentData?.medicationDetails || ''}" style="display:${showMedication ? 'block' : 'none'}; margin-top: 5px; width: 100%;">
+        </td>
+        <td><input type="checkbox" name="permission[]" ${studentData?.permission === 'Yes' || studentData?.permission === true ? 'checked' : ''}></td>
+        <td><input type="checkbox" name="present[]" ${studentData?.present === 'Yes' || studentData?.present === true ? 'checked' : ''}></td>
+        <td><button type="button" class="delete-row">✖</button></td>
+    `;
+    
+    renumberRows();
+    updateCounts();
+    optimizeTablePerformance();
+    
+    // Auto-scroll if this is a new row at the bottom
+    if (!studentData) {
+        autoScrollToBottom();
+    }
+}
+
+// Update your deleteStudentRow function
+function deleteStudentRow(button) {
+    const tbody = document.querySelector('#studentTable tbody');
+    if (tbody.rows.length <= 1) {
+        showToast('At least one student row must remain', 'error');
+        return;
+    }
+    
+    button.closest('tr').remove();
+    renumberRows();
+    updateCounts();
+}
+
+// Initialize scroll container on load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add resize observer for responsive adjustments
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const container = entry.target;
+            if (container.offsetWidth < 600) {
+                container.style.maxHeight = '300px';
+            } else {
+                container.style.maxHeight = '500px';
+            }
+        }
+    });
+    
+    const tableContainer = document.getElementById('studentTableContainer');
+    if (tableContainer) {
+        resizeObserver.observe(tableContainer);
+    }
+});
+
