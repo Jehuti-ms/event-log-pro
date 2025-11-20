@@ -957,3 +957,127 @@ body.dark .sync-status-bar.success {
     50% { opacity: 0.5; }
     100% { opacity: 1; }
 }
+
+/* Student Table Scroll Styles */
+.table-scroll-container {
+    max-height: 500px; /* Adjust this value as needed */
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    position: relative;
+}
+
+body.dark .table-scroll-container {
+    border-color: #1f2a37;
+    background: #121922;
+}
+
+/* Custom scrollbar styling */
+.table-scroll-container::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+body.dark .table-scroll-container::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+    border: 2px solid #f1f1f1;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+body.dark .table-scroll-container::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border: 2px solid #1e293b;
+}
+
+body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* Fixed header styles */
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background: #f0f2f5;
+    z-index: 10;
+}
+
+body.dark .sticky-header {
+    background: #162131;
+}
+
+/* Table adjustments for scroll */
+#studentTable {
+    margin-bottom: 0;
+}
+
+#studentTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+/* Student counter */
+.student-counter {
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+    text-align: center;
+    z-index: 5;
+}
+
+body.dark .student-counter {
+    background: #0f1720;
+    border-top-color: #1f2a37;
+    color: #e5e7eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-scroll-container {
+        max-height: 400px;
+        font-size: 0.8em;
+    }
+    
+    .table-scroll-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* Loading state */
+.table-loading {
+    position: relative;
+    min-height: 100px;
+}
+
+.table-loading::after {
+    content: "Loading students...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+}
+
+body.dark .table-loading::after {
+    color: #9ca3af;
+}
+
