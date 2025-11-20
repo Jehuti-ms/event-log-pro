@@ -257,17 +257,19 @@
                 </div>
             </div>
 
-           <h4 style="margin-top: 30px; margin-bottom: 15px;">
+           <!-- Student List Section with Search and Scroll -->
+<h4 style="margin-top: 30px; margin-bottom: 15px;">
     Student List 
-    <small id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</small>
+    <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
 </h4>
-            
-<!-- Search  -->
+
+<!-- Search Bar -->
 <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" id="studentSearch" placeholder="🔍 Search students..." style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1;">
-    <button onclick="clearSearch()" class="btn-secondary" style="padding: 8px 12px;">Clear</button>
+    <input type="text" id="studentSearch" placeholder="🔍 Search students by name, form, or contact..." style="padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;">
+    <button onclick="clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
 </div>
-            
+
+<!-- Scrollable Table Container -->
 <div class="table-scroll-container" id="studentTableContainer">
     <table id="studentTable">
         <thead class="sticky-header">
@@ -312,11 +314,11 @@
             </tr>
         </tbody>
     </table>
-    <div class="student-counter" id="studentCounter">Total Students: 0</div>
+    <div class="student-counter" id="studentCounter">Total Students: 1</div>
 </div>
 
 <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
-
+            
             <div class="form-group">
                 <label for="eventSelect">Load Existing Event</label>
                 <select id="eventSelect" onchange="loadSelectedEvent()">
@@ -340,6 +342,7 @@
     <script src="autosync.js"></script>
 </body>
 </html>
+
 
 
 
