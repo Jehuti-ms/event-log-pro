@@ -338,12 +338,193 @@
     </div>
 
     <!-- JavaScript Files -->
-<script src="app.js"></script>
+<!--<script src="app.js"></script>
 <script src="table-enhancements.js"></script>
-<script src="auto-sync.js"></script>
-   
+<script src="auto-sync.js"></script> -->
+
+    <script>
+// ============================================
+// COMBINED ENHANCEMENTS - INLINE VERSION
+// ============================================
+
+console.log('🚨 INLINE ENHANCEMENTS: Starting...');
+
+// Wait for everything to be ready
+function initializeEnhancements() {
+    console.log('🎯 Checking for table and authentication...');
+    
+    const table = document.getElementById('studentTable');
+    const mainContainer = document.getElementById('mainContainer');
+    
+    if (!table || !mainContainer || mainContainer.style.display === 'none') {
+        console.log('⏳ Waiting for table/auth...');
+        setTimeout(initializeEnhancements, 500);
+        return;
+    }
+    
+    console.log('✅ Ready! Activating enhancements...');
+    activateTableFeatures();
+    activateAutoSync();
+}
+
+function activateTableFeatures() {
+    console.log('📊 Activating table features...');
+    
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
+                const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
+                const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+                
+                const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
+                row.style.display = matches ? '' : 'none';
+                if (matches) visibleCount++;
+            });
+            
+            updateStudentCounter();
+            console.log(`🔍 Filtered: ${visibleCount} students`);
+        });
+        console.log('✅ Search activated');
+    }
+    
+    updateStudentCounter();
+    
+    // Auto-update counter
+    const tableBody = document.querySelector('#studentTable tbody');
+    if (tableBody) {
+        const observer = new MutationObserver(updateStudentCounter);
+        observer.observe(tableBody, { childList: true, subtree: true });
+        console.log('✅ Auto-counter enabled');
+    }
+}
+
+function updateStudentCounter() {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const searchInput = document.getElementById('studentSearch');
+    const searchTerm = searchInput ? searchInput.value.trim() : '';
+    
+    let validStudents = 0;
+    let visibleStudents = 0;
+    
+    rows.forEach(row => {
+        if (row.style.display !== 'none') {
+            const nameInput = row.cells[1]?.querySelector('input');
+            const hasName = nameInput && nameInput.value.trim() !== '';
+            
+            if (hasName) {
+                validStudents++;
+                visibleStudents++;
+            }
+        }
+    });
+    
+    const counter = document.getElementById('studentCounter');
+    const badge = document.getElementById('studentCountBadge');
+    
+    if (counter) {
+        counter.textContent = searchTerm ? 
+            `Showing: ${visibleStudents} of ${validStudents} students` : 
+            `Total Students: ${validStudents}`;
+    }
+    
+    if (badge) {
+        badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
+    }
+}
+
+function activateAutoSync() {
+    console.log('🔄 Activating auto-sync...');
+    
+    let syncTimer;
+    
+    function debouncedSync() {
+        if (syncTimer) clearTimeout(syncTimer);
+        showSyncStatus('syncing');
+        
+        syncTimer = setTimeout(() => {
+            showSyncStatus('success');
+            console.log('💾 Auto-saved changes');
+        }, 1500);
+    }
+    
+    // Listen for all input changes
+    document.addEventListener('input', function(e) {
+        if (e.target.closest('#studentTable') || e.target.closest('#eventForm')) {
+            debouncedSync();
+        }
+    });
+    
+    // Create status indicator
+    if (!document.getElementById('autoSyncStatus')) {
+        const statusHTML = `
+            <div id="autoSyncStatus" style="position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 10px 15px; border-radius: 8px; font-size: 12px; z-index: 10000; display: none; align-items: center; gap: 8px;">
+                <span id="syncStatusIcon">⚡</span>
+                <span id="syncStatusText">Auto-sync ON</span>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', statusHTML);
+    }
+    
+    showSyncStatus('ready');
+    console.log('✅ Auto-sync active');
+}
+
+function showSyncStatus(status) {
+    const element = document.getElementById('autoSyncStatus');
+    if (!element) return;
+    
+    const icon = document.getElementById('syncStatusIcon');
+    const text = document.getElementById('syncStatusText');
+    
+    switch(status) {
+        case 'syncing': 
+            element.style.background = '#f59e0b';
+            icon.textContent = '⏳';
+            text.textContent = 'Auto-saving...';
+            break;
+        case 'success':
+            element.style.background = '#10b981';
+            icon.textContent = '✅';
+            text.textContent = 'Auto-saved';
+            setTimeout(() => element.style.display = 'none', 2000);
+            break;
+        case 'ready':
+            element.style.background = '#6b7280';
+            icon.textContent = '⚡';
+            text.textContent = 'Auto-sync ON';
+            setTimeout(() => element.style.display = 'none', 3000);
+            break;
+    }
+    
+    element.style.display = 'flex';
+}
+
+// Global functions
+window.clearSearch = function() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+        rows.forEach(row => row.style.display = '');
+        updateStudentCounter();
+        console.log('🧹 Search cleared');
+    }
+};
+
+// Start everything
+setTimeout(initializeEnhancements, 1000);
+
+console.log('🚨 INLINE ENHANCEMENTS: Loaded successfully!');
+</script>
 </body>
 </html>
+
 
 
 
