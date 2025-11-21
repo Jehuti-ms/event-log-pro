@@ -345,41 +345,76 @@
 
 <script>
 // ============================================
-// SIMPLE PERMANENT ENHANCEMENTS
+// WAIT-AND-ACTIVATE ENHANCEMENTS
 // ============================================
 
-console.log('🚨 PERMANENT ENHANCEMENTS: Starting...');
+console.log('🚨 WAIT-AND-ACTIVATE: Starting...');
 
-// Simple enhancement activation
-function activateEnhancements() {
-    console.log('🎯 Activating enhancements...');
+function waitForElements() {
+    console.log('⏳ Waiting for enhancement elements...');
     
-    // 1. Connect search
+    const elements = {
+        studentSearch: document.getElementById('studentSearch'),
+        studentCounter: document.getElementById('studentCounter'), 
+        studentCountBadge: document.getElementById('studentCountBadge'),
+        studentTableContainer: document.getElementById('studentTableContainer'),
+        studentTable: document.getElementById('studentTable')
+    };
+    
+    console.log('Current elements state:', elements);
+    
+    // Check if all critical elements exist AND are in DOM
+    if (elements.studentSearch && elements.studentTable && 
+        document.body.contains(elements.studentSearch)) {
+        
+        console.log('✅ All elements found and in DOM!');
+        activateEnhancements();
+    } else {
+        console.log('❌ Elements missing, waiting...');
+        setTimeout(waitForElements, 500);
+    }
+}
+
+function activateEnhancements() {
+    console.log('🎯 ACTIVATING ENHANCEMENTS NOW!');
+    
     const searchInput = document.getElementById('studentSearch');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#studentTable tbody tr');
-            
-            let visibleCount = 0;
-            rows.forEach(row => {
-                const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
-                const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
-                const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
-                
-                const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
-                row.style.display = matches ? '' : 'none';
-                if (matches) visibleCount++;
-            });
-            
-            updateStudentCounter();
-            console.log(`🔍 Filtered: ${visibleCount} students`);
-        });
-        console.log('✅ Search connected');
+    const table = document.getElementById('studentTable');
+    
+    if (!searchInput || !table) {
+        console.log('❌ Critical elements missing during activation');
+        return;
     }
     
+    console.log('Search input found:', searchInput);
+    console.log('Table found:', table);
+    
+    // 1. Activate search functionality
+    searchInput.addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase().trim();
+        const rows = table.querySelectorAll('tbody tr');
+        
+        console.log(`🔍 Searching for: "${term}" in ${rows.length} rows`);
+        
+        let visibleCount = 0;
+        rows.forEach((row, index) => {
+            const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
+            const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
+            const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+            
+            const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+        
+        updateStudentCounter();
+        console.log(`✅ Filtered to ${visibleCount} visible students`);
+    });
+    
+    console.log('✅ Search functionality activated');
+    
     // 2. Make headers sticky
-    const thead = document.querySelector('#studentTable thead');
+    const thead = table.querySelector('thead');
     if (thead) {
         const thElements = thead.querySelectorAll('th');
         thElements.forEach(th => {
@@ -394,8 +429,8 @@ function activateEnhancements() {
     // 3. Initial counter update
     updateStudentCounter();
     
-    // 4. Auto-update counter
-    const tableBody = document.querySelector('#studentTable tbody');
+    // 4. Auto-update counter when table changes
+    const tableBody = table.querySelector('tbody');
     if (tableBody) {
         const observer = new MutationObserver(() => {
             setTimeout(updateStudentCounter, 100);
@@ -404,14 +439,20 @@ function activateEnhancements() {
         console.log('✅ Auto-counter enabled');
     }
     
-    console.log('✅ All enhancements activated!');
+    console.log('🎉 ALL ENHANCEMENTS ACTIVATED SUCCESSFULLY!');
 }
 
 function updateStudentCounter() {
-    const rows = document.querySelectorAll('#studentTable tbody tr');
+    const table = document.getElementById('studentTable');
     const searchInput = document.getElementById('studentSearch');
     const searchTerm = searchInput ? searchInput.value.trim() : '';
     
+    if (!table) {
+        console.log('❌ Table not found for counter update');
+        return;
+    }
+    
+    const rows = table.querySelectorAll('tbody tr');
     let validStudents = 0;
     let visibleStudents = 0;
     
@@ -439,31 +480,36 @@ function updateStudentCounter() {
     if (badge) {
         badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
     }
+    
+    console.log(`📊 Counter updated: ${validStudents} valid, ${visibleStudents} visible`);
 }
 
 // Global clear search function
 window.clearSearch = function() {
+    console.log('🧹 Clear search called');
     const searchInput = document.getElementById('studentSearch');
     if (searchInput) {
         searchInput.value = '';
-        const rows = document.querySelectorAll('#studentTable tbody tr');
-        rows.forEach(row => row.style.display = '');
-        updateStudentCounter();
-        console.log('🧹 Search cleared');
+        const table = document.getElementById('studentTable');
+        if (table) {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => row.style.display = '');
+            updateStudentCounter();
+            console.log('✅ Search cleared');
+        }
     }
 };
 
-// Start when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM loaded - starting enhancements');
-    setTimeout(activateEnhancements, 1000);
-});
+// Start waiting for elements
+console.log('🚨 Starting to wait for elements...');
+setTimeout(waitForElements, 1000);
 
-console.log('🚨 PERMANENT ENHANCEMENTS: Script loaded!');
+console.log('🚨 WAIT-AND-ACTIVATE: Script loaded!');
 </script>
 
 </body>
 </html>
+
 
 
 
