@@ -974,6 +974,14 @@ console.log('✅ app.js loaded successfully');
 function initializeTableEnhancements() {
     console.log('🎯 Initializing permanent table enhancements...');
     
+    // Wait for table to exist
+    const table = document.getElementById('studentTable');
+    if (!table) {
+        console.log('⏳ Student table not found, retrying in 500ms...');
+        setTimeout(initializeTableEnhancements, 500);
+        return;
+    }
+
     // Add CSS
     const enhancementCSS = `
         .search-container {
@@ -1029,11 +1037,15 @@ function initializeTableEnhancements() {
         }
     `;
     
-    const style = document.createElement('style');
-    style.textContent = enhancementCSS;
-    document.head.appendChild(style);
+    // Only add CSS once
+    if (!document.getElementById('tableEnhancementCSS')) {
+        const style = document.createElement('style');
+        style.id = 'tableEnhancementCSS';
+        style.textContent = enhancementCSS;
+        document.head.appendChild(style);
+    }
 
-    // Create search bar
+    // Create search bar (only once)
     if (!document.getElementById('studentSearch')) {
         const searchContainer = document.createElement('div');
         searchContainer.className = 'search-container';
@@ -1052,31 +1064,28 @@ function initializeTableEnhancements() {
         });
     }
 
-    // Create scroll container
+    // Create scroll container (only once)
     if (!document.getElementById('studentTableContainer')) {
-        const table = document.getElementById('studentTable');
-        if (table) {
-            const scrollContainer = document.createElement('div');
-            scrollContainer.id = 'studentTableContainer';
-            scrollContainer.className = 'table-scroll-container';
-            
-            const tableParent = table.parentNode;
-            tableParent.insertBefore(scrollContainer, table);
-            scrollContainer.appendChild(table);
-            
-            // Add student counter
-            const studentCounter = document.createElement('div');
-            studentCounter.id = 'studentCounter';
-            studentCounter.className = 'student-counter';
-            studentCounter.textContent = 'Total Students: 0';
-            scrollContainer.appendChild(studentCounter);
-        }
+        const scrollContainer = document.createElement('div');
+        scrollContainer.id = 'studentTableContainer';
+        scrollContainer.className = 'table-scroll-container';
+        
+        const tableParent = table.parentNode;
+        tableParent.insertBefore(scrollContainer, table);
+        scrollContainer.appendChild(table);
+        
+        // Add student counter
+        const studentCounter = document.createElement('div');
+        studentCounter.id = 'studentCounter';
+        studentCounter.className = 'student-counter';
+        studentCounter.textContent = 'Total Students: 0';
+        scrollContainer.appendChild(studentCounter);
     }
 
-    // Create count badge
+    // Create count badge (only once)
     if (!document.getElementById('studentCountBadge')) {
         const studentHeader = document.querySelector('h4');
-        if (studentHeader) {
+        if (studentHeader && !studentHeader.querySelector('#studentCountBadge')) {
             const badge = document.createElement('span');
             badge.id = 'studentCountBadge';
             badge.textContent = '0 students';
@@ -1106,6 +1115,8 @@ function initializeTableEnhancements() {
         });
         observer.observe(tableBody, { childList: true, subtree: true });
     }
+    
+    console.log('✅ Table enhancements initialized successfully!');
 }
 
 function filterStudents(searchTerm) {
@@ -1166,12 +1177,37 @@ window.clearSearch = function() {
     }
 };
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeTableEnhancements);
-} else {
-    initializeTableEnhancements();
+// Enhanced initialization that works with your auth flow
+function initializeWithAuthCheck() {
+    console.log('🔍 Checking authentication status for table enhancements...');
+    
+    // Check if user is authenticated and main container is visible
+    const mainContainer = document.getElementById('mainContainer');
+    const landingPage = document.getElementById('landingPage');
+    
+    if (mainContainer && mainContainer.style.display !== 'none' && 
+        landingPage && landingPage.style.display === 'none') {
+        console.log('✅ User is authenticated, initializing table enhancements...');
+        initializeTableEnhancements();
+    } else {
+        console.log('⏳ Waiting for authentication...');
+        setTimeout(initializeWithAuthCheck, 1000);
+    }
 }
 
-// Also initialize when authenticated (in case DOM loads before auth check)
-setTimeout(initializeTableEnhancements, 1000);
+// Start initialization
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeWithAuthCheck);
+} else {
+    initializeWithAuthCheck();
+}
+
+// Also listen for URL changes (since your app uses URL parameters)
+let currentUrl = window.location.href;
+setInterval(() => {
+    if (window.location.href !== currentUrl) {
+        currentUrl = window.location.href;
+        console.log('🔄 URL changed, reinitializing table enhancements...');
+        setTimeout(initializeTableEnhancements, 1000);
+    }
+}, 500);
