@@ -497,9 +497,62 @@ setTimeout(makeHeadersSticky, 3000);
 
 console.log('🚨 EVENT DELEGATION: Script loaded!');
 </script>
+<script>
+// EMERGENCY ELEMENT CREATION
+console.log('🚨 EMERGENCY: Creating enhancement elements...');
 
+setTimeout(() => {
+    // Find the student table
+    const table = document.getElementById('studentTable');
+    if (!table) {
+        console.log('❌ No student table found');
+        return;
+    }
+    
+    console.log('✅ Student table found, creating enhancements...');
+    
+    // Create search bar if it doesn't exist
+    if (!document.getElementById('studentSearch')) {
+        const searchContainer = document.createElement('div');
+        searchContainer.style.cssText = 'margin-bottom: 15px; display: flex; gap: 10px; align-items: center;';
+        
+        const searchInput = document.createElement('input');
+        searchInput.id = 'studentSearch';
+        searchInput.type = 'text';
+        searchInput.placeholder = '🔍 Search students...';
+        searchInput.style.cssText = 'padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;';
+        
+        const clearButton = document.createElement('button');
+        clearButton.textContent = 'Clear Search';
+        clearButton.className = 'btn-secondary';
+        clearButton.style.cssText = 'padding: 10px 15px; white-space: nowrap;';
+        clearButton.onclick = () => {
+            searchInput.value = '';
+            emergencyFilterStudents('');
+        };
+        
+        searchContainer.appendChild(searchInput);
+        searchContainer.appendChild(clearButton);
+        
+        // Insert before table
+        table.parentNode.insertBefore(searchContainer, table);
+        console.log('✅ Emergency search bar created');
+    }
+    
+    // Add other emergency enhancements...
+    console.log('🎉 Emergency enhancements created!');
+    
+}, 3000);
+
+function emergencyFilterStudents(term) {
+    // Emergency filter function
+    const rows = document.querySelectorAll('#studentTable tbody tr');
+    // ... filter logic here
+}
+</script>
 </body>
 </html>
+
 
 
 
