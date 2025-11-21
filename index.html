@@ -258,19 +258,20 @@
             </div>
 
            <!-- Student List Section with Search and Scroll -->
+<!-- Student List Section with Search and Scroll -->
 <h4 style="margin-top: 30px; margin-bottom: 15px;">
     Student List 
     <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
 </h4>
 
 <!-- Search Bar -->
-<div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+<div class="search-container" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
     <input type="text" id="studentSearch" placeholder="🔍 Search students by name, form, or contact..." style="padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;">
     <button onclick="clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
 </div>
 
 <!-- Scrollable Table Container -->
-<div class="table-scroll-container" id="studentTableContainer">
+<div class="table-scroll-container" id="studentTableContainer" style="max-height: 500px; overflow-y: auto; overflow-x: auto; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; position: relative;">
     <table id="studentTable">
         <thead class="sticky-header">
             <tr>
@@ -314,7 +315,7 @@
             </tr>
         </tbody>
     </table>
-    <div class="student-counter" id="studentCounter">Total Students: 1</div>
+    <div class="student-counter" id="studentCounter" style="position: sticky; bottom: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ddd; font-weight: bold; text-align: center; z-index: 5;">Total Students: 1</div>
 </div>
 
 <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
@@ -342,88 +343,18 @@
 <!-- <script src="table-enhancements.js"></script>
 <script src="auto-sync.js"></script> -->
 
-  <script>
+<script>
 // ============================================
-// INLINE ENHANCEMENTS - FILE PROTOCOL COMPATIBLE
+// SIMPLE PERMANENT ENHANCEMENTS
 // ============================================
 
-console.log('🚨 INLINE ENHANCEMENTS: Starting...');
+console.log('🚨 PERMANENT ENHANCEMENTS: Starting...');
 
-// Add enhancement CSS
-const enhancementCSS = `
-    .table-scroll-container {
-        max-height: 500px;
-        overflow-y: auto;
-        overflow-x: auto;
-        margin: 20px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        position: relative;
-    }
-    body.dark .table-scroll-container {
-        border-color: #1f2a37;
-        background: #121922;
-    }
-    .table-scroll-container thead th {
-        position: sticky;
-        top: 0;
-        background: #f0f2f5;
-        z-index: 10;
-    }
-    body.dark .table-scroll-container thead th {
-        background: #162131;
-    }
-    .student-counter {
-        position: sticky;
-        bottom: 0;
-        background: #f8f9fa;
-        padding: 10px;
-        border-top: 1px solid #ddd;
-        font-weight: bold;
-        text-align: center;
-        z-index: 5;
-    }
-    body.dark .student-counter {
-        background: #0f1720;
-        border-top-color: #1f2a37;
-        color: #e5e7eb;
-    }
-    #studentCountBadge {
-        font-size: 0.7em;
-        background: #0078d7;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 12px;
-        margin-left: 10px;
-    }
-`;
-
-// Inject CSS
-const style = document.createElement('style');
-style.textContent = enhancementCSS;
-document.head.appendChild(style);
-console.log('✅ Enhancement CSS injected');
-
-// Wait for DOM and authentication
-function initializeEnhancements() {
-    console.log('🎯 Checking for table...');
+// Simple enhancement activation
+function activateEnhancements() {
+    console.log('🎯 Activating enhancements...');
     
-    const table = document.getElementById('studentTable');
-    const mainContainer = document.getElementById('mainContainer');
-    
-    if (!table || !mainContainer || mainContainer.style.display === 'none') {
-        console.log('⏳ Waiting for table/auth...');
-        setTimeout(initializeEnhancements, 500);
-        return;
-    }
-    
-    console.log('✅ Table found! Activating enhancements...');
-    activateSearch();
-    activateCounter();
-    makeHeadersSticky();
-}
-
-function activateSearch() {
+    // 1. Connect search
     const searchInput = document.getElementById('studentSearch');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
@@ -442,16 +373,28 @@ function activateSearch() {
             });
             
             updateStudentCounter();
-            console.log(`🔍 Filtered: ${visibleCount} students match "${term}"`);
+            console.log(`🔍 Filtered: ${visibleCount} students`);
         });
-        console.log('✅ Search activated');
+        console.log('✅ Search connected');
     }
-}
-
-function activateCounter() {
+    
+    // 2. Make headers sticky
+    const thead = document.querySelector('#studentTable thead');
+    if (thead) {
+        const thElements = thead.querySelectorAll('th');
+        thElements.forEach(th => {
+            th.style.position = 'sticky';
+            th.style.top = '0';
+            th.style.zIndex = '10';
+            th.style.background = '#f0f2f5';
+        });
+        console.log(`✅ Made ${thElements.length} headers sticky`);
+    }
+    
+    // 3. Initial counter update
     updateStudentCounter();
     
-    // Auto-update when table changes
+    // 4. Auto-update counter
     const tableBody = document.querySelector('#studentTable tbody');
     if (tableBody) {
         const observer = new MutationObserver(() => {
@@ -460,6 +403,8 @@ function activateCounter() {
         observer.observe(tableBody, { childList: true, subtree: true });
         console.log('✅ Auto-counter enabled');
     }
+    
+    console.log('✅ All enhancements activated!');
 }
 
 function updateStudentCounter() {
@@ -496,19 +441,6 @@ function updateStudentCounter() {
     }
 }
 
-function makeHeadersSticky() {
-    const thead = document.querySelector('#studentTable thead');
-    if (thead) {
-        const thElements = thead.querySelectorAll('th');
-        thElements.forEach(th => {
-            th.style.position = 'sticky';
-            th.style.top = '0';
-            th.style.zIndex = '10';
-        });
-        console.log(`✅ Made ${thElements.length} headers sticky`);
-    }
-}
-
 // Global clear search function
 window.clearSearch = function() {
     const searchInput = document.getElementById('studentSearch');
@@ -521,13 +453,18 @@ window.clearSearch = function() {
     }
 };
 
-// Start enhancements
-setTimeout(initializeEnhancements, 1000);
+// Start when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM loaded - starting enhancements');
+    setTimeout(activateEnhancements, 1000);
+});
 
-console.log('🚨 INLINE ENHANCEMENTS: Script loaded!');
+console.log('🚨 PERMANENT ENHANCEMENTS: Script loaded!');
 </script>
+
 </body>
 </html>
+
 
 
 
