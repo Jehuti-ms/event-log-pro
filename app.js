@@ -970,17 +970,28 @@ console.log('✅ app.js loaded successfully');
 // ============================================
 // PERMANENT STUDENT TABLE ENHANCEMENTS
 // ============================================
+console.log('🚨 TABLE ENHANCEMENTS CODE IS LOADED - Checking for student table...');
 
 function initializeTableEnhancements() {
-    console.log('🎯 Initializing permanent table enhancements...');
+    console.log('🎯 INITIALIZE TABLE ENHANCEMENTS CALLED');
+    console.log('📋 Checking for student table...');
     
-    // Wait for table to exist
     const table = document.getElementById('studentTable');
+    console.log('📊 Student table found:', !!table);
+    
     if (!table) {
-        console.log('⏳ Student table not found, retrying in 500ms...');
-        setTimeout(initializeTableEnhancements, 500);
+        console.log('❌ No student table found - current page state:');
+        console.log('- Main container:', document.getElementById('mainContainer'));
+        console.log('- Landing page:', document.getElementById('landingPage'));
+        console.log('- All tables on page:', document.querySelectorAll('table'));
+        console.log('⏳ Will retry in 1 second...');
+        setTimeout(initializeTableEnhancements, 1000);
         return;
     }
+
+    console.log('✅ Student table found! Proceeding with enhancements...');
+    // ... rest of your existing code
+}
 
     // Add CSS
     const enhancementCSS = `
