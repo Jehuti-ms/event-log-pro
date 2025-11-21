@@ -278,8 +278,7 @@
                 </div>
             </div>
 
-           <!-- Student List Section with Search and Scroll -->
-<!-- Student List Section with Search and Scroll -->
+         <!-- Student List Section with Search and Scroll -->
 <h4 style="margin-top: 30px; margin-bottom: 15px;">
     Student List 
     <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
@@ -293,49 +292,51 @@
 
 <!-- Scrollable Table Container -->
 <div class="table-scroll-container" id="studentTableContainer" style="max-height: 500px; overflow-y: auto; overflow-x: auto; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; position: relative;">
-    <table id="studentTable">
-        <thead class="sticky-header">
-            <tr>
-                <th>#</th>
-                <th>Student Name</th>
-                <th>Form</th>
-                <th>Contact Number</th>
-                <th>Medical / Illness</th>
-                <th>Medication</th>
-                <th>Permission</th>
-                <th>Present</th>
-                <th>Remove</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td><input type="text" name="studentName[]"></td>
-                <td><input type="text" name="form[]"></td>
-                <td><input type="text" name="contact[]"></td>
-                <td>
-                    <select name="illness[]" class="student-illness">
-                        <option value="None">None</option>
-                        <option value="Asthma">Asthma</option>
-                        <option value="Allergies – Mild">Allergies – Mild</option>
-                        <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
-                        <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
-                        <option value="Diabetes">Diabetes</option>
-                        <option value="Heart condition">Heart condition</option>
-                        <option value="Other (specify)">Other (specify)</option>
-                    </select>
-                    <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
-                </td>
-                <td>
-                    <input type="checkbox" name="medication[]" class="medication-checkbox">
-                    <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
-                </td>
-                <td><input type="checkbox" name="permission[]"></td>
-                <td><input type="checkbox" name="present[]"></td>
-                <td><button type="button" class="delete-row">✖</button></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Form</th>
+                    <th>Contact Number</th>
+                    <th>Medical / Illness</th>
+                    <th>Medication</th>
+                    <th>Permission</th>
+                    <th>Present</th>
+                    <th>Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><input type="text" name="studentName[]"></td>
+                    <td><input type="text" name="form[]"></td>
+                    <td><input type="text" name="contact[]"></td>
+                    <td>
+                        <select name="illness[]" class="student-illness">
+                            <option value="None">None</option>
+                            <option value="Asthma">Asthma</option>
+                            <option value="Allergies – Mild">Allergies – Mild</option>
+                            <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
+                            <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
+                            <option value="Diabetes">Diabetes</option>
+                            <option value="Heart condition">Heart condition</option>
+                            <option value="Other (specify)">Other (specify)</option>
+                        </select>
+                        <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
+                    </td>
+                    <td>
+                        <input type="checkbox" name="medication[]" class="medication-checkbox">
+                        <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
+                    </td>
+                    <td><input type="checkbox" name="permission[]"></td>
+                    <td><input type="checkbox" name="present[]"></td>
+                    <td><button type="button" class="delete-row">✖</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <div class="student-counter" id="studentCounter" style="position: sticky; bottom: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ddd; font-weight: bold; text-align: center; z-index: 5;">Total Students: 1</div>
 </div>
 
@@ -366,70 +367,83 @@
 
 <script>
 // ============================================
-// EVENT DELEGATION ENHANCEMENTS
+// SIMPLE ENHANCEMENTS FOR EXISTING ELEMENTS
 // ============================================
 
-console.log('🚨 EVENT DELEGATION: Starting...');
+console.log('🚨 SIMPLE ENHANCEMENTS: Starting...');
 
-// Use event delegation - works even if elements don't exist yet
-document.addEventListener('input', function(e) {
-    // Check if this is our search input (even if created later)
-    if (e.target.id === 'studentSearch') {
-        const term = e.target.value.toLowerCase().trim();
-        const table = document.getElementById('studentTable');
-        
-        if (!table) {
-            console.log('❌ Table not found during search');
-            return;
-        }
-        
-        const rows = table.querySelectorAll('tbody tr');
-        let visibleCount = 0;
-        
-        rows.forEach(row => {
-            const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
-            const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
-            const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
-            
-            const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
-            row.style.display = matches ? '' : 'none';
-            if (matches) visibleCount++;
-        });
-        
-        updateStudentCounter();
-        console.log(`🔍 Delegated search: ${visibleCount} students match "${term}"`);
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM loaded - activating enhancements');
+    
+    // Wait a bit for everything to be ready
+    setTimeout(() => {
+        activateSimpleEnhancements();
+    }, 1000);
 });
 
-// Update counter periodically
-function startCounterUpdates() {
-    console.log('🔄 Starting periodic counter updates...');
+function activateSimpleEnhancements() {
+    console.log('🎯 Activating simple enhancements...');
     
-    // Update immediately
-    updateStudentCounter();
+    // 1. Connect search functionality
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
+                const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
+                const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+                
+                const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
+                row.style.display = matches ? '' : 'none';
+                if (matches) visibleCount++;
+            });
+            
+            updateSimpleCounter();
+            console.log(`🔍 Filtered: ${visibleCount} students match "${term}"`);
+        });
+        console.log('✅ Search connected');
+    } else {
+        console.log('❌ Search input not found');
+    }
     
-    // Update every second
-    setInterval(updateStudentCounter, 1000);
+    // 2. Make headers sticky
+    const thead = document.querySelector('#studentTable thead');
+    if (thead) {
+        const thElements = thead.querySelectorAll('th');
+        thElements.forEach(th => {
+            th.style.position = 'sticky';
+            th.style.top = '0';
+            th.style.zIndex = '10';
+            th.style.background = '#f0f2f5';
+        });
+        console.log(`✅ Made ${thElements.length} headers sticky`);
+    }
     
-    // Also update when table changes
+    // 3. Initial counter update
+    updateSimpleCounter();
+    
+    // 4. Auto-update counter
     const tableBody = document.querySelector('#studentTable tbody');
     if (tableBody) {
-        const observer = new MutationObserver(updateStudentCounter);
+        const observer = new MutationObserver(() => {
+            setTimeout(updateSimpleCounter, 100);
+        });
         observer.observe(tableBody, { childList: true, subtree: true });
+        console.log('✅ Auto-counter enabled');
     }
+    
+    console.log('✅ All simple enhancements activated!');
 }
 
-function updateStudentCounter() {
-    const table = document.getElementById('studentTable');
+function updateSimpleCounter() {
+    const rows = document.querySelectorAll('#studentTable tbody tr');
     const searchInput = document.getElementById('studentSearch');
     const searchTerm = searchInput ? searchInput.value.trim() : '';
     
-    if (!table) {
-        // Table doesn't exist yet, try again later
-        return;
-    }
-    
-    const rows = table.querySelectorAll('tbody tr');
     let validStudents = 0;
     let visibleStudents = 0;
     
@@ -459,99 +473,23 @@ function updateStudentCounter() {
     }
 }
 
-// Global clear search
+// Global clear search function
 window.clearSearch = function() {
     const searchInput = document.getElementById('studentSearch');
     if (searchInput) {
         searchInput.value = '';
-        const table = document.getElementById('studentTable');
-        if (table) {
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => row.style.display = '');
-            updateStudentCounter();
-        }
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+        rows.forEach(row => row.style.display = '');
+        updateSimpleCounter();
+        console.log('🧹 Search cleared');
     }
 };
 
-// Make headers sticky when table exists
-function makeHeadersSticky() {
-    const table = document.getElementById('studentTable');
-    if (table) {
-        const thead = table.querySelector('thead');
-        if (thead) {
-            const thElements = thead.querySelectorAll('th');
-            thElements.forEach(th => {
-                th.style.position = 'sticky';
-                th.style.top = '0';
-                th.style.zIndex = '10';
-                th.style.background = '#f0f2f5';
-            });
-            console.log('✅ Headers made sticky');
-        }
-    }
-}
-
-// Start everything
-setTimeout(startCounterUpdates, 2000);
-setTimeout(makeHeadersSticky, 3000);
-
-console.log('🚨 EVENT DELEGATION: Script loaded!');
-</script>
-<script>
-// EMERGENCY ELEMENT CREATION
-console.log('🚨 EMERGENCY: Creating enhancement elements...');
-
-setTimeout(() => {
-    // Find the student table
-    const table = document.getElementById('studentTable');
-    if (!table) {
-        console.log('❌ No student table found');
-        return;
-    }
-    
-    console.log('✅ Student table found, creating enhancements...');
-    
-    // Create search bar if it doesn't exist
-    if (!document.getElementById('studentSearch')) {
-        const searchContainer = document.createElement('div');
-        searchContainer.style.cssText = 'margin-bottom: 15px; display: flex; gap: 10px; align-items: center;';
-        
-        const searchInput = document.createElement('input');
-        searchInput.id = 'studentSearch';
-        searchInput.type = 'text';
-        searchInput.placeholder = '🔍 Search students...';
-        searchInput.style.cssText = 'padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;';
-        
-        const clearButton = document.createElement('button');
-        clearButton.textContent = 'Clear Search';
-        clearButton.className = 'btn-secondary';
-        clearButton.style.cssText = 'padding: 10px 15px; white-space: nowrap;';
-        clearButton.onclick = () => {
-            searchInput.value = '';
-            emergencyFilterStudents('');
-        };
-        
-        searchContainer.appendChild(searchInput);
-        searchContainer.appendChild(clearButton);
-        
-        // Insert before table
-        table.parentNode.insertBefore(searchContainer, table);
-        console.log('✅ Emergency search bar created');
-    }
-    
-    // Add other emergency enhancements...
-    console.log('🎉 Emergency enhancements created!');
-    
-}, 3000);
-
-function emergencyFilterStudents(term) {
-    // Emergency filter function
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-    // ... filter logic here
-}
+console.log('🚨 SIMPLE ENHANCEMENTS: Script loaded!');
 </script>
 </body>
 </html>
+
 
 
 
