@@ -1451,6 +1451,13 @@ function createFallbackAutoSyncUI() {
     }
 }
 
+window.collectFormData = collectFormData;
+window.initializeAutoSync = function() {
+    console.log('🔄 AutoSync initialization requested');
+    // AutoSync functionality would go here
+    showToast('AutoSync functionality would initialize here', 'info');
+};
+
 // Make functions globally available
 window.handleGoogleSignIn = handleGoogleSignIn;
 window.handleLogout = handleLogout;
@@ -1467,6 +1474,10 @@ window.loadSelectedEvent = loadSelectedEvent;
 window.promptLoadEvent = promptLoadEvent;
 window.addStudentRow = addStudentRow;
 window.clearSearch = clearSearch;
+window.updateCounts = updateCounts;
+window.filterStudents = filterStudents;
+window.updateStudentCounter = updateStudentCounter;
+window.autoScrollToBottom = autoScrollToBottom;
 
 console.log('✅ app.js loaded successfully');
 
