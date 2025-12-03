@@ -585,16 +585,519 @@ async function generateReport() {
         return;
     }
     
-    const result = await apiCall('generateReport', { eventId: currentEventId });
-    if (result.success) {
-        showToast('Report generation started! Check your Google Drive.', 'success');
-        if (result.pdfUrl) {
-            window.open(result.pdfUrl, '_blank');
+    showSpinner('Generating report...');
+    
+    try {
+        const result = await apiCall('generateReport', { eventId: currentEventId });
+        
+        if (result.success) {
+            hideSpinner();
+            
+            // Check if we have a PDF URL to embed or data to display
+            if (result.pdfUrl) {
+                // Create a modal to display the PDF with print/download options
+                showReportModal(result.pdfUrl, result.reportData || null);
+            } else if (result.reportData) {
+                // Generate HTML report from the data
+                const htmlReport = generateHTMLReport(result.reportData);
+                showReportModal(null, htmlReport, true);
+            } else {
+                // Fallback: generate report from current form data
+                const formData = collectFormData();
+                const htmlReport = generateHTMLReport(formData);
+                showReportModal(null, htmlReport, true);
+            }
+            
+        } else {
+            hideSpinner();
+            showToast('Error generating report: ' + (result.error || 'Unknown error'), 'error');
         }
-    } else {
-        showToast('Error generating report: ' + (result.error || 'Unknown error'), 'error');
+    } catch (error) {
+        hideSpinner();
+        showToast('Error generating report: ' + error.message, 'error');
     }
 }
+
+function showReportModal(pdfUrl, reportData, isHTML = false) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('reportModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'reportModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content report-modal">
+                <div class="modal-header">
+                    <h3>Event Report</h3>
+                    <button class="close-modal" onclick="closeReportModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="report-actions">
+                        <button onclick="printReport()" class="btn btn-primary">
+                            <span class="icon">🖨️</span> Print Report
+                        </button>
+                        <button onclick="downloadReport()" class="btn btn-secondary">
+                            <span class="icon">📥</span> Download PDF
+                        </button>
+                        <button onclick="copyReportLink()" class="btn btn-tertiary">
+                            <span class="icon">🔗</span> Copy Link
+                        </button>
+                    </div>
+                    <div class="report-preview" id="reportPreview">
+                        <iframe id="reportFrame" style="width: 100%; height: 600px; border: none;"></iframe>
+                        <div id="htmlReportContent" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add styles for the report modal
+        if (!document.querySelector('#reportStyles')) {
+            const styles = document.createElement('style');
+            styles.id = 'reportStyles';
+            styles.textContent = `
+                .report-modal {
+                    max-width: 90%;
+                    width: 900px;
+                }
+                .report-actions {
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                    flex-wrap: wrap;
+                }
+                .report-actions .btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 10px 20px;
+                }
+                .report-actions .icon {
+                    font-size: 16px;
+                }
+                #reportPreview {
+                    background: #f5f5f5;
+                    border-radius: 8px;
+                    padding: 10px;
+                }
+                .dark #reportPreview {
+                    background: #2a2a2a;
+                }
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    .report-modal,
+                    .report-modal * {
+                        visibility: visible;
+                    }
+                    .report-modal {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        max-width: 100%;
+                    }
+                    .report-actions {
+                        display: none;
+                    }
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+    }
+    
+    // Clear previous content
+    const frame = document.getElementById('reportFrame');
+    const htmlContent = document.getElementById('htmlReportContent');
+    
+    if (pdfUrl) {
+        // Show PDF in iframe
+        frame.style.display = 'block';
+        htmlContent.style.display = 'none';
+        frame.src = pdfUrl;
+        
+        // Store PDF URL for download
+        frame.dataset.pdfUrl = pdfUrl;
+    } else if (reportData) {
+        // Show HTML report
+        frame.style.display = 'none';
+        htmlContent.style.display = 'block';
+        
+        if (isHTML) {
+            htmlContent.innerHTML = reportData;
+        } else {
+            htmlContent.innerHTML = generateHTMLReport(reportData);
+        }
+        
+        // Store HTML content for printing
+        htmlContent.dataset.reportContent = htmlContent.innerHTML;
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function printReport() {
+    const frame = document.getElementById('reportFrame');
+    const htmlContent = document.getElementById('htmlReportContent');
+    
+    if (frame.style.display !== 'none') {
+        // Print PDF iframe content
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+    } else if (htmlContent.style.display !== 'none') {
+        // Create print-friendly HTML
+        const printWindow = window.open('', '_blank');
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Event Report - ${document.getElementById('eventName').value || 'Untitled Event'}</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .report-header {
+                        text-align: center;
+                        border-bottom: 2px solid #333;
+                        padding-bottom: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .report-header h1 {
+                        margin: 0;
+                        font-size: 24px;
+                        color: #2c3e50;
+                    }
+                    .event-info {
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin-bottom: 30px;
+                    }
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 15px;
+                    }
+                    .info-item {
+                        margin-bottom: 10px;
+                    }
+                    .info-label {
+                        font-weight: bold;
+                        color: #555;
+                        display: inline-block;
+                        min-width: 120px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 20px 0;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 10px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f8f9fa;
+                        font-weight: bold;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    .summary {
+                        margin-top: 30px;
+                        padding: 20px;
+                        background: #e8f4fd;
+                        border-radius: 8px;
+                    }
+                    .summary-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 15px;
+                    }
+                    .summary-item {
+                        text-align: center;
+                        padding: 10px;
+                    }
+                    .summary-value {
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                    }
+                    .summary-label {
+                        font-size: 14px;
+                        color: #666;
+                        margin-top: 5px;
+                    }
+                    @media print {
+                        body {
+                            font-size: 12pt;
+                        }
+                        .no-print {
+                            display: none;
+                        }
+                        .page-break {
+                            page-break-before: always;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                ${htmlContent.innerHTML}
+                <div class="no-print" style="margin-top: 30px; text-align: center; color: #666; font-size: 12px;">
+                    Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+                </div>
+            </body>
+            </html>
+        `;
+        
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        // Wait for content to load, then print
+        printWindow.onload = function() {
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        };
+    }
+}
+
+function downloadReport() {
+    const frame = document.getElementById('reportFrame');
+    const pdfUrl = frame.dataset.pdfUrl;
+    
+    if (pdfUrl) {
+        // Download PDF directly
+        const a = document.createElement('a');
+        a.href = pdfUrl;
+        a.download = `Event_Report_${currentEventId}_${Date.now()}.pdf`;
+        a.click();
+    } else {
+        // Download as HTML file
+        const htmlContent = document.getElementById('htmlReportContent');
+        if (htmlContent && htmlContent.innerHTML) {
+            const eventName = document.getElementById('eventName').value || 'Event_Report';
+            const sanitizedName = eventName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const blob = new Blob([htmlContent.innerHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${sanitizedName}_${currentEventId}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }
+}
+
+function copyReportLink() {
+    const frame = document.getElementById('reportFrame');
+    const pdfUrl = frame.dataset.pdfUrl;
+    
+    if (pdfUrl) {
+        navigator.clipboard.writeText(pdfUrl)
+            .then(() => showToast('Report link copied to clipboard!', 'success'))
+            .catch(() => showToast('Failed to copy link', 'error'));
+    } else {
+        showToast('No report link available', 'info');
+    }
+}
+
+function generateHTMLReport(eventData) {
+    // Count statistics
+    const totalStudents = eventData.students.length;
+    const presentCount = eventData.students.filter(s => s.present).length;
+    const permissionCount = eventData.students.filter(s => s.permission).length;
+    const illnessCount = eventData.students.filter(s => s.illness && s.illness !== 'None').length;
+    const medicationCount = eventData.students.filter(s => s.takingMedication).length;
+    
+    // Format date and time
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'Not specified';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    };
+    
+    const formatTime = (timeStr) => {
+        if (!timeStr) return 'Not specified';
+        return timeStr;
+    };
+    
+    return `
+        <div class="report-header">
+            <h1>${eventData.eventName || 'Event Report'}</h1>
+            <p>Event ID: ${eventData.eventId}</p>
+        </div>
+        
+        <div class="event-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Date:</span>
+                    ${formatDate(eventData.eventDate)}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Venue:</span>
+                    ${eventData.venue || 'Not specified'}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Departure:</span>
+                    ${formatTime(eventData.departure)}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Return:</span>
+                    ${formatTime(eventData.returnTime)}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Vehicle:</span>
+                    ${eventData.vehicle || 'Not specified'}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Company:</span>
+                    ${eventData.company || 'Not specified'}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Accompanying:</span>
+                    ${eventData.accompanying || 'None'}
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h2>Quick Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value">${totalStudents}</div>
+                    <div class="summary-label">Total Students</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${presentCount}</div>
+                    <div class="summary-label">Present</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${permissionCount}</div>
+                    <div class="summary-label">Permissions</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${illnessCount}</div>
+                    <div class="summary-label">Medical Notes</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Student List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Form</th>
+                    <th>Contact</th>
+                    <th>Medical Info</th>
+                    <th>Medication</th>
+                    <th>Permission</th>
+                    <th>Present</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${eventData.students.map((student, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${student.name || ''}</td>
+                        <td>${student.form || ''}</td>
+                        <td>${student.contact || ''}</td>
+                        <td>
+                            ${student.illness && student.illness !== 'None' ? 
+                                `<strong>${student.illness}</strong><br>${student.otherIllness || ''}` : 
+                                'None'}
+                        </td>
+                        <td>
+                            ${student.takingMedication ? 
+                                `<strong>Yes</strong><br>${student.medicationDetails || ''}` : 
+                                'No'}
+                        </td>
+                        <td>${student.permission ? '✅ Yes' : '❌ No'}</td>
+                        <td>${student.present ? '✅ Yes' : '❌ No'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        ${eventData.students.some(s => s.illness && s.illness !== 'None') ? `
+            <div class="page-break"></div>
+            <h2>Medical Information Summary</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Condition</th>
+                        <th>Details</th>
+                        <th>Medication</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${eventData.students.filter(s => s.illness && s.illness !== 'None').map(student => `
+                        <tr>
+                            <td><strong>${student.name}</strong> (${student.form})</td>
+                            <td>${student.illness}</td>
+                            <td>${student.otherIllness || 'No additional details'}</td>
+                            <td>${student.takingMedication ? student.medicationDetails || 'Medication - no details' : 'None'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : ''}
+        
+        <div class="page-break"></div>
+        <h2>Emergency Contact Information</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Form</th>
+                    <th>Contact Number</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${eventData.students.filter(s => s.contact).map(student => `
+                    <tr>
+                        <td>${student.name}</td>
+                        <td>${student.form}</td>
+                        <td>${student.contact}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Make the new function globally available
+window.generateReport = generateReport;
+window.closeReportModal = closeReportModal;
+window.printReport = printReport;
+window.downloadReport = downloadReport;
+window.copyReportLink = copyReportLink;
 
 // ============================================
 // STUDENT ROW MANAGEMENT
