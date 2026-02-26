@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Log Pro - Event Management System</title>
     
+    <!-- Import Map for Firebase -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+            }
+        }
+    </script>
+    
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
@@ -12,8 +23,8 @@
     <meta name="theme-color" content="#667eea">
     
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon.svg">
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Apple Mobile Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,7 +32,7 @@
     <meta name="apple-mobile-web-app-title" content="Event Log Pro">
     
     <!-- Description -->
-    <meta name="description" content="Comprehensive event management system for field trips, tours, and student events with Google Sheets integration">
+    <meta name="description" content="Comprehensive event management system for field trips, tours, and student events with Firebase">
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
@@ -30,25 +41,63 @@
     <link rel="stylesheet" href="styles.css">
 
     <style>
-/* Debug styles to see enhancement elements */
-#studentSearch {
-    border: 2px solid #0078d7 !important;
-    background: #f0f8ff !important;
-}
+        /* Debug styles to see enhancement elements */
+        #studentSearch {
+            border: 2px solid #0078d7 !important;
+            background: #f0f8ff !important;
+        }
 
-#studentTableContainer {
-    border: 2px solid #28a745 !important;
-}
+        #studentTableContainer {
+            border: 2px solid #28a745 !important;
+        }
 
-#studentCounter {
-    border: 2px solid #ff6b35 !important;
-    background: #fff3e0 !important;
-}
+        #studentCounter {
+            border: 2px solid #ff6b35 !important;
+            background: #fff3e0 !important;
+        }
 
-#studentCountBadge {
-    border: 2px solid purple !important;
-}
-</style>
+        #studentCountBadge {
+            border: 2px solid purple !important;
+        }
+
+        .sync-status-bar {
+            background: #f8f9fa;
+            padding: 8px 20px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .sync-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .sync-indicator.online {
+            background: #28a745;
+            box-shadow: 0 0 8px #28a745;
+        }
+
+        .sync-indicator.offline {
+            background: #dc3545;
+        }
+
+        .sync-indicator.syncing {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
     
     <!-- Service Worker Registration -->
     <script>
@@ -67,26 +116,18 @@
 </head>
 <body>
     <script>
-         console.log('🔧 Script loading check:');
-    console.log('📍 window.collectFormData:', typeof window.collectFormData);
-    console.log('📍 window.initializeAutoSync:', typeof window.initializeAutoSync);
-    console.log('📍 window.AutoSync:', typeof window.AutoSync);
-    
-    // Test if we can manually initialize
-    setTimeout(() => {
-        console.log('🧪 Testing manual AutoSync initialization...');
-        if (typeof initializeAutoSync === 'function') {
-            console.log('✅ initializeAutoSync is available, calling it...');
-            initializeAutoSync();
-        } else {
-            console.error('❌ initializeAutoSync is NOT available');
-        }
-    }, 3000);
+        console.log('🔧 Script loading check...');
         
         // CRITICAL: Check auth IMMEDIATELY to prevent flash
         (function() {
-            if (localStorage.getItem('isAuthenticated') === 'true') {
+            const isAuth = localStorage.getItem('isAuthenticated') === 'true' || 
+                           localStorage.getItem('worklog_session') !== null;
+            
+            if (isAuth) {
                 document.body.classList.add('authenticated');
+                console.log('✅ User authenticated');
+            } else {
+                console.log('🔐 User not authenticated');
             }
         })();
     </script>
@@ -127,42 +168,16 @@
             <div class="modal-body">
                 <div class="settings-grid">
                     <div class="settings-section">
-                        <h3>📡 Web App Connection</h3>
+                        <h3>🔐 Firebase Configuration</h3>
+                        <p>Firebase is configured. No additional settings needed.</p>
                         <div class="form-group">
-                            <label for="settingsApiUrl"><strong>Google Apps Script Web App URL</strong></label>
-                            <input type="text" id="settingsApiUrl" placeholder="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec">
-                            <small class="help-text">Deploy your Google Apps Script as a web app and paste the URL here</small>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h3>📊 Google Sheet Configuration</h3>
-                        <div class="form-group">
-                            <label for="settingsSheetId"><strong>Google Sheet ID</strong></label>
-                            <input type="text" id="settingsSheetId" placeholder="Your Google Sheet ID">
-                            <small class="help-text">Find this in your sheet URL: docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit</small>
-                        </div>
-                        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                            <small style="color: #856404;">
-                                <strong>⚠️ Important:</strong> Add this Sheet ID to your Apps Script project properties as <code>SHEET_ID</code>
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h3>📄 Google Doc Configuration</h3>
-                        <div class="form-group">
-                            <label for="settingsDocId"><strong>Google Doc Template ID (Optional)</strong></label>
-                            <input type="text" id="settingsDocId" placeholder="Your Google Doc Template ID">
-                            <small class="help-text">For custom report templates. Leave blank to auto-create new docs.</small>
+                            <label for="autoSyncInterval">Auto-sync Interval (seconds)</label>
+                            <input type="number" id="autoSyncInterval" min="10" max="300" value="30">
                         </div>
                     </div>
                 </div>
-                
-                <div id="connectionStatus"></div>
-                
-                <div style="text-align: center; margin: 20px 0;">
-                    <button onclick="testConnection()" class="btn-info">🔍 Test Connection</button>
+                <div id="connectionStatus" class="connection-status success">
+                    ✅ Firebase Connected
                 </div>
             </div>
             <div class="modal-footer">
@@ -180,11 +195,10 @@
             <h3 class="form-title">Event / Tour Data Sheet</h3>
             <p id="eventIdDisplay">Event ID: (new)</p>
 
-                        <div class="header-controls">
+            <div class="header-controls">
                 <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
                 <button onclick="openSettings()" class="settings-btn">⚙️ Settings</button>
-                <button onclick="autoSync.forceSync()" class="settings-btn" title="Force Sync" id="syncButton">🔄 Sync Now</button>
-                <div id="syncIndicator" class="sync-indicator offline" title="Offline"></div>
+                <button onclick="forceSync()" class="settings-btn" title="Force Sync" id="syncButton">🔄 Sync Now</button>
                 <div class="theme-toggle-wrapper">
                     <span class="toggle-text">Dark Mode</span>
                     <div class="theme-toggle">
@@ -198,9 +212,13 @@
                 </div>
             </div>
         </header>
+        
         <!-- Sync Status Bar -->
         <div id="syncStatusBar" class="sync-status-bar">
-            <span id="syncStatusText">Checking connection...</span>
+            <div>
+                <span class="sync-indicator offline" id="syncIndicator"></span>
+                <span id="syncStatusText">Checking connection...</span>
+            </div>
             <span id="lastSyncTime"></span>
         </div>
         
@@ -278,69 +296,69 @@
                 </div>
             </div>
 
-         <!-- Student List Section with Search and Scroll -->
-<h4 style="margin-top: 30px; margin-bottom: 15px;">
-    Student List 
-    <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
-</h4>
+            <!-- Student List Section with Search and Scroll -->
+            <h4 style="margin-top: 30px; margin-bottom: 15px;">
+                Student List 
+                <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
+            </h4>
 
-<!-- Search Bar -->
-<div class="search-container" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" id="studentSearch" placeholder="🔍 Search students by name, form, or contact..." style="padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;">
-    <button onclick="clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
-</div>
+            <!-- Search Bar -->
+            <div class="search-container" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="studentSearch" placeholder="🔍 Search students by name, form, or contact..." style="padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;">
+                <button onclick="clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
+            </div>
 
-<!-- Scrollable Table Container -->
-<div class="table-scroll-container" id="studentTableContainer" style="max-height: 500px; overflow-y: auto; overflow-x: auto; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; position: relative;">
-    <div class="table-container">
-        <table id="studentTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Student Name</th>
-                    <th>Form</th>
-                    <th>Contact Number</th>
-                    <th>Medical / Illness</th>
-                    <th>Medication</th>
-                    <th>Permission</th>
-                    <th>Present</th>
-                    <th>Remove</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td><input type="text" name="studentName[]"></td>
-                    <td><input type="text" name="form[]"></td>
-                    <td><input type="text" name="contact[]"></td>
-                    <td>
-                        <select name="illness[]" class="student-illness">
-                            <option value="None">None</option>
-                            <option value="Asthma">Asthma</option>
-                            <option value="Allergies – Mild">Allergies – Mild</option>
-                            <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
-                            <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
-                            <option value="Diabetes">Diabetes</option>
-                            <option value="Heart condition">Heart condition</option>
-                            <option value="Other (specify)">Other (specify)</option>
-                        </select>
-                        <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
-                    </td>
-                    <td>
-                        <input type="checkbox" name="medication[]" class="medication-checkbox">
-                        <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
-                    </td>
-                    <td><input type="checkbox" name="permission[]"></td>
-                    <td><input type="checkbox" name="present[]"></td>
-                    <td><button type="button" class="delete-row">✖</button></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="student-counter" id="studentCounter" style="position: sticky; bottom: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ddd; font-weight: bold; text-align: center; z-index: 5;">Total Students: 1</div>
-</div>
+            <!-- Scrollable Table Container -->
+            <div class="table-scroll-container" id="studentTableContainer" style="max-height: 500px; overflow-y: auto; overflow-x: auto; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; position: relative;">
+                <div class="table-container">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student Name</th>
+                                <th>Form</th>
+                                <th>Contact Number</th>
+                                <th>Medical / Illness</th>
+                                <th>Medication</th>
+                                <th>Permission</th>
+                                <th>Present</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" name="studentName[]"></td>
+                                <td><input type="text" name="form[]"></td>
+                                <td><input type="text" name="contact[]"></td>
+                                <td>
+                                    <select name="illness[]" class="student-illness">
+                                        <option value="None">None</option>
+                                        <option value="Asthma">Asthma</option>
+                                        <option value="Allergies – Mild">Allergies – Mild</option>
+                                        <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
+                                        <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
+                                        <option value="Diabetes">Diabetes</option>
+                                        <option value="Heart condition">Heart condition</option>
+                                        <option value="Other (specify)">Other (specify)</option>
+                                    </select>
+                                    <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="medication[]" class="medication-checkbox">
+                                    <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
+                                </td>
+                                <td><input type="checkbox" name="permission[]"></td>
+                                <td><input type="checkbox" name="present[]"></td>
+                                <td><button type="button" class="delete-row">✖</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="student-counter" id="studentCounter" style="position: sticky; bottom: 0; background: #f8f9fa; padding: 10px; border-top: 1px solid #ddd; font-weight: bold; text-align: center; z-index: 5;">Total Students: 1</div>
+            </div>
 
-<button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
+            <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
             
             <div class="form-group">
                 <label for="eventSelect">Load Existing Event</label>
@@ -360,149 +378,283 @@
         </form>
     </div>
 
-    <!-- JavaScript Files -->
-<script src="app.js"></script>
-<!-- <script src="table-enhancements.js"></script>
-<script src="auto-sync.js"></script> -->
-
-<script>
-// ============================================
-// SIMPLE ENHANCEMENTS FOR EXISTING ELEMENTS
-// ============================================
-
-console.log('🚨 SIMPLE ENHANCEMENTS: Starting...');
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM loaded - activating enhancements');
-    
-    // Wait a bit for everything to be ready
-    setTimeout(() => {
-        activateSimpleEnhancements();
-    }, 1000);
-});
-
-function activateSimpleEnhancements() {
-    console.log('🎯 Activating simple enhancements...');
-    
-    // 1. Connect search functionality
-    const searchInput = document.getElementById('studentSearch');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#studentTable tbody tr');
-            
-            let visibleCount = 0;
-            rows.forEach(row => {
-                const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
-                const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
-                const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+    <!-- Firebase and App Scripts -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, collection, doc, getDocs, setDoc, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
+            authDomain: "eventlog-e2243.firebaseapp.com",
+            projectId: "eventlog-e2243",
+            storageBucket: "eventlog-e2243.firebasestorage.app",
+            messagingSenderId: "95089726888",
+            appId: "1:95089726888:web:a7a577456aeebe10f4399d",
+            measurementId: "G-RM4V4410ZN"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        
+        // Make Firebase available globally
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseProvider = provider;
+        
+        console.log('🔥 Firebase initialized');
+        
+        // Auth state observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ User signed in:', user.email);
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('worklog_session', user.uid);
+                document.body.classList.add('authenticated');
                 
-                const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
-                row.style.display = matches ? '' : 'none';
-                if (matches) visibleCount++;
+                // Hide landing page, show main container
+                document.getElementById('landingPage')?.classList.add('hidden');
+                document.getElementById('mainContainer')?.classList.add('active');
+                
+                // Initialize app data
+                if (typeof initializeAppData === 'function') {
+                    initializeAppData();
+                }
+            } else {
+                console.log('🔐 User signed out');
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('worklog_session');
+                document.body.classList.remove('authenticated');
+                
+                // Show landing page
+                document.getElementById('landingPage')?.classList.remove('hidden');
+                document.getElementById('mainContainer')?.classList.remove('active');
+            }
+        });
+        
+        // Make auth functions global
+        window.handleGoogleSignIn = async function() {
+            try {
+                showSpinner('Signing in...');
+                await signInWithPopup(auth, provider);
+                hideSpinner();
+                showToast('Signed in successfully!', 'success');
+            } catch (error) {
+                hideSpinner();
+                console.error('Sign in error:', error);
+                showToast('Sign in failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.handleLogout = async function() {
+            try {
+                await signOut(auth);
+                showToast('Logged out successfully', 'success');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('Logout failed: ' + error.message, 'error');
+            }
+        };
+    </script>
+    
+    <!-- Main App Script -->
+    <script src="app.js"></script>
+    
+    <!-- Enhancement Script -->
+    <script>
+        // ============================================
+        // SIMPLE ENHANCEMENTS
+        // ============================================
+
+        console.log('🚀 Enhancements loading...');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM loaded - activating enhancements');
+            
+            setTimeout(() => {
+                activateEnhancements();
+            }, 1000);
+        });
+
+        function activateEnhancements() {
+            console.log('🎯 Activating enhancements...');
+            
+            // Connect search functionality
+            const searchInput = document.getElementById('studentSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const term = e.target.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll('#studentTable tbody tr');
+                    
+                    let visibleCount = 0;
+                    rows.forEach(row => {
+                        if (row.style.display !== 'none') {
+                            const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
+                            const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
+                            const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+                            
+                            const matches = name.includes(term) || form.includes(term) || contact.includes(term);
+                            if (!matches && term !== '') {
+                                row.style.display = 'none';
+                            } else {
+                                row.style.display = '';
+                                if (name) visibleCount++;
+                            }
+                        }
+                    });
+                    
+                    updateCounter();
+                });
+                console.log('✅ Search connected');
+            }
+            
+            // Make headers sticky
+            const thead = document.querySelector('#studentTable thead');
+            if (thead) {
+                const thElements = thead.querySelectorAll('th');
+                thElements.forEach(th => {
+                    th.style.position = 'sticky';
+                    th.style.top = '0';
+                    th.style.zIndex = '10';
+                    th.style.background = '#f0f2f5';
+                });
+            }
+            
+            // Initial counter update
+            updateCounter();
+            
+            // Auto-update counter on changes
+            const tableBody = document.querySelector('#studentTable tbody');
+            if (tableBody) {
+                const observer = new MutationObserver(() => {
+                    setTimeout(updateCounter, 100);
+                });
+                observer.observe(tableBody, { childList: true, subtree: true });
+            }
+            
+            console.log('✅ All enhancements activated!');
+        }
+
+        function updateCounter() {
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            const searchInput = document.getElementById('studentSearch');
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
+            
+            let validStudents = 0;
+            let visibleStudents = 0;
+            
+            rows.forEach(row => {
+                const nameInput = row.cells[1]?.querySelector('input');
+                const hasName = nameInput && nameInput.value.trim() !== '';
+                
+                if (hasName) {
+                    validStudents++;
+                    if (row.style.display !== 'none') {
+                        visibleStudents++;
+                    }
+                }
             });
             
-            updateSimpleCounter();
-            console.log(`🔍 Filtered: ${visibleCount} students match "${term}"`);
-        });
-        console.log('✅ Search connected');
-    } else {
-        console.log('❌ Search input not found');
-    }
-    
-    // 2. Make headers sticky
-    const thead = document.querySelector('#studentTable thead');
-    if (thead) {
-        const thElements = thead.querySelectorAll('th');
-        thElements.forEach(th => {
-            th.style.position = 'sticky';
-            th.style.top = '0';
-            th.style.zIndex = '10';
-            th.style.background = '#f0f2f5';
-        });
-        console.log(`✅ Made ${thElements.length} headers sticky`);
-    }
-    
-    // 3. Initial counter update
-    updateSimpleCounter();
-    
-    // 4. Auto-update counter
-    const tableBody = document.querySelector('#studentTable tbody');
-    if (tableBody) {
-        const observer = new MutationObserver(() => {
-            setTimeout(updateSimpleCounter, 100);
-        });
-        observer.observe(tableBody, { childList: true, subtree: true });
-        console.log('✅ Auto-counter enabled');
-    }
-    
-    console.log('✅ All simple enhancements activated!');
-}
-
-function updateSimpleCounter() {
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-    const searchInput = document.getElementById('studentSearch');
-    const searchTerm = searchInput ? searchInput.value.trim() : '';
-    
-    let validStudents = 0;
-    let visibleStudents = 0;
-    
-    rows.forEach(row => {
-        if (row.style.display !== 'none') {
-            const nameInput = row.cells[1]?.querySelector('input');
-            const hasName = nameInput && nameInput.value.trim() !== '';
+            const counter = document.getElementById('studentCounter');
+            const badge = document.getElementById('studentCountBadge');
             
-            if (hasName) {
-                validStudents++;
-                visibleStudents++;
+            if (counter) {
+                counter.textContent = searchTerm ? 
+                    `Showing: ${visibleStudents} of ${validStudents} students` : 
+                    `Total Students: ${validStudents}`;
+            }
+            
+            if (badge) {
+                badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
             }
         }
-    });
-    
-    const counter = document.getElementById('studentCounter');
-    const badge = document.getElementById('studentCountBadge');
-    
-    if (counter) {
-        counter.textContent = searchTerm ? 
-            `Showing: ${visibleStudents} of ${validStudents} students` : 
-            `Total Students: ${validStudents}`;
-    }
-    
-    if (badge) {
-        badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
-    }
-}
 
-// Global clear search function
-window.clearSearch = function() {
-    const searchInput = document.getElementById('studentSearch');
-    if (searchInput) {
-        searchInput.value = '';
-        const rows = document.querySelectorAll('#studentTable tbody tr');
-        rows.forEach(row => row.style.display = '');
-        updateSimpleCounter();
-        console.log('🧹 Search cleared');
-    }
-};
+        window.clearSearch = function() {
+            const searchInput = document.getElementById('studentSearch');
+            if (searchInput) {
+                searchInput.value = '';
+                const rows = document.querySelectorAll('#studentTable tbody tr');
+                rows.forEach(row => row.style.display = '');
+                updateCounter();
+            }
+        };
 
-console.log('🚨 SIMPLE ENHANCEMENTS: Script loaded!');
-</script>
+        // Sync status functions
+        window.updateSyncStatus = function(status, message) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusText = document.getElementById('syncStatusText');
+            const lastSyncTime = document.getElementById('lastSyncTime');
+            
+            if (indicator) {
+                indicator.className = `sync-indicator ${status}`;
+            }
+            
+            if (statusText) {
+                statusText.textContent = message || status;
+            }
+            
+            if (lastSyncTime) {
+                lastSyncTime.textContent = new Date().toLocaleTimeString();
+            }
+        };
+
+        window.forceSync = async function() {
+            if (typeof window.saveEvent === 'function') {
+                updateSyncStatus('syncing', 'Syncing...');
+                await window.saveEvent();
+                updateSyncStatus('online', 'Connected');
+            }
+        };
+
+        // UI Helpers
+        window.showSpinner = function(message) {
+            const spinner = document.getElementById('spinner');
+            const spinnerText = document.getElementById('spinnerText');
+            if (spinner) {
+                spinner.classList.add('active');
+                if (spinnerText) spinnerText.textContent = message;
+            }
+        };
+
+        window.hideSpinner = function() {
+            const spinner = document.getElementById('spinner');
+            if (spinner) {
+                spinner.classList.remove('active');
+            }
+        };
+
+        window.showToast = function(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.className = `toast show ${type}`;
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        };
+
+        window.openSettings = function() {
+            document.getElementById('settingsModal').classList.add('active');
+        };
+
+        window.closeSettings = function() {
+            document.getElementById('settingsModal').classList.remove('active');
+        };
+
+        window.saveSettings = function() {
+            const interval = document.getElementById('autoSyncInterval')?.value || 30;
+            localStorage.setItem('autoSyncInterval', interval);
+            showToast('Settings saved', 'success');
+            closeSettings();
+        };
+
+        console.log('🚀 Enhancements loaded!');
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
