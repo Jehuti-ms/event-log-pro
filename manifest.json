@@ -1,7 +1,7 @@
 {
   "name": "Event Log Pro - Event Management System",
   "short_name": "Event Log Pro",
-  "description": "Comprehensive event management system for field trips, tours, and student events with Google Sheets integration",
+  "description": "Comprehensive event management system for field trips, tours, and student events with Firebase",
   "start_url": "/event-log-pro/",
   "scope": "/event-log-pro/",
   "display": "standalone",
@@ -11,38 +11,22 @@
   "categories": ["education", "productivity", "business"],
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon.svg",
+      "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot1.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Event management dashboard"
-    },
-    {
-      "src": "screenshot2.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Student tracking interface"
     }
   ],
   "shortcuts": [
@@ -50,20 +34,13 @@
       "name": "New Event",
       "short_name": "New Event",
       "description": "Create a new event",
-      "url": "/?action=new",
+      "url": "/event-log-pro/?action=new",
       "icons": [
         {
-          "src": "https://raw.githubusercontent.com/Jehuti-ms/event-log-pro/main/icon-192.png",
+          "src": "icon-192.png",
           "sizes": "192x192"
         }
       ]
     }
-  ],
-  "_config": {
-    "webAppUrl": "https://script.google.com/macros/s/AKfycbw5Tm9J0AKMQ1zOWgZ07bkYx_2R5yh8Z0KwBmrw7wruFYFGDZa-h-AKqwjJS8GudpEG/exec",
-    "sheetId": "1uq_BRuF2Ne2nwZjkG9eF-amxiax0e2Bv6ajhrFV7byM",
-    "docId": "1E3jHR_vijAJIQL0eiDv6iTFajAMwDQ9-_DPzjux-wRk",
-    "schoolName": "Grantley Adams Memorial School",
-    "schoolLogo": ""
-  }
+  ]
 }
