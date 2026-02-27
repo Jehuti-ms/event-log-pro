@@ -292,9 +292,60 @@ window.generateNewEventId = async function() {
     currentEventId = eventId;
 };
 
+// Rename internal function
+async function fetchNewEventId() {
+    try {
+        if (!initFirebaseRefs()) {
+            console.warn('Firebase not ready yet');
+            const year = new Date().getFullYear();
+            return `${year}-001`;
+        }
+        
+        const year = new Date().getFullYear();
+        const eventsRef = collection(window.firebaseDb, 'events');
+        const q = query(
+            eventsRef, 
+            where('eventId', '>=', `${year}-`), 
+            where('eventId', '<', `${year}-~`)
+        );
+        
+        const snapshot = await getDocs(q);
+        let maxNum = 0;
+        
+        snapshot.forEach(doc => {
+            const eventId = doc.data().eventId;
+            if (eventId && typeof eventId === 'string') {
+                const parts = eventId.split('-');
+                if (parts.length === 2 && parts[0] === year.toString()) {
+                    const num = parseInt(parts[1]);
+                    if (!isNaN(num) && num > maxNum) {
+                        maxNum = num;
+                    }
+                }
+            }
+        });
+        
+        const nextNum = (maxNum + 1).toString().padStart(3, '0');
+        return `${year}-${nextNum}`;
+    } catch (error) {
+        console.error('Error generating event ID:', error);
+        const year = new Date().getFullYear();
+        return `${year}-001`;
+    }
+}
+
+// Update window.generateNewEventId
+window.generateNewEventId = async function() {
+    const eventId = await fetchNewEventId();
+    document.getElementById('eventId').value = eventId;
+    document.getElementById('eventIdDisplay').textContent = `Event ID: ${eventId}`;
+    currentEventId = eventId;
+};
+
+// Update window.loadAllEvents to use fetchAllEvents
 window.loadAllEvents = async function() {
     console.log('Loading all events...');
-    const events = await loadAllEvents();
+    const events = await fetchAllEvents();
     allEvents = events;
     populateEventDropdown();
     console.log('Loaded events:', events.length);
@@ -766,18 +817,26 @@ function updateUIBasedOnAuth(user) {
             userName.textContent = user.displayName || user.email || 'User';
         }
         
-        // Initialize app data with a slight delay to ensure Firebase is ready
-        setTimeout(() => {
-            console.log('📊 Initializing app data...');
-            generateNewEventId();
-            loadAllEvents();
-            updateCounts();
-            
-            // Update sync status
-            if (window.updateSyncStatus) {
-                window.updateSyncStatus('online', `Connected as ${user.email}`);
+        // Try to initialize Firebase refs and then load data
+        const tryInitialize = () => {
+            if (initFirebaseRefs()) {
+                console.log('📊 Firebase ready, initializing app data...');
+                window.generateNewEventId();
+                window.loadAllEvents();  // Use window. to call the global function
+                updateCounts();
+                
+                // Update sync status
+                if (window.updateSyncStatus) {
+                    window.updateSyncStatus('online', `Connected as ${user.email}`);
+                }
+            } else {
+                console.log('⏳ Firebase not ready yet, retrying in 500ms...');
+                setTimeout(tryInitialize, 500);
             }
-        }, 500);
+        };
+        
+        // Start trying to initialize
+        setTimeout(tryInitialize, 500);
     } else {
         // User is signed out
         isAuthenticated = false;
@@ -788,7 +847,7 @@ function updateUIBasedOnAuth(user) {
         
         if (authButton) {
             authButton.innerHTML = '🔐 Login';
-            authButton.onclick = () => window.handleGoogleSignIn();
+            authButton.onclick = () => window.location.href = 'auth.html';
         }
         
         if (userMenu) {
