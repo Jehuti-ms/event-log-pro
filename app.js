@@ -899,25 +899,8 @@ function setupEventListeners() {
 function initializeStudentTable() {
     console.log('✅ Student table features initialized');
     
-    // Make headers sticky with enhanced styling
-    const thead = document.querySelector('#studentTable thead');
-    if (thead) {
-        const thElements = thead.querySelectorAll('th');
-        thElements.forEach(th => {
-            th.style.position = 'sticky';
-            th.style.top = '0';
-            th.style.zIndex = '100';
-            th.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
-            th.style.color = 'white';
-            th.style.fontWeight = '600';
-            th.style.padding = '16px 20px';
-            th.style.whiteSpace = 'nowrap';
-            th.style.borderBottom = '2px solid rgba(255,255,255,0.2)';
-            th.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-        });
-    }
-    
-    // Ensure the container has proper overflow
+    // Don't apply inline styles - let CSS handle it
+    // Just ensure the container has proper overflow
     const container = document.getElementById('studentTableContainer');
     if (container) {
         container.style.overflowY = 'auto';
