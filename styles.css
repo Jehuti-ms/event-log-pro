@@ -1238,7 +1238,7 @@ body.dark .table-loading::after {
 }
 
 /* ============================================================================
-   STICKY TABLE HEADER - PURE CSS SOLUTION
+   STICKY TABLE HEADER - FIXED
    ============================================================================ */
 
 /* Container for scrollable table */
@@ -1266,7 +1266,7 @@ body.dark .table-loading::after {
     min-width: 1200px; /* Adjust based on your column count */
 }
 
-/* Make thead sticky */
+/* Make thead sticky - this is the key fix */
 #studentTable thead {
     position: sticky;
     top: 0;
@@ -1278,10 +1278,9 @@ body.dark .table-loading::after {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
 }
 
-/* Style the header cells */
+/* Style the header cells - REMOVE position sticky from th */
 #studentTable thead th {
-    position: sticky;
-    top: 0;
+    /* position: sticky; REMOVED - this was conflicting */
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
     font-weight: 600;
