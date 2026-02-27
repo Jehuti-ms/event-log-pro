@@ -1238,20 +1238,20 @@ body.dark .table-loading::after {
 }
 
 /* ============================================================================
-   STICKY TABLE HEADER - ENHANCED
+   STICKY TABLE HEADER - ENHANCED with new color
    ============================================================================ */
 
 #studentTable thead {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
 }
 
 #studentTable thead th {
     position: sticky;
     top: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
     font-weight: 600;
     padding: 16px 20px;
@@ -1274,7 +1274,7 @@ body.dark .table-loading::after {
 
 /* Dark mode support */
 body.dark #studentTable thead th {
-    background: linear-gradient(135deg, #4a5cb8 0%, #5a3a8a 100%);
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
     color: #e5e7eb;
     border-bottom-color: rgba(255,255,255,0.1);
 }
