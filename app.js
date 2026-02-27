@@ -642,33 +642,60 @@ function updateCounts() {
     let presentCount = 0;
     let permissionCount = 0;
     
+    // Count ALL students regardless of search filter
     rows.forEach(row => {
         const nameInput = row.cells[1].querySelector('input');
         if (nameInput.value.trim()) {
             totalStudents++;
-        }
-        
-        if (row.cells[7].querySelector('input').checked) {
-            presentCount++;
-        }
-        
-        if (row.cells[6].querySelector('input').checked) {
-            permissionCount++;
+            
+            // Count present and permission regardless of filter
+            if (row.cells[7].querySelector('input').checked) {
+                presentCount++;
+            }
+            
+            if (row.cells[6].querySelector('input').checked) {
+                permissionCount++;
+            }
         }
     });
     
     const totalPeople = totalStudents + accompanyingCount;
     
+    // Update stats displays
     document.getElementById('totalStudents').textContent = totalStudents;
     document.getElementById('numTeachers').textContent = accompanyingCount;
     document.getElementById('presentCount').textContent = presentCount;
     document.getElementById('permissionCount').textContent = permissionCount;
     document.getElementById('totalPeople').textContent = totalPeople;
     
-    // Update counter badge
+    // Update counter badge (always show total)
     const badge = document.getElementById('studentCountBadge');
     if (badge) {
         badge.textContent = `${totalStudents} student${totalStudents !== 1 ? 's' : ''}`;
+    }
+    
+    // Update the counter at the bottom of the table
+    const counter = document.getElementById('studentCounter');
+    if (counter) {
+        const searchInput = document.getElementById('studentSearch');
+        const searchTerm = searchInput ? searchInput.value.trim() : '';
+        
+        // Count visible students for the "showing" message
+        let visibleStudents = 0;
+        rows.forEach(row => {
+            if (row.style.display !== 'none') {
+                const nameInput = row.cells[1].querySelector('input');
+                if (nameInput.value.trim()) {
+                    visibleStudents++;
+                }
+            }
+        });
+        
+        if (searchTerm) {
+            counter.textContent = `Showing: ${visibleStudents} of ${totalStudents} students`;
+        } else {
+            counter.textContent = `Total Students: ${totalStudents}`;
+        }
     }
 }
 
@@ -887,10 +914,15 @@ function initializeStudentTable() {
     // Connect search functionality
     const searchInput = document.getElementById('studentSearch');
     if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
+        // Remove any existing listeners to avoid duplicates
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase().trim();
             const rows = document.querySelectorAll('#studentTable tbody tr');
             
+            let visibleCount = 0;
             rows.forEach(row => {
                 const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
                 const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
@@ -898,12 +930,44 @@ function initializeStudentTable() {
                 
                 const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
                 row.style.display = matches ? '' : 'none';
+                if (matches) visibleCount++;
             });
             
             updateCounts();
+            console.log(`🔍 Search: ${visibleCount} visible students`);
         });
+        
         console.log('✅ Student search initialized');
+    } else {
+        console.warn('⚠️ Search input not found');
     }
+    
+    // Also make sure the Clear Search button works
+    const clearButton = document.querySelector('button[onclick="clearSearch()"]');
+    if (clearButton) {
+        // The onclick attribute already calls clearSearch, so we're good
+        console.log('✅ Clear search button found');
+    }
+}
+
+    // ============================================
+// SEARCH FUNCTIONS
+// ============================================
+
+window.clearSearch = function() {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+        rows.forEach(row => row.style.display = '');
+        updateCounts();
+        console.log('🧹 Search cleared');
+        
+        // Show a toast notification
+        window.showToast('Search cleared', 'info');
+    }
+};
+    
 }
 
 // Make functions globally available
