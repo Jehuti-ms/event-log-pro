@@ -654,8 +654,32 @@
 
         console.log('🚀 Enhancements loaded!');
     </script>
+    <!-- Floating Action Button -->
+<div class="fab-container" id="fabContainer">
+    <button class="fab-button" id="fabButton" onclick="toggleFabMenu()">+</button>
+    <div class="fab-tooltip">Add New</div>
+    <div class="fab-options" id="fabOptions">
+        <button class="fab-option" onclick="addStudentRow(); scrollToStudentForm(); hideFabMenu();">
+            <span>👤</span>
+            <span>Add Student</span>
+        </button>
+        <button class="fab-option" onclick="newEvent(); hideFabMenu();">
+            <span>📅</span>
+            <span>New Event</span>
+        </button>
+        <button class="fab-option" onclick="document.getElementById('studentSearch').focus(); hideFabMenu();">
+            <span>🔍</span>
+            <span>Search</span>
+        </button>
+        <button class="fab-option" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); hideFabMenu();">
+            <span>⬆️</span>
+            <span>Back to Top</span>
+        </button>
+    </div>
+</div>
 </body>
 </html>
+
 
 
 
