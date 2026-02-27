@@ -300,7 +300,9 @@ window.generateNewEventId = async function() {
     const eventId = await fetchNewEventId();
     document.getElementById('eventId').value = eventId;
     document.getElementById('eventIdDisplay').textContent = `Event ID: ${eventId}`;
-    currentEventId = eventId;
+    currentEventId = eventId;  // This is critical!
+    console.log('🆕 New event ID set:', currentEventId);
+    return eventId;
 };
 
 window.loadAllEvents = async function() {
@@ -809,11 +811,13 @@ function resetForm() {
     tbody.innerHTML = '';
     window.addStudentRow();
     
-    currentEventId = null;
     isEditMode = false;
     
-    window.generateNewEventId();
-    updateCounts();
+    // Generate new ID and wait for it
+    window.generateNewEventId().then(() => {
+        updateCounts();
+        console.log('✅ Form reset complete, currentEventId:', currentEventId);
+    });
 }
 
 function populateEventDropdown() {
