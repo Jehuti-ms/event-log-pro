@@ -1,14 +1,17 @@
 // sw.js - Service Worker for Event Log Pro
-const CACHE_NAME = 'event-log-pro-v2'; // Increment version to force update
+const CACHE_NAME = 'event-log-pro-v3'; // Increment version
+const BASE_PATH = '/event-log-pro/';
+
 const urlsToCache = [
-  '/event-log-pro/',
-  '/event-log-pro/index.html',
-  '/event-log-pro/styles.css',
-  '/event-log-pro/app.js',
-  '/event-log-pro/manifest.json',
-  '/event-log-pro/icon.svg',
-  '/event-log-pro/icon-192.png',
-  '/event-log-pro/icon-512.png'
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'styles.css',
+  BASE_PATH + 'app.js',
+  BASE_PATH + 'auth.js',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'icon.svg',
+  BASE_PATH + 'icon-192.png',
+  BASE_PATH + 'icon-512.png'
 ];
 
 // Install service worker
@@ -45,35 +48,69 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch event - network first, then cache
+// Fetch event - cache first with network fallback
 self.addEventListener('fetch', event => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) {
     return;
   }
-  
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Don't cache non-successful responses
-        if (!response || response.status !== 200) {
+
+  // Handle navigation requests (HTML pages)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Cache the page for offline
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
           return response;
+        })
+        .catch(() => {
+          // If network fails, return cached index.html
+          return caches.match(BASE_PATH + 'index.html');
+        })
+    );
+    return;
+  }
+
+  // For other assets (CSS, JS, images)
+  event.respondWith(
+    caches.match(event.request)
+      .then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
+        
+        return fetch(event.request)
+          .then(response => {
+            // Don't cache non-successful responses
+            if (!response || response.status !== 200) {
+              return response;
+            }
 
-        // Clone the response
-        const responseToCache = response.clone();
+            // Clone the response
+            const responseToCache = response.clone();
 
-        caches.open(CACHE_NAME)
-          .then(cache => {
-            cache.put(event.request, responseToCache);
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(err => console.log('Cache put error:', err));
+
+            return response;
           })
-          .catch(err => console.log('Cache put error:', err));
-
-        return response;
-      })
-      .catch(() => {
-        // If network fails, try cache
-        return caches.match(event.request);
+          .catch(() => {
+            // If both cache and network fail, return a fallback for images
+            if (event.request.url.match(/\.(jpg|jpeg|png|gif|svg)$/)) {
+              return caches.match(BASE_PATH + 'icon-192.png');
+            }
+            return new Response('Network error happened', {
+              status: 408,
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          });
       })
   );
 });
