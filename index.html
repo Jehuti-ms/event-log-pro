@@ -463,197 +463,189 @@
     <!-- Main App Script -->
     <script src="app.js"></script>
     
-    <!-- Enhancement Script -->
-    <script>
-        // ============================================
-        // SIMPLE ENHANCEMENTS
-        // ============================================
+  <!-- Enhancement Script - FIXED -->
+<script>
+    // ============================================
+    // SIMPLE ENHANCEMENTS
+    // ============================================
 
-        console.log('🚀 Enhancements loading...');
+    console.log('🚀 Enhancements loading...');
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded - activating enhancements');
-            
-            setTimeout(() => {
-                activateEnhancements();
-            }, 1000);
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM loaded - activating enhancements');
+        
+        setTimeout(() => {
+            activateEnhancements();
+        }, 1000);
+    });
 
-        function activateEnhancements() {
-            console.log('🎯 Activating enhancements...');
-            
-            // Connect search functionality
-            const searchInput = document.getElementById('studentSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
-                    const term = e.target.value.toLowerCase().trim();
-                    const rows = document.querySelectorAll('#studentTable tbody tr');
-                    
-                    let visibleCount = 0;
-                    rows.forEach(row => {
-                        if (row.style.display !== 'none') {
-                            const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
-                            const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
-                            const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
-                            
-                            const matches = name.includes(term) || form.includes(term) || contact.includes(term);
-                            if (!matches && term !== '') {
-                                row.style.display = 'none';
-                            } else {
-                                row.style.display = '';
-                                if (name) visibleCount++;
-                            }
-                        }
-                    });
-                    
-                    updateCounter();
-                });
-                console.log('✅ Search connected');
-            }
-            
-            // Make headers sticky
-            const thead = document.querySelector('#studentTable thead');
-            if (thead) {
-                const thElements = thead.querySelectorAll('th');
-                thElements.forEach(th => {
-                    th.style.position = 'sticky';
-                    th.style.top = '0';
-                    th.style.zIndex = '10';
-                    th.style.background = '#f0f2f5';
-                });
-            }
-            
-            // Initial counter update
-            updateCounter();
-            
-            // Auto-update counter on changes
-            const tableBody = document.querySelector('#studentTable tbody');
-            if (tableBody) {
-                const observer = new MutationObserver(() => {
-                    setTimeout(updateCounter, 100);
-                });
-                observer.observe(tableBody, { childList: true, subtree: true });
-            }
-            
-            console.log('✅ All enhancements activated!');
-        }
-
-        function updateCounter() {
-            const rows = document.querySelectorAll('#studentTable tbody tr');
-            const searchInput = document.getElementById('studentSearch');
-            const searchTerm = searchInput ? searchInput.value.trim() : '';
-            
-            let validStudents = 0;
-            let visibleStudents = 0;
-            
-            rows.forEach(row => {
-                const nameInput = row.cells[1]?.querySelector('input');
-                const hasName = nameInput && nameInput.value.trim() !== '';
-                
-                if (hasName) {
-                    validStudents++;
-                    if (row.style.display !== 'none') {
-                        visibleStudents++;
-                    }
-                }
-            });
-            
-            const counter = document.getElementById('studentCounter');
-            const badge = document.getElementById('studentCountBadge');
-            
-            if (counter) {
-                counter.textContent = searchTerm ? 
-                    `Showing: ${visibleStudents} of ${validStudents} students` : 
-                    `Total Students: ${validStudents}`;
-            }
-            
-            if (badge) {
-                badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
-            }
-        }
-
-        window.clearSearch = function() {
-            const searchInput = document.getElementById('studentSearch');
-            if (searchInput) {
-                searchInput.value = '';
+    function activateEnhancements() {
+        console.log('🎯 Activating enhancements...');
+        
+        // Connect search functionality
+        const searchInput = document.getElementById('studentSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const term = e.target.value.toLowerCase().trim();
                 const rows = document.querySelectorAll('#studentTable tbody tr');
-                rows.forEach(row => row.style.display = '');
+                
+                let visibleCount = 0;
+                rows.forEach(row => {
+                    if (row.style.display !== 'none') {
+                        const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
+                        const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
+                        const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+                        
+                        const matches = name.includes(term) || form.includes(term) || contact.includes(term);
+                        if (!matches && term !== '') {
+                            row.style.display = 'none';
+                        } else {
+                            row.style.display = '';
+                            if (name) visibleCount++;
+                        }
+                    }
+                });
+                
                 updateCounter();
-            }
-        };
+            });
+            console.log('✅ Search connected');
+        }
+        
+        // REMOVED: The inline styling for headers that was overriding your CSS
+        // Let CSS handle the sticky headers instead
+        
+        // Initial counter update
+        updateCounter();
+        
+        // Auto-update counter on changes
+        const tableBody = document.querySelector('#studentTable tbody');
+        if (tableBody) {
+            const observer = new MutationObserver(() => {
+                setTimeout(updateCounter, 100);
+            });
+            observer.observe(tableBody, { childList: true, subtree: true });
+        }
+        
+        console.log('✅ All enhancements activated!');
+    }
 
-        // Sync status functions
-        window.updateSyncStatus = function(status, message) {
-            const indicator = document.getElementById('syncIndicator');
-            const statusText = document.getElementById('syncStatusText');
-            const lastSyncTime = document.getElementById('lastSyncTime');
+    function updateCounter() {
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+        const searchInput = document.getElementById('studentSearch');
+        const searchTerm = searchInput ? searchInput.value.trim() : '';
+        
+        let validStudents = 0;
+        let visibleStudents = 0;
+        
+        rows.forEach(row => {
+            const nameInput = row.cells[1]?.querySelector('input');
+            const hasName = nameInput && nameInput.value.trim() !== '';
             
-            if (indicator) {
-                indicator.className = `sync-indicator ${status}`;
+            if (hasName) {
+                validStudents++;
+                if (row.style.display !== 'none') {
+                    visibleStudents++;
+                }
             }
-            
-            if (statusText) {
-                statusText.textContent = message || status;
-            }
-            
-            if (lastSyncTime) {
-                lastSyncTime.textContent = new Date().toLocaleTimeString();
-            }
-        };
+        });
+        
+        const counter = document.getElementById('studentCounter');
+        const badge = document.getElementById('studentCountBadge');
+        
+        if (counter) {
+            counter.textContent = searchTerm ? 
+                `Showing: ${visibleStudents} of ${validStudents} students` : 
+                `Total Students: ${validStudents}`;
+        }
+        
+        if (badge) {
+            badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
+        }
+    }
 
-        window.forceSync = async function() {
-            if (typeof window.saveEvent === 'function') {
-                updateSyncStatus('syncing', 'Syncing...');
-                await window.saveEvent();
-                updateSyncStatus('online', 'Connected');
-            }
-        };
+    window.clearSearch = function() {
+        const searchInput = document.getElementById('studentSearch');
+        if (searchInput) {
+            searchInput.value = '';
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            rows.forEach(row => row.style.display = '');
+            updateCounter();
+        }
+    };
 
-        // UI Helpers
-        window.showSpinner = function(message) {
-            const spinner = document.getElementById('spinner');
-            const spinnerText = document.getElementById('spinnerText');
-            if (spinner) {
-                spinner.classList.add('active');
-                if (spinnerText) spinnerText.textContent = message;
-            }
-        };
+    // Sync status functions
+    window.updateSyncStatus = function(status, message) {
+        const indicator = document.getElementById('syncIndicator');
+        const statusText = document.getElementById('syncStatusText');
+        const lastSyncTime = document.getElementById('lastSyncTime');
+        
+        if (indicator) {
+            indicator.className = `sync-indicator ${status}`;
+        }
+        
+        if (statusText) {
+            statusText.textContent = message || status;
+        }
+        
+        if (lastSyncTime) {
+            lastSyncTime.textContent = new Date().toLocaleTimeString();
+        }
+    };
 
-        window.hideSpinner = function() {
-            const spinner = document.getElementById('spinner');
-            if (spinner) {
-                spinner.classList.remove('active');
-            }
-        };
+    window.forceSync = async function() {
+        if (typeof window.saveEvent === 'function') {
+            updateSyncStatus('syncing', 'Syncing...');
+            await window.saveEvent();
+            updateSyncStatus('online', 'Connected');
+        }
+    };
 
-        window.showToast = function(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            if (toast) {
-                toast.textContent = message;
-                toast.className = `toast show ${type}`;
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            }
-        };
+    // UI Helpers
+    window.showSpinner = function(message) {
+        const spinner = document.getElementById('spinner');
+        const spinnerText = document.getElementById('spinnerText');
+        if (spinner) {
+            spinner.classList.add('active');
+            if (spinnerText) spinnerText.textContent = message;
+        }
+    };
 
-        window.openSettings = function() {
-            document.getElementById('settingsModal').classList.add('active');
-        };
+    window.hideSpinner = function() {
+        const spinner = document.getElementById('spinner');
+        if (spinner) {
+            spinner.classList.remove('active');
+        }
+    };
 
-        window.closeSettings = function() {
-            document.getElementById('settingsModal').classList.remove('active');
-        };
+    window.showToast = function(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        if (toast) {
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    };
 
-        window.saveSettings = function() {
-            const interval = document.getElementById('autoSyncInterval')?.value || 30;
-            localStorage.setItem('autoSyncInterval', interval);
-            showToast('Settings saved', 'success');
-            closeSettings();
-        };
+    window.openSettings = function() {
+        document.getElementById('settingsModal').classList.add('active');
+    };
 
-        console.log('🚀 Enhancements loaded!');
-    </script>
+    window.closeSettings = function() {
+        document.getElementById('settingsModal').classList.remove('active');
+    };
+
+    window.saveSettings = function() {
+        const interval = document.getElementById('autoSyncInterval')?.value || 30;
+        localStorage.setItem('autoSyncInterval', interval);
+        showToast('Settings saved', 'success');
+        closeSettings();
+    };
+
+    console.log('🚀 Enhancements loaded!');
+</script>
+    
     <!-- Floating Action Button -->
 <div class="fab-container" id="fabContainer">
     <button class="fab-button" id="fabButton" onclick="toggleFabMenu()">+</button>
@@ -681,6 +673,7 @@
  <div class="auto-save-indicator" id="autoSaveIndicator" style="display: none;"></div>
 </body>
 </html>
+
 
 
 
