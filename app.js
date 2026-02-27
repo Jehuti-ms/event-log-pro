@@ -507,6 +507,90 @@ window.generateReport = function() {
     reportWindow.document.close();
 };
 
+// ============================================================================
+// FLOATING ACTION BUTTON (FAB) FUNCTIONS
+// ============================================================================
+
+window.toggleFabMenu = function() {
+    const container = document.getElementById('fabContainer');
+    if (!container) return;
+    
+    container.classList.toggle('active');
+    
+    // Change button icon
+    const fabButton = document.getElementById('fabButton');
+    if (fabButton) {
+        if (container.classList.contains('active')) {
+            fabButton.textContent = '✕';
+            fabButton.style.transform = 'rotate(90deg)';
+        } else {
+            fabButton.textContent = '+';
+            fabButton.style.transform = 'rotate(0deg)';
+        }
+    }
+};
+
+window.hideFabMenu = function() {
+    const container = document.getElementById('fabContainer');
+    if (!container) return;
+    
+    container.classList.remove('active');
+    
+    const fabButton = document.getElementById('fabButton');
+    if (fabButton) {
+        fabButton.textContent = '+';
+        fabButton.style.transform = 'rotate(0deg)';
+    }
+};
+
+window.scrollToStudentForm = function() {
+    // Scroll to the student form section
+    const studentForm = document.querySelector('#students .section-card:first-of-type');
+    if (studentForm) {
+        studentForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Highlight the form briefly
+        studentForm.style.transition = 'box-shadow 0.3s ease';
+        studentForm.style.boxShadow = '0 0 0 4px #2ecc71, 0 4px 12px rgba(46,204,113,0.4)';
+        setTimeout(() => {
+            studentForm.style.boxShadow = '';
+        }, 1500);
+        
+        // Focus on the first input
+        setTimeout(() => {
+            const firstNameInput = document.getElementById('studentName');
+            if (firstNameInput) firstNameInput.focus();
+        }, 500);
+    }
+};
+
+// Close FAB menu when clicking outside
+document.addEventListener('click', function(event) {
+    const fabContainer = document.getElementById('fabContainer');
+    const fabButton = document.getElementById('fabButton');
+    
+    if (fabContainer && fabButton && 
+        !fabContainer.contains(event.target) && 
+        fabContainer.classList.contains('active')) {
+        hideFabMenu();
+    }
+});
+
+// Hide FAB menu on scroll
+let fabScrollTimeout;
+window.addEventListener('scroll', function() {
+    const fabContainer = document.getElementById('fabContainer');
+    if (fabContainer && fabContainer.classList.contains('active')) {
+        // Clear previous timeout
+        if (fabScrollTimeout) clearTimeout(fabScrollTimeout);
+        
+        // Hide menu after scrolling stops
+        fabScrollTimeout = setTimeout(() => {
+            hideFabMenu();
+        }, 500);
+    }
+});
+
 // ============================================
 // STUDENT TABLE FUNCTIONS
 // ============================================
