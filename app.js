@@ -900,13 +900,10 @@ function initializeStudentTable() {
     console.log('✅ Student table features initialized');
     
     // Don't apply inline styles - let CSS handle it
-    // Just ensure the container has proper overflow
+    // Just ensure the container exists
     const container = document.getElementById('studentTableContainer');
-    if (container) {
-        container.style.overflowY = 'auto';
-        container.style.overflowX = 'auto';
-        container.style.maxHeight = '500px';
-        container.style.position = 'relative';
+    if (!container) {
+        console.warn('⚠️ Student table container not found');
     }
     
     // Connect search functionality
