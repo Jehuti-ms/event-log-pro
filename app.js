@@ -1,9 +1,9 @@
-// app.js - COMPLETE FIREBASE-ONLY VERSION WITH PROPER IMPORTS
+// app.js - COMPLETE FIREBASE-ONLY VERSION WITH ALL FUNCTIONS
 console.log('📦 Firebase App.js loaded');
 
 // Import Firebase functions (these will be available from the module in index.html)
 // Note: These are actually imported in the HTML, so we reference them via window.firebase
-let collection, getDocs, query, where, orderBy, addDoc, setDoc, deleteDoc, doc, serverTimestamp;
+let collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp;
 
 // Global variables
 let currentEventId = null;
@@ -19,22 +19,23 @@ function initFirebaseRefs() {
         query = window.firebaseFirestore.query;
         where = window.firebaseFirestore.where;
         orderBy = window.firebaseFirestore.orderBy;
-        addDoc = window.firebaseFirestore.addDoc;
         setDoc = window.firebaseFirestore.setDoc;
         deleteDoc = window.firebaseFirestore.deleteDoc;
         doc = window.firebaseFirestore.doc;
         serverTimestamp = window.firebaseFirestore.serverTimestamp;
         console.log('✅ Firebase Firestore functions initialized');
         return true;
+    } else {
+        console.warn('⏳ Waiting for Firebase Firestore to be ready...');
+        return false;
     }
-    return false;
 }
 
 // ============================================
-// FIREBASE SERVICE FUNCTIONS
+// FIREBASE SERVICE FUNCTIONS (Internal)
 // ============================================
 
-async function generateEventId() {
+async function fetchNewEventId() {
     try {
         if (!initFirebaseRefs()) {
             console.warn('Firebase not ready yet');
@@ -75,7 +76,7 @@ async function generateEventId() {
     }
 }
 
-async function loadAllEvents() {
+async function fetchAllEvents() {
     try {
         if (!initFirebaseRefs()) {
             console.warn('Firebase not ready yet');
@@ -106,7 +107,7 @@ async function loadAllEvents() {
     }
 }
 
-async function loadEventData(eventId) {
+async function fetchEventData(eventId) {
     try {
         if (!initFirebaseRefs()) {
             console.warn('Firebase not ready yet');
@@ -204,7 +205,8 @@ async function saveEventToFirebase(eventData) {
             accompanying: eventData.accompanying || '',
             teachersCount: accompanyingTeachers,
             studentsCount,
-            lastModified: serverTimestamp()
+            lastModified: serverTimestamp(),
+            createdBy: window.firebaseAuth?.currentUser?.email || 'unknown'
         }, { merge: true });
         
         // Delete existing students for this event
@@ -282,59 +284,9 @@ async function deleteEventFromFirebase(eventId) {
 }
 
 // ============================================
-// UI FUNCTIONS
+// UI FUNCTIONS (Global)
 // ============================================
 
-window.generateNewEventId = async function() {
-    const eventId = await generateEventId();
-    document.getElementById('eventId').value = eventId;
-    document.getElementById('eventIdDisplay').textContent = `Event ID: ${eventId}`;
-    currentEventId = eventId;
-};
-
-// Rename internal function
-async function fetchNewEventId() {
-    try {
-        if (!initFirebaseRefs()) {
-            console.warn('Firebase not ready yet');
-            const year = new Date().getFullYear();
-            return `${year}-001`;
-        }
-        
-        const year = new Date().getFullYear();
-        const eventsRef = collection(window.firebaseDb, 'events');
-        const q = query(
-            eventsRef, 
-            where('eventId', '>=', `${year}-`), 
-            where('eventId', '<', `${year}-~`)
-        );
-        
-        const snapshot = await getDocs(q);
-        let maxNum = 0;
-        
-        snapshot.forEach(doc => {
-            const eventId = doc.data().eventId;
-            if (eventId && typeof eventId === 'string') {
-                const parts = eventId.split('-');
-                if (parts.length === 2 && parts[0] === year.toString()) {
-                    const num = parseInt(parts[1]);
-                    if (!isNaN(num) && num > maxNum) {
-                        maxNum = num;
-                    }
-                }
-            }
-        });
-        
-        const nextNum = (maxNum + 1).toString().padStart(3, '0');
-        return `${year}-${nextNum}`;
-    } catch (error) {
-        console.error('Error generating event ID:', error);
-        const year = new Date().getFullYear();
-        return `${year}-001`;
-    }
-}
-
-// Update window.generateNewEventId
 window.generateNewEventId = async function() {
     const eventId = await fetchNewEventId();
     document.getElementById('eventId').value = eventId;
@@ -342,7 +294,6 @@ window.generateNewEventId = async function() {
     currentEventId = eventId;
 };
 
-// Update window.loadAllEvents to use fetchAllEvents
 window.loadAllEvents = async function() {
     console.log('Loading all events...');
     const events = await fetchAllEvents();
@@ -354,21 +305,21 @@ window.loadAllEvents = async function() {
 window.loadSelectedEvent = function() {
     const select = document.getElementById('eventSelect');
     const eventId = select.value;
-    if (eventId) loadEvent(eventId);
+    if (eventId) window.loadEvent(eventId);
 };
 
 window.promptLoadEvent = function() {
     const eventId = prompt('Enter Event ID to load:');
-    if (eventId) loadEvent(eventId.trim());
+    if (eventId) window.loadEvent(eventId.trim());
 };
 
 window.loadEvent = async function(eventId) {
-    showSpinner('Loading event...');
-    const event = await loadEventData(eventId);
-    hideSpinner();
+    window.showSpinner('Loading event...');
+    const event = await fetchEventData(eventId);
+    window.hideSpinner();
     
     if (!event) {
-        showToast('Event not found', 'error');
+        window.showToast('Event not found', 'error');
         return;
     }
     
@@ -390,33 +341,33 @@ window.loadEvent = async function(eventId) {
     
     if (event.students && event.students.length > 0) {
         event.students.forEach((student, index) => {
-            addStudentRow(student, index + 1);
+            window.addStudentRow(student, index + 1);
         });
     } else {
-        addStudentRow();
+        window.addStudentRow();
     }
     
     currentEventId = event.eventId;
     isEditMode = true;
     updateCounts();
-    showToast('Event loaded successfully', 'success');
+    window.showToast('Event loaded successfully', 'success');
 };
 
 window.saveEvent = async function() {
     const eventData = collectFormData();
     
     if (!eventData.eventName || !eventData.eventDate) {
-        showToast('Event Name and Date are required', 'error');
+        window.showToast('Event Name and Date are required', 'error');
         return;
     }
     
-    showSpinner('Saving event...');
+    window.showSpinner('Saving event...');
     const result = await saveEventToFirebase(eventData);
-    hideSpinner();
+    window.hideSpinner();
     
     if (result.success) {
-        showToast('Event saved successfully!', 'success');
-        await loadAllEvents();
+        window.showToast('Event saved successfully!', 'success');
+        await window.loadAllEvents();
         isEditMode = false;
         
         // Update sync status
@@ -424,13 +375,13 @@ window.saveEvent = async function() {
             window.updateSyncStatus('online', 'Connected');
         }
     } else {
-        showToast('Error saving event: ' + (result.error || 'Unknown error'), 'error');
+        window.showToast('Error saving event: ' + (result.error || 'Unknown error'), 'error');
     }
 };
 
 window.deleteEvent = async function() {
     if (!currentEventId) {
-        showToast('No event selected', 'error');
+        window.showToast('No event selected', 'error');
         return;
     }
     
@@ -438,38 +389,38 @@ window.deleteEvent = async function() {
         return;
     }
     
-    showSpinner('Deleting event...');
+    window.showSpinner('Deleting event...');
     const result = await deleteEventFromFirebase(currentEventId);
-    hideSpinner();
+    window.hideSpinner();
     
     if (result.success) {
-        showToast('Event deleted successfully!', 'success');
-        await loadAllEvents();
+        window.showToast('Event deleted successfully!', 'success');
+        await window.loadAllEvents();
         resetForm();
     } else {
-        showToast('Error deleting event: ' + (result.error || 'Unknown error'), 'error');
+        window.showToast('Error deleting event: ' + (result.error || 'Unknown error'), 'error');
     }
 };
 
 window.newEvent = function() {
     if (confirm('Create a new event? Any unsaved changes will be lost.')) {
         resetForm();
-        showToast('Ready to create a new event!', 'success');
+        window.showToast('Ready to create a new event!', 'success');
     }
 };
 
 window.editEvent = function() {
     if (!currentEventId) {
-        promptLoadEvent();
+        window.promptLoadEvent();
         return;
     }
     isEditMode = true;
-    showToast('Editing mode enabled. Make changes and click Save Event.', 'success');
+    window.showToast('Editing mode enabled. Make changes and click Save Event.', 'success');
 };
 
 window.generateReport = function() {
     if (!currentEventId) {
-        showToast('Please save the event before generating a report', 'error');
+        window.showToast('Please save the event before generating a report', 'error');
         return;
     }
     
@@ -598,7 +549,7 @@ window.addStudentRow = function(studentData = null, index = null) {
 function deleteStudentRow(button) {
     const tbody = document.querySelector('#studentTable tbody');
     if (tbody.rows.length <= 1) {
-        showToast('At least one student row must remain', 'error');
+        window.showToast('At least one student row must remain', 'error');
         return;
     }
     
@@ -728,12 +679,12 @@ function resetForm() {
     
     const tbody = document.querySelector('#studentTable tbody');
     tbody.innerHTML = '';
-    addStudentRow();
+    window.addStudentRow();
     
     currentEventId = null;
     isEditMode = false;
     
-    generateNewEventId();
+    window.generateNewEventId();
     updateCounts();
 }
 
@@ -756,23 +707,23 @@ function populateEventDropdown() {
 // UI HELPER FUNCTIONS
 // ============================================
 
-function showSpinner(message = 'Loading...') {
+window.showSpinner = function(message = 'Loading...') {
     const spinner = document.getElementById('spinner');
     const spinnerText = document.getElementById('spinnerText');
     if (spinner) {
         spinner.classList.add('active');
         if (spinnerText) spinnerText.textContent = message;
     }
-}
+};
 
-function hideSpinner() {
+window.hideSpinner = function() {
     const spinner = document.getElementById('spinner');
     if (spinner) {
         spinner.classList.remove('active');
     }
-}
+};
 
-function showToast(message, type = 'info') {
+window.showToast = function(message, type = 'info') {
     const toast = document.getElementById('toast');
     if (toast) {
         toast.textContent = message;
@@ -781,10 +732,10 @@ function showToast(message, type = 'info') {
             toast.classList.remove('show');
         }, 3000);
     }
-}
+};
 
 // ============================================
-// AUTH STATE MANAGEMENT - FIXED
+// AUTH STATE MANAGEMENT
 // ============================================
 
 function updateUIBasedOnAuth(user) {
@@ -822,7 +773,7 @@ function updateUIBasedOnAuth(user) {
             if (initFirebaseRefs()) {
                 console.log('📊 Firebase ready, initializing app data...');
                 window.generateNewEventId();
-                window.loadAllEvents();  // Use window. to call the global function
+                window.loadAllEvents();
                 updateCounts();
                 
                 // Update sync status
@@ -958,9 +909,12 @@ function initializeStudentTable() {
 // Make functions globally available
 window.collectFormData = collectFormData;
 window.updateCounts = updateCounts;
-window.showToast = showToast;
-window.showSpinner = showSpinner;
-window.hideSpinner = hideSpinner;
 window.updateUIBasedOnAuth = updateUIBasedOnAuth;
+window.deleteStudentRow = deleteStudentRow;
+window.renumberRows = renumberRows;
+window.handleIllnessChange = handleIllnessChange;
+window.handleMedicationChange = handleMedicationChange;
+window.resetForm = resetForm;
+window.populateEventDropdown = populateEventDropdown;
 
 console.log('✅ Firebase App.js loaded successfully');
