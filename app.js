@@ -1311,7 +1311,7 @@ window.clearSearch = function() {
 };
 
 // ============================================================================
-// GENERATE REPORT WITH PRINT AND EMAIL
+// GENERATE REPORT WITH PRINT AND EMAIL - FIXED
 // ============================================================================
 
 window.generateReport = function() {
@@ -1320,463 +1320,507 @@ window.generateReport = function() {
         return;
     }
     
-    const eventData = collectFormData();
-    
-    // Calculate summary statistics
-    const totalStudents = eventData.students.filter(s => s.name && s.name.trim()).length;
-    const presentCount = eventData.students.filter(s => s.present).length;
-    const permissionCount = eventData.students.filter(s => s.permission).length;
-    const medicalCount = eventData.students.filter(s => s.illness !== 'None' && s.illness).length;
-    const medicationCount = eventData.students.filter(s => s.takingMedication).length;
-    
-    // Create report HTML
-    const reportHTML = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Event Report - ${eventData.eventName}</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: #f4f6f9;
-                    padding: 30px 20px;
-                    line-height: 1.6;
-                    color: #333;
-                }
-                
-                .report-container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    background: white;
-                    border-radius: 16px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                    overflow: hidden;
-                }
-                
-                .report-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 30px 40px;
-                }
-                
-                .report-header h1 {
-                    font-size: 2.2em;
-                    margin-bottom: 10px;
-                }
-                
-                .report-header p {
-                    opacity: 0.9;
-                    font-size: 1.1em;
-                }
-                
-                .report-section {
-                    padding: 30px 40px;
-                    border-bottom: 1px solid #e9ecef;
-                }
-                
-                .report-section:last-child {
-                    border-bottom: none;
-                }
-                
-                .section-title {
-                    color: #2c3e50;
-                    font-size: 1.5em;
-                    margin-bottom: 20px;
-                    padding-bottom: 10px;
-                    border-bottom: 2px solid #667eea;
-                }
-                
-                .event-details {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: 20px;
-                    background: #f8f9fa;
-                    padding: 25px;
-                    border-radius: 12px;
-                }
-                
-                .detail-item {
-                    display: flex;
-                    flex-direction: column;
-                }
-                
-                .detail-label {
-                    font-size: 0.9em;
-                    color: #6c757d;
-                    margin-bottom: 5px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .detail-value {
-                    font-size: 1.2em;
-                    font-weight: 600;
-                    color: #2c3e50;
-                }
-                
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                    gap: 20px;
-                }
-                
-                .stat-card {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    text-align: center;
-                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-                }
-                
-                .stat-value {
-                    font-size: 2.5em;
-                    font-weight: 700;
-                    margin-bottom: 5px;
-                }
-                
-                .stat-label {
-                    font-size: 0.9em;
-                    opacity: 0.9;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .student-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                }
-                
-                .student-table th {
-                    background: #667eea;
-                    color: white;
-                    font-weight: 600;
-                    padding: 12px 15px;
-                    text-align: left;
-                    font-size: 0.9em;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .student-table td {
-                    padding: 12px 15px;
-                    border-bottom: 1px solid #e9ecef;
-                    color: #4a5568;
-                }
-                
-                .student-table tbody tr:hover {
-                    background: #f8f9fa;
-                }
-                
-                .badge {
-                    display: inline-block;
-                    padding: 4px 10px;
-                    border-radius: 20px;
-                    font-size: 0.85em;
-                    font-weight: 600;
-                }
-                
-                .badge-success {
-                    background: #d4edda;
-                    color: #155724;
-                }
-                
-                .badge-danger {
-                    background: #f8d7da;
-                    color: #721c24;
-                }
-                
-                .badge-warning {
-                    background: #fff3cd;
-                    color: #856404;
-                }
-                
-                .badge-info {
-                    background: #d1ecf1;
-                    color: #0c5460;
-                }
-                
-                .print-button, .email-button {
-                    position: fixed;
-                    right: 30px;
-                    padding: 15px 25px;
-                    border: none;
-                    border-radius: 50px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    transition: all 0.3s ease;
-                    z-index: 1000;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                
-                .print-button {
-                    bottom: 100px;
-                    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                    color: white;
-                }
-                
-                .email-button {
-                    bottom: 30px;
-                    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-                    color: white;
-                }
-                
-                .print-button:hover, .email-button:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-                }
-                
-                @media print {
-                    .print-button, .email-button {
-                        display: none;
+    try {
+        const eventData = collectFormData();
+        
+        // Calculate summary statistics
+        const totalStudents = eventData.students.filter(s => s.name && s.name.trim()).length;
+        const presentCount = eventData.students.filter(s => s.present).length;
+        const permissionCount = eventData.students.filter(s => s.permission).length;
+        const medicalCount = eventData.students.filter(s => s.illness !== 'None' && s.illness).length;
+        const medicationCount = eventData.students.filter(s => s.takingMedication).length;
+        
+        // Escape strings for safe inclusion in HTML
+        const escapeHtml = (str) => {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
+        
+        const safeEventName = escapeHtml(eventData.eventName);
+        const safeEventId = escapeHtml(eventData.eventId);
+        const safeEventDate = escapeHtml(eventData.eventDate);
+        const safeVenue = escapeHtml(eventData.venue || 'N/A');
+        const safeDeparture = escapeHtml(eventData.departure || 'N/A');
+        const safeReturn = escapeHtml(eventData.returnTime || 'N/A');
+        const safeVehicle = escapeHtml(eventData.vehicle || 'N/A');
+        const safeCompany = escapeHtml(eventData.company || 'N/A');
+        const safeAccompanying = escapeHtml(eventData.accompanying || 'None');
+        
+        // Create report HTML
+        const reportHTML = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Event Report - ${safeEventName}</title>
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
                     }
                     
                     body {
-                        background: white;
-                        padding: 0;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        background: #f4f6f9;
+                        padding: 30px 20px;
+                        line-height: 1.6;
+                        color: #333;
                     }
                     
                     .report-container {
-                        box-shadow: none;
-                        border-radius: 0;
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                        overflow: hidden;
                     }
                     
                     .report-header {
-                        background: #667eea !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 30px 40px;
                     }
                     
-                    .stat-card {
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
+                    .report-header h1 {
+                        font-size: 2.2em;
+                        margin-bottom: 10px;
                     }
                     
-                    .student-table th {
-                        background: #667eea !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                }
-                
-                @media (max-width: 768px) {
-                    .report-header {
-                        padding: 20px;
+                    .report-header p {
+                        opacity: 0.9;
+                        font-size: 1.1em;
                     }
                     
                     .report-section {
-                        padding: 20px;
+                        padding: 30px 40px;
+                        border-bottom: 1px solid #e9ecef;
+                    }
+                    
+                    .report-section:last-child {
+                        border-bottom: none;
+                    }
+                    
+                    .section-title {
+                        color: #2c3e50;
+                        font-size: 1.5em;
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                        border-bottom: 2px solid #667eea;
+                    }
+                    
+                    .event-details {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 20px;
+                        background: #f8f9fa;
+                        padding: 25px;
+                        border-radius: 12px;
+                    }
+                    
+                    .detail-item {
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    
+                    .detail-label {
+                        font-size: 0.9em;
+                        color: #6c757d;
+                        margin-bottom: 5px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .detail-value {
+                        font-size: 1.2em;
+                        font-weight: 600;
+                        color: #2c3e50;
                     }
                     
                     .stats-grid {
-                        grid-template-columns: 1fr 1fr;
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                        gap: 20px;
                     }
                     
-                    .print-button, .email-button {
-                        right: 15px;
-                        padding: 12px 20px;
-                        font-size: 14px;
+                    .stat-card {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 25px;
+                        border-radius: 12px;
+                        text-align: center;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
                     }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="report-container">
-                <div class="report-header">
-                    <h1>🎓 Event Report: ${eventData.eventName}</h1>
-                    <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-                </div>
-                
-                <div class="report-section">
-                    <h2 class="section-title">📋 Event Details</h2>
-                    <div class="event-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Event ID</span>
-                            <span class="detail-value">${eventData.eventId}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Event Name</span>
-                            <span class="detail-value">${eventData.eventName}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Date</span>
-                            <span class="detail-value">${eventData.eventDate}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Venue</span>
-                            <span class="detail-value">${eventData.venue || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Departure Time</span>
-                            <span class="detail-value">${eventData.departure || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Return Time</span>
-                            <span class="detail-value">${eventData.returnTime || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Vehicle</span>
-                            <span class="detail-value">${eventData.vehicle || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Company</span>
-                            <span class="detail-value">${eventData.company || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Accompanying Teachers</span>
-                            <span class="detail-value">${eventData.accompanying || 'None'}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="report-section">
-                    <h2 class="section-title">📊 Summary Statistics</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value">${totalStudents}</div>
-                            <div class="stat-label">Total Students</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${presentCount}</div>
-                            <div class="stat-label">Present</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${permissionCount}</div>
-                            <div class="stat-label">Permission Slips</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${medicalCount}</div>
-                            <div class="stat-label">Medical Cases</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${medicationCount}</div>
-                            <div class="stat-label">On Medication</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="report-section">
-                    <h2 class="section-title">👥 Student List</h2>
-                    <table class="student-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Name</th>
-                                <th>Form</th>
-                                <th>Contact</th>
-                                <th>Medical</th>
-                                <th>Medication</th>
-                                <th>Permission</th>
-                                <th>Present</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${eventData.students.map((student, index) => {
-                                if (!student.name || !student.name.trim()) return '';
-                                return `
-                                    <tr>
-                                        <td>${index + 1}</td>
-                                        <td><strong>${student.name}</strong></td>
-                                        <td>${student.form || 'N/A'}</td>
-                                        <td>${student.contact || 'N/A'}</td>
-                                        <td>
-                                            ${student.illness !== 'None' ? 
-                                                `<span class="badge badge-warning">${student.illness}${student.otherIllness ? ': ' + student.otherIllness : ''}</span>` : 
-                                                '<span class="badge badge-success">None</span>'}
-                                        </td>
-                                        <td>
-                                            ${student.takingMedication ? 
-                                                `<span class="badge badge-info">${student.medicationDetails || 'Yes'}</span>` : 
-                                                '<span class="badge badge-success">No</span>'}
-                                        </td>
-                                        <td>
-                                            ${student.permission ? 
-                                                '<span class="badge badge-success">✓ Yes</span>' : 
-                                                '<span class="badge badge-danger">✗ No</span>'}
-                                        </td>
-                                        <td>
-                                            ${student.present ? 
-                                                '<span class="badge badge-success">✓ Present</span>' : 
-                                                '<span class="badge badge-danger">✗ Absent</span>'}
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="report-section">
-                    <p style="text-align: center; color: #6c757d; font-size: 0.9em;">
-                        Report generated by Event Log Pro • ${new Date().toLocaleString()}
-                    </p>
-                </div>
-            </div>
-            
-            <button class="print-button" onclick="window.print()">
-                🖨️ Print Report
-            </button>
-            <button class="email-button" onclick="sendEmailReport()">
-                📧 Email Report
-            </button>
-            
-            <script>
-                function sendEmailReport() {
-                    const subject = encodeURIComponent('Event Report: ${eventData.eventName}');
-                    const body = encodeURIComponent(
-                        'Event Report\n\n' +
-                        'Event: ${eventData.eventName}\n' +
-                        'Date: ${eventData.eventDate}\n' +
-                        'Venue: ${eventData.venue || 'N/A'}\n' +
-                        'Total Students: ${totalStudents}\n' +
-                        'Present: ${presentCount}\n\n' +
-                        'Please find the attached report for more details.\n\n' +
-                        'Generated by Event Log Pro'
-                    );
                     
-                    // Try to open default email client
-                    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                    .stat-value {
+                        font-size: 2.5em;
+                        font-weight: 700;
+                        margin-bottom: 5px;
+                    }
                     
-                    // Also provide option to download as HTML
-                    setTimeout(() => {
-                        if (confirm('Would you like to download this report as an HTML file to attach to your email?')) {
-                            downloadReport();
+                    .stat-label {
+                        font-size: 0.9em;
+                        opacity: 0.9;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .student-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    
+                    .student-table th {
+                        background: #667eea;
+                        color: white;
+                        font-weight: 600;
+                        padding: 12px 15px;
+                        text-align: left;
+                        font-size: 0.9em;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .student-table td {
+                        padding: 12px 15px;
+                        border-bottom: 1px solid #e9ecef;
+                        color: #4a5568;
+                    }
+                    
+                    .student-table tbody tr:hover {
+                        background: #f8f9fa;
+                    }
+                    
+                    .badge {
+                        display: inline-block;
+                        padding: 4px 10px;
+                        border-radius: 20px;
+                        font-size: 0.85em;
+                        font-weight: 600;
+                    }
+                    
+                    .badge-success {
+                        background: #d4edda;
+                        color: #155724;
+                    }
+                    
+                    .badge-danger {
+                        background: #f8d7da;
+                        color: #721c24;
+                    }
+                    
+                    .badge-warning {
+                        background: #fff3cd;
+                        color: #856404;
+                    }
+                    
+                    .badge-info {
+                        background: #d1ecf1;
+                        color: #0c5460;
+                    }
+                    
+                    .action-buttons {
+                        position: fixed;
+                        right: 30px;
+                        bottom: 30px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                        z-index: 1000;
+                    }
+                    
+                    .action-button {
+                        padding: 15px 25px;
+                        border: none;
+                        border-radius: 50px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                        transition: all 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        color: white;
+                    }
+                    
+                    .print-button {
+                        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                    }
+                    
+                    .email-button {
+                        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                    }
+                    
+                    .action-button:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+                    }
+                    
+                    @media print {
+                        .action-buttons {
+                            display: none;
                         }
-                    }, 1000);
-                }
+                        
+                        body {
+                            background: white;
+                            padding: 0;
+                        }
+                        
+                        .report-container {
+                            box-shadow: none;
+                            border-radius: 0;
+                        }
+                        
+                        .report-header {
+                            background: #667eea !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .stat-card {
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .student-table th {
+                            background: #667eea !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .report-header {
+                            padding: 20px;
+                        }
+                        
+                        .report-section {
+                            padding: 20px;
+                        }
+                        
+                        .stats-grid {
+                            grid-template-columns: 1fr 1fr;
+                        }
+                        
+                        .action-buttons {
+                            right: 15px;
+                            bottom: 15px;
+                        }
+                        
+                        .action-button {
+                            padding: 12px 20px;
+                            font-size: 14px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="report-container">
+                    <div class="report-header">
+                        <h1>🎓 Event Report: ${safeEventName}</h1>
+                        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                    
+                    <div class="report-section">
+                        <h2 class="section-title">📋 Event Details</h2>
+                        <div class="event-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Event ID</span>
+                                <span class="detail-value">${safeEventId}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Event Name</span>
+                                <span class="detail-value">${safeEventName}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Date</span>
+                                <span class="detail-value">${safeEventDate}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Venue</span>
+                                <span class="detail-value">${safeVenue}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Departure Time</span>
+                                <span class="detail-value">${safeDeparture}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Return Time</span>
+                                <span class="detail-value">${safeReturn}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Vehicle</span>
+                                <span class="detail-value">${safeVehicle}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Company</span>
+                                <span class="detail-value">${safeCompany}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Accompanying Teachers</span>
+                                <span class="detail-value">${safeAccompanying}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section">
+                        <h2 class="section-title">📊 Summary Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">${totalStudents}</div>
+                                <div class="stat-label">Total Students</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${presentCount}</div>
+                                <div class="stat-label">Present</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${permissionCount}</div>
+                                <div class="stat-label">Permission Slips</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${medicalCount}</div>
+                                <div class="stat-label">Medical Cases</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${medicationCount}</div>
+                                <div class="stat-label">On Medication</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section">
+                        <h2 class="section-title">👥 Student List</h2>
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Form</th>
+                                    <th>Contact</th>
+                                    <th>Medical</th>
+                                    <th>Medication</th>
+                                    <th>Permission</th>
+                                    <th>Present</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${eventData.students.map((student, index) => {
+                                    if (!student.name || !student.name.trim()) return '';
+                                    const safeName = escapeHtml(student.name);
+                                    const safeForm = escapeHtml(student.form || 'N/A');
+                                    const safeContact = escapeHtml(student.contact || 'N/A');
+                                    const safeIllness = escapeHtml(student.illness || 'None');
+                                    const safeOtherIllness = escapeHtml(student.otherIllness || '');
+                                    const safeMedication = escapeHtml(student.medicationDetails || '');
+                                    
+                                    return `
+                                        <tr>
+                                            <td>${index + 1}</td>
+                                            <td><strong>${safeName}</strong></td>
+                                            <td>${safeForm}</td>
+                                            <td>${safeContact}</td>
+                                            <td>
+                                                ${student.illness !== 'None' ? 
+                                                    `<span class="badge badge-warning">${safeIllness}${student.otherIllness ? ': ' + safeOtherIllness : ''}</span>` : 
+                                                    '<span class="badge badge-success">None</span>'}
+                                            </td>
+                                            <td>
+                                                ${student.takingMedication ? 
+                                                    `<span class="badge badge-info">${safeMedication || 'Yes'}</span>` : 
+                                                    '<span class="badge badge-success">No</span>'}
+                                            </td>
+                                            <td>
+                                                ${student.permission ? 
+                                                    '<span class="badge badge-success">✓ Yes</span>' : 
+                                                    '<span class="badge badge-danger">✗ No</span>'}
+                                            </td>
+                                            <td>
+                                                ${student.present ? 
+                                                    '<span class="badge badge-success">✓ Present</span>' : 
+                                                    '<span class="badge badge-danger">✗ Absent</span>'}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="report-section">
+                        <p style="text-align: center; color: #6c757d; font-size: 0.9em;">
+                            Report generated by Event Log Pro • ${new Date().toLocaleString()}
+                        </p>
+                    </div>
+                </div>
                 
-                function downloadReport() {
-                    const reportContent = document.documentElement.outerHTML;
-                    const blob = new Blob([reportContent], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'event_report_${eventData.eventId}.html';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                }
-            </script>
-        </body>
-        </html>
-    `;
-    
-    // Open report in new window
-    const reportWindow = window.open('', '_blank');
-    reportWindow.document.write(reportHTML);
-    reportWindow.document.close();
+                <div class="action-buttons">
+                    <button class="action-button print-button" onclick="window.print()">
+                        🖨️ Print Report
+                    </button>
+                    <button class="action-button email-button" onclick="sendEmailReport()">
+                        📧 Email Report
+                    </button>
+                </div>
+                
+                <script>
+                    function sendEmailReport() {
+                        const subject = encodeURIComponent('Event Report: ${safeEventName}');
+                        const body = encodeURIComponent(
+                            'Event Report\\n\\n' +
+                            'Event: ${safeEventName}\\n' +
+                            'Date: ${safeEventDate}\\n' +
+                            'Venue: ${safeVenue}\\n' +
+                            'Total Students: ${totalStudents}\\n' +
+                            'Present: ${presentCount}\\n\\n' +
+                            'Please find the attached report for more details.\\n\\n' +
+                            'Generated by Event Log Pro'
+                        );
+                        
+                        // Open default email client
+                        window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+                        
+                        // Provide option to download as HTML
+                        setTimeout(() => {
+                            if (confirm('Would you like to download this report as an HTML file to attach to your email?')) {
+                                downloadReport();
+                            }
+                        }, 1000);
+                    }
+                    
+                    function downloadReport() {
+                        const reportContent = document.documentElement.outerHTML;
+                        const blob = new Blob([reportContent], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'event_report_${safeEventId}.html';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+        
+        // Open report in new window
+        const reportWindow = window.open('', '_blank');
+        reportWindow.document.write(reportHTML);
+        reportWindow.document.close();
+        
+    } catch (error) {
+        console.error('Error generating report:', error);
+        window.showToast('Error generating report: ' + error.message, 'error');
+    }
 };
 
 // Make functions globally available
