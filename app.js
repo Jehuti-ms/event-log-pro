@@ -1,5 +1,9 @@
-// app.js - COMPLETE FIREBASE-ONLY VERSION
+// app.js - COMPLETE FIREBASE-ONLY VERSION WITH PROPER IMPORTS
 console.log('📦 Firebase App.js loaded');
+
+// Import Firebase functions (these will be available from the module in index.html)
+// Note: These are actually imported in the HTML, so we reference them via window.firebase
+let collection, getDocs, query, where, orderBy, addDoc, setDoc, deleteDoc, doc, serverTimestamp;
 
 // Global variables
 let currentEventId = null;
@@ -7,12 +11,37 @@ let isEditMode = false;
 let allEvents = [];
 let isAuthenticated = false;
 
+// Initialize Firebase references when available
+function initFirebaseRefs() {
+    if (window.firebaseFirestore) {
+        collection = window.firebaseFirestore.collection;
+        getDocs = window.firebaseFirestore.getDocs;
+        query = window.firebaseFirestore.query;
+        where = window.firebaseFirestore.where;
+        orderBy = window.firebaseFirestore.orderBy;
+        addDoc = window.firebaseFirestore.addDoc;
+        setDoc = window.firebaseFirestore.setDoc;
+        deleteDoc = window.firebaseFirestore.deleteDoc;
+        doc = window.firebaseFirestore.doc;
+        serverTimestamp = window.firebaseFirestore.serverTimestamp;
+        console.log('✅ Firebase Firestore functions initialized');
+        return true;
+    }
+    return false;
+}
+
 // ============================================
 // FIREBASE SERVICE FUNCTIONS
 // ============================================
 
 async function generateEventId() {
     try {
+        if (!initFirebaseRefs()) {
+            console.warn('Firebase not ready yet');
+            const year = new Date().getFullYear();
+            return `${year}-001`;
+        }
+        
         const year = new Date().getFullYear();
         const eventsRef = collection(window.firebaseDb, 'events');
         const q = query(
@@ -48,6 +77,11 @@ async function generateEventId() {
 
 async function loadAllEvents() {
     try {
+        if (!initFirebaseRefs()) {
+            console.warn('Firebase not ready yet');
+            return [];
+        }
+        
         const eventsRef = collection(window.firebaseDb, 'events');
         const q = query(eventsRef, orderBy('lastModified', 'desc'));
         const snapshot = await getDocs(q);
@@ -74,6 +108,11 @@ async function loadAllEvents() {
 
 async function loadEventData(eventId) {
     try {
+        if (!initFirebaseRefs()) {
+            console.warn('Firebase not ready yet');
+            return null;
+        }
+        
         // Get event by eventId field
         const eventsRef = collection(window.firebaseDb, 'events');
         const q = query(eventsRef, where('eventId', '==', eventId));
@@ -127,6 +166,10 @@ async function loadEventData(eventId) {
 
 async function saveEventToFirebase(eventData) {
     try {
+        if (!initFirebaseRefs()) {
+            throw new Error('Firebase not ready');
+        }
+        
         const { eventId } = eventData;
         const eventsRef = collection(window.firebaseDb, 'events');
         const studentsRef = collection(window.firebaseDb, 'students');
@@ -207,6 +250,10 @@ async function saveEventToFirebase(eventData) {
 
 async function deleteEventFromFirebase(eventId) {
     try {
+        if (!initFirebaseRefs()) {
+            throw new Error('Firebase not ready');
+        }
+        
         const eventsRef = collection(window.firebaseDb, 'events');
         const studentsRef = collection(window.firebaseDb, 'students');
         
@@ -246,6 +293,7 @@ window.generateNewEventId = async function() {
 };
 
 window.loadAllEvents = async function() {
+    console.log('Loading all events...');
     const events = await loadAllEvents();
     allEvents = events;
     populateEventDropdown();
@@ -685,27 +733,92 @@ function showToast(message, type = 'info') {
 }
 
 // ============================================
+// AUTH STATE MANAGEMENT
+// ============================================
+
+function updateUIBasedOnAuth(user) {
+    const landingPage = document.getElementById('landingPage');
+    const mainContainer = document.getElementById('mainContainer');
+    const authButton = document.getElementById('authButton');
+    const userMenu = document.getElementById('userMenu');
+    const userName = document.getElementById('userName');
+    
+    if (user) {
+        // User is signed in
+        isAuthenticated = true;
+        localStorage.setItem('isAuthenticated', 'true');
+        
+        if (landingPage) landingPage.classList.add('hidden');
+        if (mainContainer) mainContainer.classList.add('active');
+        
+        // Update auth button
+        if (authButton) {
+            authButton.innerHTML = `👤 ${user.displayName || user.email || 'User'}`;
+            authButton.onclick = (e) => {
+                e.stopPropagation();
+                if (userMenu) {
+                    userMenu.classList.toggle('show');
+                }
+            };
+        }
+        
+        if (userName) {
+            userName.textContent = user.displayName || user.email || 'User';
+        }
+        
+        // Initialize app data
+        generateNewEventId();
+        loadAllEvents();
+        updateCounts();
+        
+        // Update sync status
+        if (window.updateSyncStatus) {
+            window.updateSyncStatus('online', `Connected as ${user.email}`);
+        }
+    } else {
+        // User is signed out
+        isAuthenticated = false;
+        localStorage.removeItem('isAuthenticated');
+        
+        if (landingPage) landingPage.classList.remove('hidden');
+        if (mainContainer) mainContainer.classList.remove('active');
+        
+        if (authButton) {
+            authButton.innerHTML = '🔐 Login';
+            authButton.onclick = () => window.handleGoogleSignIn();
+        }
+        
+        if (userMenu) {
+            userMenu.classList.remove('show');
+        }
+        
+        // Update sync status
+        if (window.updateSyncStatus) {
+            window.updateSyncStatus('offline', 'Not connected');
+        }
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Content Loaded - Starting initialization');
     
-    // Check if user is authenticated (from Firebase auth state)
-    const checkAuth = setInterval(() => {
-        if (window.firebaseAuth?.currentUser) {
-            console.log('✅ User is authenticated, initializing app...');
-            clearInterval(checkAuth);
-            
-            // Initialize app
-            generateNewEventId();
-            loadAllEvents();
-            updateCounts();
-            
-            // Initialize student table features
-            initializeStudentTable();
+    // Set up click outside to close user menu
+    document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('userMenu');
+        const authButton = document.getElementById('authButton');
+        if (userMenu && authButton && !authButton.contains(event.target) && !userMenu.contains(event.target)) {
+            userMenu.classList.remove('show');
         }
-    }, 500);
+    });
+    
+    // Initialize student table features
+    setTimeout(() => {
+        initializeStudentTable();
+    }, 1000);
     
     // Set up event listeners
     setupEventListeners();
@@ -786,5 +899,6 @@ window.updateCounts = updateCounts;
 window.showToast = showToast;
 window.showSpinner = showSpinner;
 window.hideSpinner = hideSpinner;
+window.updateUIBasedOnAuth = updateUIBasedOnAuth;
 
 console.log('✅ Firebase App.js loaded successfully');
