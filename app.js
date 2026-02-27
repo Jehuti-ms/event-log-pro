@@ -899,16 +899,31 @@ function setupEventListeners() {
 function initializeStudentTable() {
     console.log('✅ Student table features initialized');
     
-    // Make headers sticky
+    // Make headers sticky with enhanced styling
     const thead = document.querySelector('#studentTable thead');
     if (thead) {
         const thElements = thead.querySelectorAll('th');
         thElements.forEach(th => {
             th.style.position = 'sticky';
             th.style.top = '0';
-            th.style.zIndex = '10';
-            th.style.background = '#f0f2f5';
+            th.style.zIndex = '100';
+            th.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            th.style.color = 'white';
+            th.style.fontWeight = '600';
+            th.style.padding = '16px 20px';
+            th.style.whiteSpace = 'nowrap';
+            th.style.borderBottom = '2px solid rgba(255,255,255,0.2)';
+            th.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
         });
+    }
+    
+    // Ensure the container has proper overflow
+    const container = document.getElementById('studentTableContainer');
+    if (container) {
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'auto';
+        container.style.maxHeight = '500px';
+        container.style.position = 'relative';
     }
     
     // Connect search functionality
@@ -967,7 +982,101 @@ window.clearSearch = function() {
         window.showToast('Search cleared', 'info');
     }
 };
+
+// Add keyboard shortcut for search
+document.addEventListener('keydown', function(e) {
+    // Ctrl+K or Cmd+K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('studentSearch');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+            window.showToast('🔍 Search focused', 'info');
+        }
+    }
     
+    // Escape key to close FAB menu
+    if (e.key === 'Escape') {
+        hideFabMenu();
+    }
+});
+
+// ============================================================================
+// FLOATING ACTION BUTTON FUNCTIONS
+// ============================================================================
+
+window.toggleFabMenu = function() {
+    const container = document.getElementById('fabContainer');
+    container.classList.toggle('active');
+    
+    // Change button icon
+    const fabButton = document.getElementById('fabButton');
+    if (container.classList.contains('active')) {
+        fabButton.textContent = '✕';
+        fabButton.style.transform = 'rotate(90deg)';
+    } else {
+        fabButton.textContent = '+';
+        fabButton.style.transform = 'rotate(0deg)';
+    }
+};
+
+window.hideFabMenu = function() {
+    const container = document.getElementById('fabContainer');
+    container.classList.remove('active');
+    
+    const fabButton = document.getElementById('fabButton');
+    fabButton.textContent = '+';
+    fabButton.style.transform = 'rotate(0deg)';
+};
+
+window.scrollToStudentForm = function() {
+    // Scroll to the student form section
+    const studentForm = document.querySelector('#students .section-card:first-of-type');
+    if (studentForm) {
+        studentForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Highlight the form briefly
+        studentForm.style.transition = 'box-shadow 0.3s ease';
+        studentForm.style.boxShadow = '0 0 0 4px #667eea, 0 4px 12px rgba(102,126,234,0.4)';
+        setTimeout(() => {
+            studentForm.style.boxShadow = '';
+        }, 1500);
+        
+        // Focus on the first input
+        setTimeout(() => {
+            const firstNameInput = document.getElementById('studentName');
+            if (firstNameInput) firstNameInput.focus();
+        }, 500);
+    }
+};
+
+// Close FAB menu when clicking outside
+document.addEventListener('click', function(event) {
+    const fabContainer = document.getElementById('fabContainer');
+    const fabButton = document.getElementById('fabButton');
+    
+    if (fabContainer && fabButton && 
+        !fabContainer.contains(event.target) && 
+        fabContainer.classList.contains('active')) {
+        hideFabMenu();
+    }
+});
+
+// Hide FAB menu on scroll
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+    if (fabContainer && fabContainer.classList.contains('active')) {
+        // Clear previous timeout
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        
+        // Hide menu after scrolling stops
+        scrollTimeout = setTimeout(() => {
+            hideFabMenu();
+        }, 500);
+    }
+});
+
 // Make functions globally available
 window.collectFormData = collectFormData;
 window.updateCounts = updateCounts;
