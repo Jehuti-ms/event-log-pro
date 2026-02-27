@@ -1480,5 +1480,98 @@ body.dark #studentTable tbody td:first-child {
     color: #9ca3af;
 }
 
+/* ============================================================================
+   AUTO-SAVE INDICATOR
+   ============================================================================ */
+
+.auto-save-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9998;
+    animation: slideInLeft 0.3s ease;
+    border-left: 4px solid;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auto-save-indicator.pending {
+    border-left-color: #f59e0b;
+    color: #92400e;
+    background: #fffbeb;
+}
+
+.auto-save-indicator.saving {
+    border-left-color: #3b82f6;
+    color: #1e40af;
+    background: #eff6ff;
+}
+
+.auto-save-indicator.saving::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid #3b82f6;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+.auto-save-indicator.saved {
+    border-left-color: #10b981;
+    color: #065f46;
+    background: #ecfdf5;
+}
+
+.auto-save-indicator.error {
+    border-left-color: #ef4444;
+    color: #991b1b;
+    background: #fef2f2;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Dark mode support */
+body.dark .auto-save-indicator {
+    background: #1e293b;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+body.dark .auto-save-indicator.pending {
+    background: #422006;
+    color: #fcd34d;
+}
+
+body.dark .auto-save-indicator.saving {
+    background: #172554;
+    color: #93c5fd;
+}
+
+body.dark .auto-save-indicator.saved {
+    background: #064e3b;
+    color: #a7f3d0;
+}
+
+body.dark .auto-save-indicator.error {
+    background: #7f1d1d;
+    color: #fecaca;
+}
 
 
