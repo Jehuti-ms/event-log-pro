@@ -1050,6 +1050,235 @@ window.addEventListener('scroll', function() {
     }
 });
 
+// ============================================================================
+// AUTO-SAVE FUNCTIONALITY
+// ============================================================================
+
+// Auto-save configuration
+let autoSaveTimeout = null;
+const AUTO_SAVE_DELAY = 2000; // 2 seconds delay after last change
+let isSaving = false;
+let pendingChanges = false;
+
+// Initialize auto-save
+function initAutoSave() {
+    console.log('🔄 Initializing auto-save...');
+    
+    const tableBody = document.querySelector('#studentTable tbody');
+    if (!tableBody) {
+        console.warn('⚠️ Table body not found for auto-save');
+        return;
+    }
+    
+    // Listen for changes in the table
+    tableBody.addEventListener('input', function(e) {
+        if (e.target.matches('input[type="text"], input[type="checkbox"], select')) {
+            handleTableChange();
+        }
+    });
+    
+    tableBody.addEventListener('change', function(e) {
+        if (e.target.matches('input[type="checkbox"], select')) {
+            handleTableChange();
+        }
+    });
+    
+    // Listen for row additions/deletions
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                handleTableChange();
+            }
+        });
+    });
+    
+    observer.observe(tableBody, {
+        childList: true,
+        subtree: true
+    });
+    
+    console.log('✅ Auto-save initialized');
+}
+
+// Handle table changes
+function handleTableChange() {
+    // Mark that there are pending changes
+    pendingChanges = true;
+    
+    // Clear any existing timeout
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+    }
+    
+    // Show auto-save indicator
+    showAutoSaveIndicator('pending');
+    
+    // Set new timeout
+    autoSaveTimeout = setTimeout(() => {
+        performAutoSave();
+    }, AUTO_SAVE_DELAY);
+}
+
+// Perform auto-save
+async function performAutoSave() {
+    // Prevent multiple simultaneous saves
+    if (isSaving) {
+        console.log('⏳ Auto-save already in progress, waiting...');
+        setTimeout(performAutoSave, 500);
+        return;
+    }
+    
+    // Check if there are actually changes to save
+    if (!pendingChanges) {
+        console.log('📝 No pending changes to save');
+        return;
+    }
+    
+    // Check if we have a current event
+    if (!currentEventId) {
+        console.log('📝 No event selected, auto-save skipped');
+        pendingChanges = false;
+        showAutoSaveIndicator('idle');
+        return;
+    }
+    
+    try {
+        isSaving = true;
+        showAutoSaveIndicator('saving');
+        
+        console.log('💾 Auto-saving changes...');
+        
+        // Collect current form data
+        const eventData = collectFormData();
+        
+        // Validate required fields
+        if (!eventData.eventName || !eventData.eventDate) {
+            console.log('⚠️ Auto-save skipped: missing required fields');
+            showAutoSaveIndicator('idle');
+            isSaving = false;
+            pendingChanges = false;
+            return;
+        }
+        
+        // Save to Firebase
+        const result = await saveEventToFirebase(eventData);
+        
+        if (result.success) {
+            console.log('✅ Auto-save successful');
+            pendingChanges = false;
+            showAutoSaveIndicator('saved');
+            
+            // Update last sync time
+            if (window.updateSyncStatus) {
+                window.updateSyncStatus('online', 'Auto-saved');
+            }
+            
+            // Show success toast (optional - you might want to disable this for auto-save)
+            // window.showToast('Changes auto-saved', 'success');
+        } else {
+            console.error('❌ Auto-save failed:', result.error);
+            showAutoSaveIndicator('error');
+            
+            // Show error toast
+            window.showToast('Auto-save failed: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Auto-save error:', error);
+        showAutoSaveIndicator('error');
+        window.showToast('Auto-save error: ' + error.message, 'error');
+    } finally {
+        isSaving = false;
+        autoSaveTimeout = null;
+        
+        // Hide indicator after 2 seconds if no new changes
+        setTimeout(() => {
+            if (!pendingChanges) {
+                showAutoSaveIndicator('idle');
+            }
+        }, 2000);
+    }
+}
+
+// Auto-save indicator
+function showAutoSaveIndicator(status) {
+    const indicator = document.getElementById('autoSaveIndicator');
+    if (!indicator) return;
+    
+    // Remove all status classes
+    indicator.classList.remove('pending', 'saving', 'saved', 'error');
+    
+    switch(status) {
+        case 'pending':
+            indicator.innerHTML = '✏️ Unsaved changes...';
+            indicator.classList.add('pending');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'saving':
+            indicator.innerHTML = '💾 Saving...';
+            indicator.classList.add('saving');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'saved':
+            indicator.innerHTML = '✅ All changes saved';
+            indicator.classList.add('saved');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'error':
+            indicator.innerHTML = '❌ Save failed';
+            indicator.classList.add('error');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'idle':
+            indicator.style.display = 'none';
+            break;
+    }
+}
+
+// Force auto-save immediately
+window.forceAutoSave = async function() {
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = null;
+    }
+    pendingChanges = true;
+    await performAutoSave();
+};
+
+// Save manually (for save button)
+window.saveEvent = async function() {
+    // Clear any pending auto-save
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = null;
+    }
+    
+    const eventData = collectFormData();
+    
+    if (!eventData.eventName || !eventData.eventDate) {
+        window.showToast('Event Name and Date are required', 'error');
+        return;
+    }
+    
+    window.showSpinner('Saving event...');
+    const result = await saveEventToFirebase(eventData);
+    window.hideSpinner();
+    
+    if (result.success) {
+        window.showToast('Event saved successfully!', 'success');
+        await window.loadAllEvents();
+        isEditMode = false;
+        pendingChanges = false;
+        showAutoSaveIndicator('idle');
+        
+        // Update sync status
+        if (window.updateSyncStatus) {
+            window.updateSyncStatus('online', 'Connected');
+        }
+    } else {
+        window.showToast('Error saving event: ' + (result.error || 'Unknown error'), 'error');
+    }
+};
+
 // Make functions globally available
 window.collectFormData = collectFormData;
 window.updateCounts = updateCounts;
