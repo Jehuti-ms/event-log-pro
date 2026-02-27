@@ -1279,6 +1279,30 @@ window.saveEvent = async function() {
     }
 };
 
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM Content Loaded - Starting initialization');
+    
+    // Initialize auto-save
+    initAutoSave();
+    
+    // Set up click outside to close user menu
+    document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('userMenu');
+        const authButton = document.getElementById('authButton');
+        if (userMenu && authButton && !authButton.contains(event.target) && !userMenu.contains(event.target)) {
+            userMenu.classList.remove('show');
+        }
+    });
+    
+    // Initialize student table features
+    setTimeout(() => {
+        initializeStudentTable();
+    }, 1000);
+    
+    // Set up event listeners
+    setupEventListeners();
+});
+
 // Make functions globally available
 window.collectFormData = collectFormData;
 window.updateCounts = updateCounts;
