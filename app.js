@@ -968,8 +968,6 @@ window.clearSearch = function() {
     }
 };
     
-}
-
 // Make functions globally available
 window.collectFormData = collectFormData;
 window.updateCounts = updateCounts;
