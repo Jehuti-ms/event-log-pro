@@ -1,4 +1,4 @@
-// app.js - COMPLETE FIREBASE-ONLY VERSION WITH ALL FUNCTIONS
+// app.js - COMPLETE FIREBASE-ONLY VERSION WITH ALL FIXES
 console.log('📦 Firebase App.js loaded');
 
 // Import Firebase functions (these will be available from the module in index.html)
@@ -10,6 +10,15 @@ let currentEventId = null;
 let isEditMode = false;
 let allEvents = [];
 let isAuthenticated = false;
+
+// Auto-save variables
+let autoSaveTimeout = null;
+const AUTO_SAVE_DELAY = 2000; // 2 seconds delay after last change
+let isSaving = false;
+let pendingChanges = false;
+
+// Track initialization state
+let appInitialized = false;
 
 // Initialize Firebase references when available
 function initFirebaseRefs() {
@@ -354,6 +363,12 @@ window.loadEvent = async function(eventId) {
 };
 
 window.saveEvent = async function() {
+    // Clear any pending auto-save
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = null;
+    }
+    
     const eventData = collectFormData();
     
     if (!eventData.eventName || !eventData.eventDate) {
@@ -369,6 +384,8 @@ window.saveEvent = async function() {
         window.showToast('Event saved successfully!', 'success');
         await window.loadAllEvents();
         isEditMode = false;
+        pendingChanges = false;
+        showAutoSaveIndicator('idle');
         
         // Update sync status
         if (window.updateSyncStatus) {
@@ -762,6 +779,327 @@ window.showToast = function(message, type = 'info') {
 };
 
 // ============================================
+// AUTO-SAVE FUNCTIONALITY
+// ============================================
+
+function initAutoSave() {
+    console.log('🔄 Initializing auto-save...');
+    
+    const tableBody = document.querySelector('#studentTable tbody');
+    if (!tableBody) {
+        console.warn('⚠️ Table body not found for auto-save');
+        return;
+    }
+    
+    // Listen for changes in the table
+    tableBody.addEventListener('input', function(e) {
+        if (e.target.matches('input[type="text"], input[type="checkbox"], select')) {
+            handleTableChange();
+        }
+    });
+    
+    tableBody.addEventListener('change', function(e) {
+        if (e.target.matches('input[type="checkbox"], select')) {
+            handleTableChange();
+        }
+    });
+    
+    // Listen for row additions/deletions
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                handleTableChange();
+            }
+        });
+    });
+    
+    observer.observe(tableBody, {
+        childList: true,
+        subtree: true
+    });
+    
+    console.log('✅ Auto-save initialized');
+}
+
+function handleTableChange() {
+    // Mark that there are pending changes
+    pendingChanges = true;
+    
+    // Clear any existing timeout
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+    }
+    
+    // Show auto-save indicator
+    showAutoSaveIndicator('pending');
+    
+    // Set new timeout
+    autoSaveTimeout = setTimeout(() => {
+        performAutoSave();
+    }, AUTO_SAVE_DELAY);
+}
+
+async function performAutoSave() {
+    // Prevent multiple simultaneous saves
+    if (isSaving) {
+        console.log('⏳ Auto-save already in progress, waiting...');
+        setTimeout(performAutoSave, 500);
+        return;
+    }
+    
+    // Check if there are actually changes to save
+    if (!pendingChanges) {
+        console.log('📝 No pending changes to save');
+        return;
+    }
+    
+    // Check if we have a current event
+    if (!currentEventId) {
+        console.log('📝 No event selected, auto-save skipped');
+        pendingChanges = false;
+        showAutoSaveIndicator('idle');
+        return;
+    }
+    
+    try {
+        isSaving = true;
+        showAutoSaveIndicator('saving');
+        
+        console.log('💾 Auto-saving changes...');
+        
+        // Collect current form data
+        const eventData = collectFormData();
+        
+        // Validate required fields
+        if (!eventData.eventName || !eventData.eventDate) {
+            console.log('⚠️ Auto-save skipped: missing required fields');
+            showAutoSaveIndicator('idle');
+            isSaving = false;
+            pendingChanges = false;
+            return;
+        }
+        
+        // Save to Firebase
+        const result = await saveEventToFirebase(eventData);
+        
+        if (result.success) {
+            console.log('✅ Auto-save successful');
+            pendingChanges = false;
+            showAutoSaveIndicator('saved');
+            
+            // Update last sync time
+            if (window.updateSyncStatus) {
+                window.updateSyncStatus('online', 'Auto-saved');
+            }
+        } else {
+            console.error('❌ Auto-save failed:', result.error);
+            showAutoSaveIndicator('error');
+            
+            // Show error toast
+            window.showToast('Auto-save failed: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Auto-save error:', error);
+        showAutoSaveIndicator('error');
+        window.showToast('Auto-save error: ' + error.message, 'error');
+    } finally {
+        isSaving = false;
+        autoSaveTimeout = null;
+        
+        // Hide indicator after 2 seconds if no new changes
+        setTimeout(() => {
+            if (!pendingChanges) {
+                showAutoSaveIndicator('idle');
+            }
+        }, 2000);
+    }
+}
+
+function showAutoSaveIndicator(status) {
+    const indicator = document.getElementById('autoSaveIndicator');
+    if (!indicator) return;
+    
+    // Remove all status classes
+    indicator.classList.remove('pending', 'saving', 'saved', 'error');
+    
+    switch(status) {
+        case 'pending':
+            indicator.innerHTML = '✏️ Unsaved changes...';
+            indicator.classList.add('pending');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'saving':
+            indicator.innerHTML = '💾 Saving...';
+            indicator.classList.add('saving');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'saved':
+            indicator.innerHTML = '✅ All changes saved';
+            indicator.classList.add('saved');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'error':
+            indicator.innerHTML = '❌ Save failed';
+            indicator.classList.add('error');
+            indicator.style.display = 'inline-block';
+            break;
+        case 'idle':
+            indicator.style.display = 'none';
+            break;
+    }
+}
+
+window.forceAutoSave = async function() {
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = null;
+    }
+    pendingChanges = true;
+    await performAutoSave();
+};
+
+// ============================================
+// DARK MODE TOGGLE - FIXED
+// ============================================
+
+function initDarkMode() {
+    console.log('🎨 Initializing dark mode...');
+    
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    
+    if (!darkModeToggle) {
+        console.warn('⚠️ Dark mode toggle not found');
+        return;
+    }
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    console.log('📦 Saved theme:', savedTheme);
+    
+    // Apply theme
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        darkModeToggle.checked = true;
+    } else {
+        document.body.classList.remove('dark');
+        darkModeToggle.checked = false;
+    }
+    
+    // Remove any existing listeners by cloning and replacing
+    const newToggle = darkModeToggle.cloneNode(true);
+    darkModeToggle.parentNode.replaceChild(newToggle, darkModeToggle);
+    
+    // Add new listener
+    newToggle.addEventListener('change', function(e) {
+        if (this.checked) {
+            document.body.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            console.log('🌓 Dark mode enabled');
+        } else {
+            document.body.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            console.log('☀️ Light mode enabled');
+        }
+    });
+    
+    console.log('✅ Dark mode initialized');
+}
+
+// ============================================
+// CLICK OUTSIDE HANDLER
+// ============================================
+
+function setupClickOutside() {
+    document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('userMenu');
+        const authButton = document.getElementById('authButton');
+        
+        if (userMenu && authButton && 
+            !authButton.contains(event.target) && 
+            !userMenu.contains(event.target)) {
+            userMenu.classList.remove('show');
+        }
+    });
+}
+
+// ============================================
+// STUDENT TABLE INITIALIZATION - FIXED (NO INLINE STYLES)
+// ============================================
+
+function initializeStudentTable() {
+    console.log('✅ Student table features initialized');
+    
+    // Don't apply inline styles - let CSS handle it
+    // Just connect search functionality
+    
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        // Remove any existing listeners
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#studentTable tbody tr');
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
+                const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
+                const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
+                
+                const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
+                row.style.display = matches ? '' : 'none';
+                if (matches) visibleCount++;
+            });
+            
+            updateCounts();
+            console.log(`🔍 Search: ${visibleCount} visible students`);
+        });
+        
+        console.log('✅ Student search initialized');
+    } else {
+        console.warn('⚠️ Search input not found');
+    }
+    
+    // Initial counter update
+    updateCounts();
+    
+    // Auto-update counter on changes
+    const tableBody = document.querySelector('#studentTable tbody');
+    if (tableBody) {
+        const observer = new MutationObserver(() => {
+            setTimeout(updateCounts, 100);
+        });
+        observer.observe(tableBody, { childList: true, subtree: true });
+    }
+}
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+function setupEventListeners() {
+    console.log('🔗 Setting up event listeners...');
+    
+    // Accompanying teachers input
+    const accompanyingInput = document.getElementById('accompanying');
+    if (accompanyingInput) {
+        accompanyingInput.addEventListener('input', updateCounts);
+    }
+    
+    // Delete row buttons (delegation)
+    const tableBody = document.querySelector('#studentTable tbody');
+    if (tableBody) {
+        tableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-row')) {
+                deleteStudentRow(e.target);
+            }
+        });
+    }
+}
+
+// ============================================
 // AUTH STATE MANAGEMENT
 // ============================================
 
@@ -840,171 +1178,41 @@ function updateUIBasedOnAuth(user) {
 }
 
 // ============================================
-// INITIALIZATION
+// INITIALIZATION - SINGLE SOURCE OF TRUTH
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Starting initialization');
-    
-    // Set up click outside to close user menu
-    document.addEventListener('click', function(event) {
-        const userMenu = document.getElementById('userMenu');
-        const authButton = document.getElementById('authButton');
-        if (userMenu && authButton && !authButton.contains(event.target) && !userMenu.contains(event.target)) {
-            userMenu.classList.remove('show');
-        }
-    });
-    
-    // Initialize student table features
-    setTimeout(() => {
-        initializeStudentTable();
-    }, 1000);
-    
-    // Set up event listeners
-    setupEventListeners();
-});
-
-function setupEventListeners() {
-    // Accompanying teachers input
-    const accompanyingInput = document.getElementById('accompanying');
-    if (accompanyingInput) {
-        accompanyingInput.addEventListener('input', updateCounts);
-    }
-    
-    // Delete row buttons (delegation)
-    const tableBody = document.querySelector('#studentTable tbody');
-    if (tableBody) {
-        tableBody.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-row')) {
-                deleteStudentRow(e.target);
-            }
-        });
-    }
-    
-  // ============================================================================
-// DARK MODE TOGGLE - IMPROVED VERSION
-// ============================================================================
-
-function initDarkMode() {
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    
-    if (!darkModeToggle) {
-        console.warn('⚠️ Dark mode toggle not found');
+    // Prevent multiple initializations
+    if (appInitialized) {
+        console.log('⚠️ App already initialized, skipping...');
         return;
     }
     
-    // Load saved theme
-    const savedTheme = localStorage.getItem('theme');
-    console.log('🎨 Saved theme:', savedTheme);
-    
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark');
-        darkModeToggle.checked = true;
-        console.log('🌓 Dark mode enabled from storage');
-    } else {
-        document.body.classList.remove('dark');
-        darkModeToggle.checked = false;
-        console.log('☀️ Light mode enabled from storage');
-    }
-    
-    // Remove any existing listeners by cloning and replacing
-    const newToggle = darkModeToggle.cloneNode(true);
-    darkModeToggle.parentNode.replaceChild(newToggle, darkModeToggle);
-    
-    // Add new event listener
-    newToggle.addEventListener('change', function(e) {
-        if (this.checked) {
-            document.body.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-            console.log('🌓 Dark mode enabled');
-        } else {
-            document.body.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-            console.log('☀️ Light mode enabled');
-        }
-    });
-    
-    console.log('✅ Dark mode initialized');
-}
-
-// Call this in your DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Content Loaded - Starting initialization');
+    appInitialized = true;
     
-    // Initialize dark mode
+    // Initialize dark mode first
     initDarkMode();
     
-    // Initialize auto-save
-    if (typeof initAutoSave === 'function') {
-        initAutoSave();
-    }
-    
     // Set up click outside to close user menu
-    document.addEventListener('click', function(event) {
-        const userMenu = document.getElementById('userMenu');
-        const authButton = document.getElementById('authButton');
-        if (userMenu && authButton && !authButton.contains(event.target) && !userMenu.contains(event.target)) {
-            userMenu.classList.remove('show');
-        }
-    });
+    setupClickOutside();
     
-    // Initialize student table features
+    // Initialize auto-save
+    initAutoSave();
+    
+    // Initialize student table features after a short delay
     setTimeout(() => {
-        if (typeof initializeStudentTable === 'function') {
-            initializeStudentTable();
-        }
-    }, 1000);
+        initializeStudentTable();
+    }, 500);
     
     // Set up event listeners
-    if (typeof setupEventListeners === 'function') {
-        setupEventListeners();
-    }
+    setupEventListeners();
+    
+    console.log('✅ App initialization complete');
 });
-    
-function initializeStudentTable() {
-    console.log('✅ Student table features initialized');
-    
-    // Don't apply inline styles - let CSS handle it
-    // Just ensure the container exists
-    const container = document.getElementById('studentTableContainer');
-    if (!container) {
-        console.warn('⚠️ Student table container not found');
-    }
-    
-    // Connect search functionality
-    const searchInput = document.getElementById('studentSearch');
-    if (searchInput) {
-        // Remove any existing listeners to avoid duplicates
-        const newSearchInput = searchInput.cloneNode(true);
-        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
-        
-        newSearchInput.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#studentTable tbody tr');
-            
-            let visibleCount = 0;
-            rows.forEach(row => {
-                const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
-                const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
-                const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
-                
-                const matches = name.includes(term) || form.includes(term) || contact.includes(term) || term === '';
-                row.style.display = matches ? '' : 'none';
-                if (matches) visibleCount++;
-            });
-            
-            updateCounts();
-            console.log(`🔍 Search: ${visibleCount} visible students`);
-        });
-        
-        console.log('✅ Student search initialized');
-    } else {
-        console.warn('⚠️ Search input not found');
-    }
-}
 
-    // ============================================
-// SEARCH FUNCTIONS
+// ============================================
+// CLEAR SEARCH
 // ============================================
 
 window.clearSearch = function() {
@@ -1015,358 +1223,8 @@ window.clearSearch = function() {
         rows.forEach(row => row.style.display = '');
         updateCounts();
         console.log('🧹 Search cleared');
-        
-        // Show a toast notification
-        window.showToast('Search cleared', 'info');
     }
 };
-
-// Add keyboard shortcut for search
-document.addEventListener('keydown', function(e) {
-    // Ctrl+K or Cmd+K to focus search
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        const searchInput = document.getElementById('studentSearch');
-        if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-            window.showToast('🔍 Search focused', 'info');
-        }
-    }
-    
-    // Escape key to close FAB menu
-    if (e.key === 'Escape') {
-        hideFabMenu();
-    }
-});
-
-// ============================================================================
-// FLOATING ACTION BUTTON FUNCTIONS
-// ============================================================================
-
-window.toggleFabMenu = function() {
-    const container = document.getElementById('fabContainer');
-    container.classList.toggle('active');
-    
-    // Change button icon
-    const fabButton = document.getElementById('fabButton');
-    if (container.classList.contains('active')) {
-        fabButton.textContent = '✕';
-        fabButton.style.transform = 'rotate(90deg)';
-    } else {
-        fabButton.textContent = '+';
-        fabButton.style.transform = 'rotate(0deg)';
-    }
-};
-
-window.hideFabMenu = function() {
-    const container = document.getElementById('fabContainer');
-    container.classList.remove('active');
-    
-    const fabButton = document.getElementById('fabButton');
-    fabButton.textContent = '+';
-    fabButton.style.transform = 'rotate(0deg)';
-};
-
-window.scrollToStudentForm = function() {
-    // Scroll to the student form section
-    const studentForm = document.querySelector('#students .section-card:first-of-type');
-    if (studentForm) {
-        studentForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        // Highlight the form briefly
-        studentForm.style.transition = 'box-shadow 0.3s ease';
-        studentForm.style.boxShadow = '0 0 0 4px #667eea, 0 4px 12px rgba(102,126,234,0.4)';
-        setTimeout(() => {
-            studentForm.style.boxShadow = '';
-        }, 1500);
-        
-        // Focus on the first input
-        setTimeout(() => {
-            const firstNameInput = document.getElementById('studentName');
-            if (firstNameInput) firstNameInput.focus();
-        }, 500);
-    }
-};
-
-// Close FAB menu when clicking outside
-document.addEventListener('click', function(event) {
-    const fabContainer = document.getElementById('fabContainer');
-    const fabButton = document.getElementById('fabButton');
-    
-    if (fabContainer && fabButton && 
-        !fabContainer.contains(event.target) && 
-        fabContainer.classList.contains('active')) {
-        hideFabMenu();
-    }
-});
-
-// Hide FAB menu on scroll
-let scrollTimeout;
-window.addEventListener('scroll', function() {
-    if (fabContainer && fabContainer.classList.contains('active')) {
-        // Clear previous timeout
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-        
-        // Hide menu after scrolling stops
-        scrollTimeout = setTimeout(() => {
-            hideFabMenu();
-        }, 500);
-    }
-});
-
-// ============================================================================
-// AUTO-SAVE FUNCTIONALITY
-// ============================================================================
-
-// Auto-save configuration
-let autoSaveTimeout = null;
-const AUTO_SAVE_DELAY = 2000; // 2 seconds delay after last change
-let isSaving = false;
-let pendingChanges = false;
-
-// Initialize auto-save
-function initAutoSave() {
-    console.log('🔄 Initializing auto-save...');
-    
-    const tableBody = document.querySelector('#studentTable tbody');
-    if (!tableBody) {
-        console.warn('⚠️ Table body not found for auto-save');
-        return;
-    }
-    
-    // Listen for changes in the table
-    tableBody.addEventListener('input', function(e) {
-        if (e.target.matches('input[type="text"], input[type="checkbox"], select')) {
-            handleTableChange();
-        }
-    });
-    
-    tableBody.addEventListener('change', function(e) {
-        if (e.target.matches('input[type="checkbox"], select')) {
-            handleTableChange();
-        }
-    });
-    
-    // Listen for row additions/deletions
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                handleTableChange();
-            }
-        });
-    });
-    
-    observer.observe(tableBody, {
-        childList: true,
-        subtree: true
-    });
-    
-    console.log('✅ Auto-save initialized');
-}
-
-// Handle table changes
-function handleTableChange() {
-    // Mark that there are pending changes
-    pendingChanges = true;
-    
-    // Clear any existing timeout
-    if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout);
-    }
-    
-    // Show auto-save indicator
-    showAutoSaveIndicator('pending');
-    
-    // Set new timeout
-    autoSaveTimeout = setTimeout(() => {
-        performAutoSave();
-    }, AUTO_SAVE_DELAY);
-}
-
-// Perform auto-save
-async function performAutoSave() {
-    // Prevent multiple simultaneous saves
-    if (isSaving) {
-        console.log('⏳ Auto-save already in progress, waiting...');
-        setTimeout(performAutoSave, 500);
-        return;
-    }
-    
-    // Check if there are actually changes to save
-    if (!pendingChanges) {
-        console.log('📝 No pending changes to save');
-        return;
-    }
-    
-    // Check if we have a current event
-    if (!currentEventId) {
-        console.log('📝 No event selected, auto-save skipped');
-        pendingChanges = false;
-        showAutoSaveIndicator('idle');
-        return;
-    }
-    
-    try {
-        isSaving = true;
-        showAutoSaveIndicator('saving');
-        
-        console.log('💾 Auto-saving changes...');
-        
-        // Collect current form data
-        const eventData = collectFormData();
-        
-        // Validate required fields
-        if (!eventData.eventName || !eventData.eventDate) {
-            console.log('⚠️ Auto-save skipped: missing required fields');
-            showAutoSaveIndicator('idle');
-            isSaving = false;
-            pendingChanges = false;
-            return;
-        }
-        
-        // Save to Firebase
-        const result = await saveEventToFirebase(eventData);
-        
-        if (result.success) {
-            console.log('✅ Auto-save successful');
-            pendingChanges = false;
-            showAutoSaveIndicator('saved');
-            
-            // Update last sync time
-            if (window.updateSyncStatus) {
-                window.updateSyncStatus('online', 'Auto-saved');
-            }
-            
-            // Show success toast (optional - you might want to disable this for auto-save)
-            // window.showToast('Changes auto-saved', 'success');
-        } else {
-            console.error('❌ Auto-save failed:', result.error);
-            showAutoSaveIndicator('error');
-            
-            // Show error toast
-            window.showToast('Auto-save failed: ' + result.error, 'error');
-        }
-    } catch (error) {
-        console.error('❌ Auto-save error:', error);
-        showAutoSaveIndicator('error');
-        window.showToast('Auto-save error: ' + error.message, 'error');
-    } finally {
-        isSaving = false;
-        autoSaveTimeout = null;
-        
-        // Hide indicator after 2 seconds if no new changes
-        setTimeout(() => {
-            if (!pendingChanges) {
-                showAutoSaveIndicator('idle');
-            }
-        }, 2000);
-    }
-}
-
-// Auto-save indicator
-function showAutoSaveIndicator(status) {
-    const indicator = document.getElementById('autoSaveIndicator');
-    if (!indicator) return;
-    
-    // Remove all status classes
-    indicator.classList.remove('pending', 'saving', 'saved', 'error');
-    
-    switch(status) {
-        case 'pending':
-            indicator.innerHTML = '✏️ Unsaved changes...';
-            indicator.classList.add('pending');
-            indicator.style.display = 'inline-block';
-            break;
-        case 'saving':
-            indicator.innerHTML = '💾 Saving...';
-            indicator.classList.add('saving');
-            indicator.style.display = 'inline-block';
-            break;
-        case 'saved':
-            indicator.innerHTML = '✅ All changes saved';
-            indicator.classList.add('saved');
-            indicator.style.display = 'inline-block';
-            break;
-        case 'error':
-            indicator.innerHTML = '❌ Save failed';
-            indicator.classList.add('error');
-            indicator.style.display = 'inline-block';
-            break;
-        case 'idle':
-            indicator.style.display = 'none';
-            break;
-    }
-}
-
-// Force auto-save immediately
-window.forceAutoSave = async function() {
-    if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = null;
-    }
-    pendingChanges = true;
-    await performAutoSave();
-};
-
-// Save manually (for save button)
-window.saveEvent = async function() {
-    // Clear any pending auto-save
-    if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = null;
-    }
-    
-    const eventData = collectFormData();
-    
-    if (!eventData.eventName || !eventData.eventDate) {
-        window.showToast('Event Name and Date are required', 'error');
-        return;
-    }
-    
-    window.showSpinner('Saving event...');
-    const result = await saveEventToFirebase(eventData);
-    window.hideSpinner();
-    
-    if (result.success) {
-        window.showToast('Event saved successfully!', 'success');
-        await window.loadAllEvents();
-        isEditMode = false;
-        pendingChanges = false;
-        showAutoSaveIndicator('idle');
-        
-        // Update sync status
-        if (window.updateSyncStatus) {
-            window.updateSyncStatus('online', 'Connected');
-        }
-    } else {
-        window.showToast('Error saving event: ' + (result.error || 'Unknown error'), 'error');
-    }
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Starting initialization');
-    
-    // Initialize auto-save
-    initAutoSave();
-    
-    // Set up click outside to close user menu
-    document.addEventListener('click', function(event) {
-        const userMenu = document.getElementById('userMenu');
-        const authButton = document.getElementById('authButton');
-        if (userMenu && authButton && !authButton.contains(event.target) && !userMenu.contains(event.target)) {
-            userMenu.classList.remove('show');
-        }
-    });
-    
-    // Initialize student table features
-    setTimeout(() => {
-        initializeStudentTable();
-    }, 1000);
-    
-    // Set up event listeners
-    setupEventListeners();
-});
 
 // Make functions globally available
 window.collectFormData = collectFormData;
