@@ -213,7 +213,7 @@
             <p id="eventIdDisplay">Event ID: (new)</p>
 
             <div class="header-controls">
-                <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
+               <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
                 <button onclick="openSettings()" class="settings-btn">⚙️ Settings</button>
                 <button onclick="forceSync()" class="settings-btn" title="Force Sync" id="syncButton">🔄 Sync Now</button>
                 <div class="theme-toggle-wrapper">
@@ -395,89 +395,70 @@
         </form>
     </div>
 
-    <!-- Firebase and App Scripts -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-        import { getFirestore, collection, doc, getDocs, setDoc, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-        
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
-            authDomain: "eventlog-e2243.firebaseapp.com",
-            projectId: "eventlog-e2243",
-            storageBucket: "eventlog-e2243.firebasestorage.app",
-            messagingSenderId: "95089726888",
-            appId: "1:95089726888:web:a7a577456aeebe10f4399d",
-            measurementId: "G-RM4V4410ZN"
-        };
-        
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        
-        // Make Firebase available globally
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.firebaseProvider = provider;
-        
-        console.log('🔥 Firebase initialized');
-        
-        // Auth state observer
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log('✅ User signed in:', user.email);
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('worklog_session', user.uid);
-                document.body.classList.add('authenticated');
-                
-                // Hide landing page, show main container
-                document.getElementById('landingPage')?.classList.add('hidden');
-                document.getElementById('mainContainer')?.classList.add('active');
-                
-                // Initialize app data
-                if (typeof initializeAppData === 'function') {
-                    initializeAppData();
-                }
-            } else {
-                console.log('🔐 User signed out');
-                localStorage.removeItem('isAuthenticated');
-                localStorage.removeItem('worklog_session');
-                document.body.classList.remove('authenticated');
-                
-                // Show landing page
-                document.getElementById('landingPage')?.classList.remove('hidden');
-                document.getElementById('mainContainer')?.classList.remove('active');
+   <!-- Firebase and App Scripts -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
+        authDomain: "eventlog-e2243.firebaseapp.com",
+        projectId: "eventlog-e2243",
+        storageBucket: "eventlog-e2243.firebasestorage.app",
+        messagingSenderId: "95089726888",
+        appId: "1:95089726888:web:a7a577456aeebe10f4399d",
+        measurementId: "G-RM4V4410ZN"
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // Make Firebase available globally
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    
+    // Make Firestore functions available globally
+    window.firebaseFirestore = {
+        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp
+    };
+    
+    console.log('🔥 Firebase initialized');
+    
+    // Auth state observer
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('✅ User signed in:', user.email);
+            localStorage.setItem('isAuthenticated', 'true');
+            
+            if (window.updateUIBasedOnAuth) {
+                window.updateUIBasedOnAuth(user);
             }
-        });
-        
-        // Make auth functions global
-        window.handleGoogleSignIn = async function() {
-            try {
-                showSpinner('Signing in...');
-                await signInWithPopup(auth, provider);
-                hideSpinner();
-                showToast('Signed in successfully!', 'success');
-            } catch (error) {
-                hideSpinner();
-                console.error('Sign in error:', error);
-                showToast('Sign in failed: ' + error.message, 'error');
+        } else {
+            console.log('🔐 User signed out');
+            localStorage.removeItem('isAuthenticated');
+            
+            // Redirect to auth page
+            if (!window.location.pathname.includes('auth.html')) {
+                window.location.href = 'auth.html';
             }
-        };
-        
-        window.handleLogout = async function() {
-            try {
-                await signOut(auth);
-                showToast('Logged out successfully', 'success');
-            } catch (error) {
-                console.error('Logout error:', error);
-                showToast('Logout failed: ' + error.message, 'error');
-            }
-        };
-    </script>
+        }
+    });
+    
+    // Make auth functions global
+    window.handleLogout = async function() {
+        try {
+            await auth.signOut();
+            window.location.href = 'auth.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Logout failed: ' + error.message);
+        }
+    };
+</script>
     
     <!-- Main App Script -->
     <script src="app.js"></script>
@@ -675,5 +656,6 @@
     </script>
 </body>
 </html>
+
 
 
