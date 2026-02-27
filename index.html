@@ -216,8 +216,6 @@
                <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
                 <button onclick="openSettings()" class="settings-btn">⚙️ Settings</button>
                 <button onclick="forceSync()" class="settings-btn" title="Force Sync" id="syncButton">🔄 Sync Now</button>
-                <!-- Add this near your header controls or sync status -->
-            <div class="auto-save-indicator" id="autoSaveIndicator" style="display: none;"></div>
                 <div class="theme-toggle-wrapper">
                     <span class="toggle-text">Dark Mode</span>
                     <div class="theme-toggle">
@@ -679,8 +677,11 @@
         </button>
     </div>
 </div>
+ <!-- Auto-save indicator - will float at bottom-left -->
+ <div class="auto-save-indicator" id="autoSaveIndicator" style="display: none;"></div>
 </body>
 </html>
+
 
 
 
