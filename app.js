@@ -881,21 +881,86 @@ function setupEventListeners() {
         });
     }
     
-    // Dark mode toggle
+  // ============================================================================
+// DARK MODE TOGGLE - IMPROVED VERSION
+// ============================================================================
+
+function initDarkMode() {
     const darkModeToggle = document.getElementById('darkModeToggle');
+    
+    if (!darkModeToggle) {
+        console.warn('⚠️ Dark mode toggle not found');
+        return;
+    }
+    
+    // Load saved theme
     const savedTheme = localStorage.getItem('theme');
+    console.log('🎨 Saved theme:', savedTheme);
     
     if (savedTheme === 'dark') {
         document.body.classList.add('dark');
         darkModeToggle.checked = true;
+        console.log('🌓 Dark mode enabled from storage');
+    } else {
+        document.body.classList.remove('dark');
+        darkModeToggle.checked = false;
+        console.log('☀️ Light mode enabled from storage');
     }
     
-    darkModeToggle.addEventListener('change', () => {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('theme', darkModeToggle.checked ? 'dark' : 'light');
+    // Remove any existing listeners by cloning and replacing
+    const newToggle = darkModeToggle.cloneNode(true);
+    darkModeToggle.parentNode.replaceChild(newToggle, darkModeToggle);
+    
+    // Add new event listener
+    newToggle.addEventListener('change', function(e) {
+        if (this.checked) {
+            document.body.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            console.log('🌓 Dark mode enabled');
+        } else {
+            document.body.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            console.log('☀️ Light mode enabled');
+        }
     });
+    
+    console.log('✅ Dark mode initialized');
 }
 
+// Call this in your DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM Content Loaded - Starting initialization');
+    
+    // Initialize dark mode
+    initDarkMode();
+    
+    // Initialize auto-save
+    if (typeof initAutoSave === 'function') {
+        initAutoSave();
+    }
+    
+    // Set up click outside to close user menu
+    document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('userMenu');
+        const authButton = document.getElementById('authButton');
+        if (userMenu && authButton && !authButton.contains(event.target) && !userMenu.contains(event.target)) {
+            userMenu.classList.remove('show');
+        }
+    });
+    
+    // Initialize student table features
+    setTimeout(() => {
+        if (typeof initializeStudentTable === 'function') {
+            initializeStudentTable();
+        }
+    }, 1000);
+    
+    // Set up event listeners
+    if (typeof setupEventListeners === 'function') {
+        setupEventListeners();
+    }
+});
+    
 function initializeStudentTable() {
     console.log('✅ Student table features initialized');
     
