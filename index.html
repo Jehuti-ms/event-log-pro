@@ -116,6 +116,23 @@
 </head>
 <body>
     <script>
+    // CRITICAL: Check auth IMMEDIATELY
+    (function() {
+        // Check if user is authenticated via Firebase
+        const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+        
+        // If not authenticated, redirect to auth page
+        if (!isAuth && !window.location.pathname.includes('auth.html')) {
+            console.log('🔐 Not authenticated, redirecting to login');
+            window.location.href = 'auth.html';
+        } else if (isAuth) {
+            console.log('✅ User authenticated');
+            document.body.classList.add('authenticated');
+        }
+    })();
+</script>
+    
+    <script>
         console.log('🔧 Script loading check...');
         
         // CRITICAL: Check auth IMMEDIATELY to prevent flash
@@ -658,4 +675,5 @@
     </script>
 </body>
 </html>
+
 
