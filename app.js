@@ -907,7 +907,7 @@ function initializeStudentTable() {
             th.style.position = 'sticky';
             th.style.top = '0';
             th.style.zIndex = '100';
-            th.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            th.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
             th.style.color = 'white';
             th.style.fontWeight = '600';
             th.style.padding = '16px 20px';
@@ -955,13 +955,6 @@ function initializeStudentTable() {
         console.log('✅ Student search initialized');
     } else {
         console.warn('⚠️ Search input not found');
-    }
-    
-    // Also make sure the Clear Search button works
-    const clearButton = document.querySelector('button[onclick="clearSearch()"]');
-    if (clearButton) {
-        // The onclick attribute already calls clearSearch, so we're good
-        console.log('✅ Clear search button found');
     }
 }
 
