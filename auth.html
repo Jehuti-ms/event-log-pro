@@ -212,22 +212,44 @@
             right: 0;
         }
 
-        .error-message {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
+        .forgot-password {
+            text-align: right;
+            margin-top: 10px;
         }
 
-        .success-message {
-            color: #28a745;
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
             font-size: 14px;
-            margin-top: 5px;
-            display: none;
+            transition: all 0.3s ease;
         }
 
-        .message-show {
-            display: block;
+        .forgot-password a:hover {
+            text-decoration: underline;
+            color: #764ba2;
+        }
+
+        .demo-credentials {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 14px;
+        }
+
+        .demo-credentials p {
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .demo-credentials .cred {
+            font-family: monospace;
+            background: #e8ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #667eea;
         }
 
         .back-link {
@@ -283,6 +305,41 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10001;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.info {
+            background: #17a2b8;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -304,16 +361,26 @@
                 <form id="loginForm">
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                        <input type="email" id="loginEmail" placeholder="your@email.com" required autocomplete="email">
                     </div>
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+
+                    <div class="forgot-password">
+                        <a href="#" onclick="resetPassword()">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Sign In</button>
                 </form>
+
+                <!-- Demo Credentials -->
+                <div class="demo-credentials">
+                    <p>🔑 Demo Account:</p>
+                    <span class="cred">demo@eventlog.com</span> / <span class="cred">demo123</span>
+                </div>
 
                 <div class="divider">or</div>
 
@@ -333,23 +400,23 @@
                 <form id="registerForm">
                     <div class="form-group">
                         <label>Full Name</label>
-                        <input type="text" id="registerName" placeholder="John Doe" required>
+                        <input type="text" id="registerName" placeholder="John Doe" required autocomplete="name">
                     </div>
 
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                        <input type="email" id="registerEmail" placeholder="your@email.com" required autocomplete="email">
                     </div>
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="registerPassword" placeholder="••••••••" required>
+                        <input type="password" id="registerPassword" placeholder="••••••••" required autocomplete="new-password">
                         <small style="color: #6c757d; display: block; margin-top: 5px;">Minimum 6 characters</small>
                     </div>
 
                     <div class="form-group">
                         <label>Confirm Password</label>
-                        <input type="password" id="registerConfirmPassword" placeholder="••••••••" required>
+                        <input type="password" id="registerConfirmPassword" placeholder="••••••••" required autocomplete="new-password">
                     </div>
 
                     <button type="submit" class="btn btn-primary">Create Account</button>
@@ -369,7 +436,7 @@
             </div>
 
             <div class="back-link">
-                <a href="index.html">← Back to App</a>
+                <a href="/event-log-pro/">← Back to App</a>
             </div>
         </div>
     </div>
@@ -382,6 +449,9 @@
         </div>
     </div>
 
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
         import { 
@@ -390,7 +460,8 @@
             signInWithEmailAndPassword,
             signInWithPopup,
             GoogleAuthProvider,
-            updateProfile
+            updateProfile,
+            sendPasswordResetEmail
         } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
         // Firebase configuration
@@ -412,6 +483,7 @@
         // UI Elements
         const spinner = document.getElementById('spinner');
         const spinnerText = document.getElementById('spinnerText');
+        const toastContainer = document.getElementById('toastContainer');
 
         // Helper Functions
         function showSpinner(message) {
@@ -423,23 +495,49 @@
             spinner.classList.remove('active');
         }
 
-        function showError(elementId, message) {
-            const errorDiv = document.getElementById(elementId);
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.classList.add('message-show');
-                setTimeout(() => {
-                    errorDiv.classList.remove('message-show');
-                }, 3000);
-            } else {
-                alert(message);
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Create demo user if it doesn't exist
+        async function createDemoUser() {
+            try {
+                // Try to sign in with demo credentials first
+                try {
+                    await signInWithEmailAndPassword(auth, 'demo@eventlog.com', 'demo123');
+                    console.log('✅ Demo user already exists');
+                } catch (error) {
+                    // If demo user doesn't exist, create it
+                    if (error.code === 'auth/user-not-found') {
+                        console.log('Creating demo user...');
+                        const userCredential = await createUserWithEmailAndPassword(auth, 'demo@eventlog.com', 'demo123');
+                        await updateProfile(userCredential.user, {
+                            displayName: 'Demo User'
+                        });
+                        console.log('✅ Demo user created successfully');
+                        
+                        // Sign out immediately so user can choose to sign in
+                        await auth.signOut();
+                    } else if (error.code === 'auth/too-many-requests') {
+                        console.log('Too many attempts, skipping demo user creation');
+                    } else {
+                        console.log('Demo user check:', error.code);
+                    }
+                }
+            } catch (error) {
+                console.error('Error with demo user:', error);
             }
         }
 
-        function showSuccess(message) {
-            // You can implement a toast or just alert for now
-            alert('✅ ' + message);
-        }
+        // Call this after Firebase initializes
+        createDemoUser();
 
         // Tab switching
         window.switchTab = function(tab) {
@@ -455,6 +553,33 @@
             }
         };
 
+        // Forgot Password
+        window.resetPassword = async function() {
+            const email = document.getElementById('loginEmail').value;
+            if (!email) {
+                showToast('Please enter your email address first', 'error');
+                document.getElementById('loginEmail').focus();
+                return;
+            }
+            
+            try {
+                showSpinner('Sending reset email...');
+                await sendPasswordResetEmail(auth, email);
+                hideSpinner();
+                showToast('✅ Password reset email sent! Check your inbox.', 'success');
+            } catch (error) {
+                hideSpinner();
+                console.error('Password reset error:', error);
+                let message = 'Error sending reset email';
+                if (error.code === 'auth/user-not-found') {
+                    message = 'No account found with this email';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = 'Invalid email address';
+                }
+                showToast('❌ ' + message, 'error');
+            }
+        };
+
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -464,32 +589,42 @@
 
             try {
                 showSpinner('Signing in...');
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log('Login successful:', userCredential.user.email);
                 hideSpinner();
-                showSuccess('Signed in successfully!');
+                localStorage.setItem('isAuthenticated', 'true');
+                showToast('✅ Signed in successfully!', 'success');
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/event-log-pro/';
                 }, 1500);
             } catch (error) {
                 hideSpinner();
+                console.error('Login error:', error.code, error.message);
+                
                 let errorMessage = 'Sign in failed';
+                let suggestion = '';
+                
                 switch (error.code) {
+                    case 'auth/invalid-credential':
                     case 'auth/user-not-found':
-                        errorMessage = 'No account found with this email';
-                        break;
                     case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password';
+                        errorMessage = 'Invalid email or password';
+                        suggestion = '\n\nTry using:\nEmail: demo@eventlog.com\nPassword: demo123';
                         break;
                     case 'auth/invalid-email':
-                        errorMessage = 'Invalid email address';
+                        errorMessage = 'Invalid email address format';
                         break;
                     case 'auth/too-many-requests':
                         errorMessage = 'Too many failed attempts. Try again later';
                         break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error. Check your internet connection';
+                        break;
                     default:
                         errorMessage = error.message;
                 }
-                alert('❌ ' + errorMessage);
+                
+                showToast('❌ ' + errorMessage + (suggestion || ''), 'error');
             }
         });
 
@@ -503,12 +638,12 @@
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
             if (password.length < 6) {
-                alert('Password must be at least 6 characters');
+                showToast('Password must be at least 6 characters', 'error');
                 return;
             }
 
             if (password !== confirmPassword) {
-                alert('Passwords do not match');
+                showToast('Passwords do not match', 'error');
                 return;
             }
 
@@ -521,28 +656,34 @@
                     displayName: name
                 });
                 
+                console.log('Account created successfully:', userCredential.user.email);
                 hideSpinner();
-                showSuccess('Account created successfully!');
+                localStorage.setItem('isAuthenticated', 'true');
+                showToast('✅ Account created successfully!', 'success');
+                
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/event-log-pro/';
                 }, 1500);
             } catch (error) {
                 hideSpinner();
+                console.error('Registration error:', error.code, error.message);
+                
                 let errorMessage = 'Registration failed';
                 switch (error.code) {
                     case 'auth/email-already-in-use':
-                        errorMessage = 'Email already in use';
+                        errorMessage = 'Email already in use. Please sign in instead.';
                         break;
                     case 'auth/invalid-email':
                         errorMessage = 'Invalid email address';
                         break;
                     case 'auth/weak-password':
-                        errorMessage = 'Password is too weak';
+                        errorMessage = 'Password is too weak. Use at least 6 characters';
                         break;
                     default:
                         errorMessage = error.message;
                 }
-                alert('❌ ' + errorMessage);
+                
+                showToast('❌ ' + errorMessage, 'error');
             }
         });
 
@@ -550,16 +691,33 @@
         window.signInWithGoogle = async function() {
             try {
                 showSpinner('Signing in with Google...');
-                await signInWithPopup(auth, provider);
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                const result = await signInWithPopup(auth, provider);
+                console.log('Google sign in successful:', result.user.email);
                 hideSpinner();
-                showSuccess('Signed in successfully!');
+                localStorage.setItem('isAuthenticated', 'true');
+                showToast('✅ Signed in successfully!', 'success');
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/event-log-pro/';
                 }, 1500);
             } catch (error) {
                 hideSpinner();
-                console.error('Google sign in error:', error);
-                alert('❌ Google sign in failed: ' + error.message);
+                console.error('Google sign in error:', error.code, error.message);
+                
+                let errorMessage = 'Google sign in failed';
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = 'Sign in cancelled';
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMessage = 'Popup was blocked. Please allow popups for this site.';
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    errorMessage = 'This domain is not authorized. Please add it to Firebase console.';
+                } else {
+                    errorMessage = error.message;
+                }
+                
+                showToast('❌ ' + errorMessage, 'error');
             }
         };
     </script>
