@@ -1266,21 +1266,11 @@ body.dark .table-loading::after {
     min-width: 1200px; /* Adjust based on your column count */
 }
 
-/* Make thead sticky - this is the key fix */
-#studentTable thead {
+/* Style the header cells - WITH position sticky on th */
+#studentTable th {
     position: sticky;
     top: 0;
     z-index: 10;
-}
-
-/* Style the header row */
-#studentTable thead tr {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-}
-
-/* Style the header cells - REMOVE position sticky from th */
-#studentTable thead th {
-    /* position: sticky; REMOVED - this was conflicting */
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
     font-weight: 600;
@@ -1291,6 +1281,16 @@ body.dark .table-loading::after {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     font-size: 14px;
     letter-spacing: 0.5px;
+}
+
+/* Remove position sticky from thead - it doesn't need it */
+#studentTable thead {
+    /* No position sticky here */
+}
+
+/* Style the header row - just for background */
+#studentTable thead tr {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
 }
 
 /* Add a subtle shadow at the top when scrolling */
@@ -1312,23 +1312,23 @@ body.dark .table-scroll-container {
     border-color: #374151;
 }
 
-body.dark #studentTable thead tr,
-body.dark #studentTable thead th {
+body.dark #studentTable th,
+body.dark #studentTable thead tr {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
-body.dark #studentTable thead th {
+body.dark #studentTable th {
     border-bottom-color: rgba(255, 255, 255, 0.1);
     color: #f0fdf4;
 }
 
 /* Hover effect on headers */
-#studentTable thead th:hover {
+#studentTable th:hover {
     background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
     cursor: default;
 }
 
-body.dark #studentTable thead th:hover {
+body.dark #studentTable th:hover {
     background: linear-gradient(135deg, #047857 0%, #036b4b 100%);
 }
 
@@ -1478,6 +1478,7 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
 body.dark #studentTable tbody td:first-child {
     color: #9ca3af;
 }
+
 
 /* ============================================================================
    AUTO-SAVE INDICATOR
