@@ -733,7 +733,7 @@ function showToast(message, type = 'info') {
 }
 
 // ============================================
-// AUTH STATE MANAGEMENT
+// AUTH STATE MANAGEMENT - FIXED
 // ============================================
 
 function updateUIBasedOnAuth(user) {
@@ -766,15 +766,18 @@ function updateUIBasedOnAuth(user) {
             userName.textContent = user.displayName || user.email || 'User';
         }
         
-        // Initialize app data
-        generateNewEventId();
-        loadAllEvents();
-        updateCounts();
-        
-        // Update sync status
-        if (window.updateSyncStatus) {
-            window.updateSyncStatus('online', `Connected as ${user.email}`);
-        }
+        // Initialize app data with a slight delay to ensure Firebase is ready
+        setTimeout(() => {
+            console.log('📊 Initializing app data...');
+            generateNewEventId();
+            loadAllEvents();
+            updateCounts();
+            
+            // Update sync status
+            if (window.updateSyncStatus) {
+                window.updateSyncStatus('online', `Connected as ${user.email}`);
+            }
+        }, 500);
     } else {
         // User is signed out
         isAuthenticated = false;
