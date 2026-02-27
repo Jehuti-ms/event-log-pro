@@ -1,14 +1,14 @@
 // sw.js - Service Worker for Event Log Pro
-const CACHE_NAME = 'event-log-pro-v1';
+const CACHE_NAME = 'event-log-pro-v2'; // Increment version to force update
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/event-log-pro/',
+  '/event-log-pro/index.html',
+  '/event-log-pro/styles.css',
+  '/event-log-pro/app.js',
+  '/event-log-pro/manifest.json',
+  '/event-log-pro/icon.svg',
+  '/event-log-pro/icon-192.png',
+  '/event-log-pro/icon-512.png'
 ];
 
 // Install service worker
@@ -18,7 +18,10 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Cache opened');
-        return cache.addAll(urlsToCache);
+        return cache.addAll(urlsToCache).catch(error => {
+          console.error('Failed to cache some resources:', error);
+          // Still continue even if some resources fail
+        });
       })
   );
   self.skipWaiting();
@@ -44,11 +47,16 @@ self.addEventListener('activate', event => {
 
 // Fetch event - network first, then cache
 self.addEventListener('fetch', event => {
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then(response => {
         // Don't cache non-successful responses
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+        if (!response || response.status !== 200) {
           return response;
         }
 
@@ -58,7 +66,8 @@ self.addEventListener('fetch', event => {
         caches.open(CACHE_NAME)
           .then(cache => {
             cache.put(event.request, responseToCache);
-          });
+          })
+          .catch(err => console.log('Cache put error:', err));
 
         return response;
       })
