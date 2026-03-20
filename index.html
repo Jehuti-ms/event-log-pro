@@ -459,6 +459,27 @@
         }
     };
 </script>
+
+    <!-- Add this right after your Firebase initialization script -->
+<script type="module">
+    // Make Firebase Firestore functions available globally with real-time support
+    import { 
+        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, 
+        serverTimestamp, onSnapshot, updateDoc, addDoc 
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    
+    // Extend the global Firebase object
+    window.firebaseFirestore = {
+        ...window.firebaseFirestore,
+        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, 
+        serverTimestamp, onSnapshot, updateDoc, addDoc
+    };
+    
+    console.log('🔥 Firebase Firestore with real-time support ready');
+</script>
+
+    <!-- Load auto-sync after app.js -->
+    <script src="autosync.js"></script>
     
     <!-- Main App Script -->
     <script src="app.js"></script>
