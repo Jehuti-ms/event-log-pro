@@ -1573,4 +1573,169 @@ body.dark .auto-save-indicator.error {
     color: #fecaca;
 }
 
+/* Add to styles.css - Fix for mobile header controls */
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    padding-top: 60px; /* Add space for controls on mobile */
+}
+
+.header-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 100;
+}
+
+/* Mobile styles - fix for header controls */
+@media (max-width: 768px) {
+    header {
+        padding-top: 80px; /* More space for controls on mobile */
+        margin-bottom: 20px;
+    }
+    
+    .header-controls {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        left: auto;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        max-width: 100%;
+    }
+    
+    .settings-btn {
+        padding: 6px 12px;
+        font-size: 0.8em;
+        white-space: nowrap;
+    }
+    
+    .theme-toggle-wrapper {
+        position: relative;
+        white-space: nowrap;
+    }
+    
+    .toggle-text {
+        font-size: 0.7em;
+    }
+    
+    .toggle-label {
+        width: 50px;
+        height: 26px;
+    }
+    
+    .toggle-ball {
+        width: 20px;
+        height: 20px;
+        top: 3px;
+        left: 3px;
+    }
+    
+    .theme-toggle input:checked + .toggle-label .toggle-ball {
+        transform: translateX(24px);
+    }
+    
+    h1 {
+        font-size: 1.5em;
+        margin-top: 10px;
+    }
+    
+    h2 {
+        font-size: 1em;
+    }
+    
+    .form-title {
+        font-size: 1.2em;
+    }
+}
+
+/* Even smaller screens */
+@media (max-width: 480px) {
+    header {
+        padding-top: 100px;
+    }
+    
+    .header-controls {
+        gap: 5px;
+    }
+    
+    .settings-btn {
+        padding: 5px 10px;
+        font-size: 0.7em;
+    }
+    
+    .settings-btn span {
+        display: none; /* Hide text, show only emoji on very small screens */
+    }
+    
+    .settings-btn {
+        font-size: 1.2em;
+        padding: 8px 10px;
+    }
+    
+    .toggle-text {
+        display: none; /* Hide "Dark Mode" text on very small screens */
+    }
+    
+    .theme-toggle-wrapper {
+        gap: 3px;
+    }
+    
+    .toggle-label {
+        width: 44px;
+        height: 24px;
+    }
+    
+    .toggle-ball {
+        width: 18px;
+        height: 18px;
+        top: 3px;
+        left: 3px;
+    }
+    
+    .theme-toggle input:checked + .toggle-label .toggle-ball {
+        transform: translateX(20px);
+    }
+    
+    .toggle-icon {
+        font-size: 10px;
+    }
+}
+
+/* Fix for the header controls to ensure they stay within viewport */
+@media (max-width: 600px) {
+    .container {
+        overflow-x: hidden;
+    }
+    
+    header {
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .header-controls {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        left: auto;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        background: transparent;
+        padding: 0;
+        max-width: calc(100% - 20px);
+    }
+    
+    /* Make sure buttons don't overflow */
+    .settings-btn {
+        margin: 0;
+        flex-shrink: 0;
+    }
+}
 
