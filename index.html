@@ -27,7 +27,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Apple Mobile Web App -->
-   <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Event Log Pro">
     
@@ -39,114 +39,18 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
-
-    <style>
-        /* Debug styles to see enhancement elements */
-        #studentSearch {
-            border: 2px solid #0078d7 !important;
-            background: #f0f8ff !important;
-        }
-
-        #studentTableContainer {
-            border: 2px solid #28a745 !important;
-        }
-
-        #studentCounter {
-            border: 2px solid #ff6b35 !important;
-            background: #fff3e0 !important;
-        }
-
-        #studentCountBadge {
-            border: 2px solid purple !important;
-        }
-
-        .sync-status-bar {
-            background: #f8f9fa;
-            padding: 8px 20px;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .sync-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        .sync-indicator.online {
-            background: #28a745;
-            box-shadow: 0 0 8px #28a745;
-        }
-
-        .sync-indicator.offline {
-            background: #dc3545;
-        }
-
-        .sync-indicator.syncing {
-            background: #ffc107;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-    </style>
-    
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed:', error);
-                    });
-            });
-        }
-    </script>
 </head>
 <body>
     <script>
     // CRITICAL: Check auth IMMEDIATELY
     (function() {
-        // Check if user is authenticated via Firebase
         const isAuth = localStorage.getItem('isAuthenticated') === 'true';
-        
-        // If not authenticated, redirect to auth page
         if (!isAuth && !window.location.pathname.includes('auth.html')) {
-            console.log('🔐 Not authenticated, redirecting to login');
             window.location.href = 'auth.html';
         } else if (isAuth) {
-            console.log('✅ User authenticated');
             document.body.classList.add('authenticated');
         }
     })();
-</script>
-    
-    <script>
-        console.log('🔧 Script loading check...');
-        
-        // CRITICAL: Check auth IMMEDIATELY to prevent flash
-        (function() {
-            const isAuth = localStorage.getItem('isAuthenticated') === 'true' || 
-                           localStorage.getItem('worklog_session') !== null;
-            
-            if (isAuth) {
-                document.body.classList.add('authenticated');
-                console.log('✅ User authenticated');
-            } else {
-                console.log('🔐 User not authenticated');
-            }
-        })();
     </script>
     
     <div id="landingPage" class="landing-page">
@@ -213,7 +117,7 @@
             <p id="eventIdDisplay">Event ID: (new)</p>
 
             <div class="header-controls">
-               <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
+                <button onclick="handleLogout()" class="settings-btn">🚪 Logout</button>
                 <button onclick="openSettings()" class="settings-btn">⚙️ Settings</button>
                 <button onclick="forceSync()" class="settings-btn" title="Force Sync" id="syncButton">🔄 Sync Now</button>
                 <div class="theme-toggle-wrapper">
@@ -313,68 +217,44 @@
                 </div>
             </div>
 
-            <!-- Student List Section with Search and Scroll -->
+            <!-- Student List Section -->
             <h4 style="margin-top: 30px; margin-bottom: 15px;">
                 Student List 
                 <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
             </h4>
 
             <!-- Search Bar -->
-            <div class="search-container" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
                 <input type="text" id="studentSearch" placeholder="🔍 Search students by name, form, or contact..." style="padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;">
-                <button onclick="clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
+                <button onclick="window.clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
             </div>
 
-           <!-- Scrollable Table Container - Simplified Structure -->
+            <!-- Scrollable Table Container -->
             <div class="table-scroll-container" id="studentTableContainer">
                 <table id="studentTable">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Student Name</th>
-                            <th>Form</th>
-                            <th>Contact Number</th>
-                            <th>Medical / Illness</th>
-                            <th>Medication</th>
-                            <th>Permission</th>
-                            <th>Present</th>
-                            <th>Remove</th>
+                            <th style="width: 50px;">#</th>
+                            <th style="min-width: 180px;">👤 Student Name</th>
+                            <th style="min-width: 80px;">📚 Form</th>
+                            <th style="min-width: 130px;">📞 Contact Number</th>
+                            <th style="min-width: 200px;">💊 Medical / Illness</th>
+                            <th style="min-width: 180px;">💉 Medication</th>
+                            <th style="width: 100px;">✅ Permission</th>
+                            <th style="width: 100px;">🎯 Present</th>
+                            <th style="width: 70px;">✖️ Remove</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Your student rows -->
-                        <tr>
-                            <td>1</td>
-                            <td><input type="text" name="studentName[]"></td>
-                            <td><input type="text" name="form[]"></td>
-                            <td><input type="text" name="contact[]"></td>
-                            <td>
-                                <select name="illness[]" class="student-illness">
-                                    <option value="None">None</option>
-                                    <option value="Asthma">Asthma</option>
-                                    <option value="Allergies – Mild">Allergies – Mild</option>
-                                    <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
-                                    <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
-                                    <option value="Diabetes">Diabetes</option>
-                                    <option value="Heart condition">Heart condition</option>
-                                    <option value="Other (specify)">Other (specify)</option>
-                                </select>
-                                <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
-                            </td>
-                            <td>
-                                <input type="checkbox" name="medication[]" class="medication-checkbox">
-                                <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
-                            </td>
-                            <td><input type="checkbox" name="permission[]"></td>
-                            <td><input type="checkbox" name="present[]"></td>
-                            <td><button type="button" class="delete-row">✖</button></td>
-                        </tr>
+                    <tbody id="studentTableBody">
+                        <!-- Student rows will be added here by JavaScript -->
                     </tbody>
                 </table>
-                <div class="student-counter" id="studentCounter">Total Students: 1</div>
+                <div class="student-counter" id="studentCounter">
+                    Total Students: 0
+                </div>
             </div>
             
-            <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
+            <button type="button" class="add-row" onclick="window.addStudentRow()">+ Add Student</button>
             
             <div class="form-group">
                 <label for="eventSelect">Load Existing Event</label>
@@ -394,309 +274,85 @@
         </form>
     </div>
 
-   <!-- Firebase and App Scripts -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
-        authDomain: "eventlog-e2243.firebaseapp.com",
-        projectId: "eventlog-e2243",
-        storageBucket: "eventlog-e2243.firebasestorage.app",
-        messagingSenderId: "95089726888",
-        appId: "1:95089726888:web:a7a577456aeebe10f4399d",
-        measurementId: "G-RM4V4410ZN"
-    };
-    
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    
-    // Make Firebase available globally
-    window.firebaseAuth = auth;
-    window.firebaseDb = db;
-    
-    // Make Firestore functions available globally
-    window.firebaseFirestore = {
-        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp
-    };
-    
-    console.log('🔥 Firebase initialized');
-    
-    // Auth state observer
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log('✅ User signed in:', user.email);
-            localStorage.setItem('isAuthenticated', 'true');
-            
-            if (window.updateUIBasedOnAuth) {
-                window.updateUIBasedOnAuth(user);
-            }
-        } else {
-            console.log('🔐 User signed out');
-            localStorage.removeItem('isAuthenticated');
-            
-            // Redirect to auth page
-            if (!window.location.pathname.includes('auth.html')) {
-                window.location.href = 'auth.html';
-            }
-        }
-    });
-    
-    // Make auth functions global
-    window.handleLogout = async function() {
-        try {
-            await auth.signOut();
-            window.location.href = 'auth.html';
-        } catch (error) {
-            console.error('Logout error:', error);
-            alert('Logout failed: ' + error.message);
-        }
-    };
-</script>
-
-    <!-- Add this right after your Firebase initialization script -->
-<script type="module">
-    // Make Firebase Firestore functions available globally with real-time support
-    import { 
-        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, 
-        serverTimestamp, onSnapshot, updateDoc, addDoc 
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    
-    // Extend the global Firebase object
-    window.firebaseFirestore = {
-        ...window.firebaseFirestore,
-        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, 
-        serverTimestamp, onSnapshot, updateDoc, addDoc
-    };
-    
-    console.log('🔥 Firebase Firestore with real-time support ready');
-</script>
-
-    <!-- Load auto-sync after app.js -->
-    <script src="autosync.js"></script>
-    
-    <!-- Main App Script -->
-    <script src="app.js"></script>
-    
-  <!-- Enhancement Script - FIXED -->
-<script>
-    // ============================================
-    // SIMPLE ENHANCEMENTS
-    // ============================================
-
-    console.log('🚀 Enhancements loading...');
-
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('📄 DOM loaded - activating enhancements');
+    <!-- Firebase and App Scripts -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
         
-        setTimeout(() => {
-            activateEnhancements();
-        }, 1000);
-    });
-
-    function activateEnhancements() {
-        console.log('🎯 Activating enhancements...');
+        const firebaseConfig = {
+            apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
+            authDomain: "eventlog-e2243.firebaseapp.com",
+            projectId: "eventlog-e2243",
+            storageBucket: "eventlog-e2243.firebasestorage.app",
+            messagingSenderId: "95089726888",
+            appId: "1:95089726888:web:a7a577456aeebe10f4399d",
+            measurementId: "G-RM4V4410ZN"
+        };
         
-        // Connect search functionality
-        const searchInput = document.getElementById('studentSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const term = e.target.value.toLowerCase().trim();
-                const rows = document.querySelectorAll('#studentTable tbody tr');
-                
-                let visibleCount = 0;
-                rows.forEach(row => {
-                    if (row.style.display !== 'none') {
-                        const name = row.cells[1]?.querySelector('input')?.value.toLowerCase() || '';
-                        const form = row.cells[2]?.querySelector('input')?.value.toLowerCase() || '';
-                        const contact = row.cells[3]?.querySelector('input')?.value.toLowerCase() || '';
-                        
-                        const matches = name.includes(term) || form.includes(term) || contact.includes(term);
-                        if (!matches && term !== '') {
-                            row.style.display = 'none';
-                        } else {
-                            row.style.display = '';
-                            if (name) visibleCount++;
-                        }
-                    }
-                });
-                
-                updateCounter();
-            });
-            console.log('✅ Search connected');
-        }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         
-        // REMOVED: The inline styling for headers that was overriding your CSS
-        // Let CSS handle the sticky headers instead
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseFirestore = {
+            collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp
+        };
         
-        // Initial counter update
-        updateCounter();
+        console.log('🔥 Firebase initialized');
         
-        // Auto-update counter on changes
-        const tableBody = document.querySelector('#studentTable tbody');
-        if (tableBody) {
-            const observer = new MutationObserver(() => {
-                setTimeout(updateCounter, 100);
-            });
-            observer.observe(tableBody, { childList: true, subtree: true });
-        }
-        
-        console.log('✅ All enhancements activated!');
-    }
-
-    function updateCounter() {
-        const rows = document.querySelectorAll('#studentTable tbody tr');
-        const searchInput = document.getElementById('studentSearch');
-        const searchTerm = searchInput ? searchInput.value.trim() : '';
-        
-        let validStudents = 0;
-        let visibleStudents = 0;
-        
-        rows.forEach(row => {
-            const nameInput = row.cells[1]?.querySelector('input');
-            const hasName = nameInput && nameInput.value.trim() !== '';
-            
-            if (hasName) {
-                validStudents++;
-                if (row.style.display !== 'none') {
-                    visibleStudents++;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ User signed in:', user.email);
+                localStorage.setItem('isAuthenticated', 'true');
+                if (window.updateUIBasedOnAuth) window.updateUIBasedOnAuth(user);
+            } else {
+                console.log('🔐 User signed out');
+                localStorage.removeItem('isAuthenticated');
+                if (!window.location.pathname.includes('auth.html')) {
+                    window.location.href = 'auth.html';
                 }
             }
         });
         
-        const counter = document.getElementById('studentCounter');
-        const badge = document.getElementById('studentCountBadge');
-        
-        if (counter) {
-            counter.textContent = searchTerm ? 
-                `Showing: ${visibleStudents} of ${validStudents} students` : 
-                `Total Students: ${validStudents}`;
-        }
-        
-        if (badge) {
-            badge.textContent = `${validStudents} student${validStudents !== 1 ? 's' : ''}`;
-        }
-    }
+        window.handleLogout = async function() {
+            try {
+                await auth.signOut();
+                window.location.href = 'auth.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+    </script>
 
-    window.clearSearch = function() {
-        const searchInput = document.getElementById('studentSearch');
-        if (searchInput) {
-            searchInput.value = '';
-            const rows = document.querySelectorAll('#studentTable tbody tr');
-            rows.forEach(row => row.style.display = '');
-            updateCounter();
-        }
-    };
+    <script src="app.js"></script>
+    <script src="autosync.js"></script>
 
-    // Sync status functions
-    window.updateSyncStatus = function(status, message) {
-        const indicator = document.getElementById('syncIndicator');
-        const statusText = document.getElementById('syncStatusText');
-        const lastSyncTime = document.getElementById('lastSyncTime');
-        
-        if (indicator) {
-            indicator.className = `sync-indicator ${status}`;
-        }
-        
-        if (statusText) {
-            statusText.textContent = message || status;
-        }
-        
-        if (lastSyncTime) {
-            lastSyncTime.textContent = new Date().toLocaleTimeString();
-        }
-    };
-
-    window.forceSync = async function() {
-        if (typeof window.saveEvent === 'function') {
-            updateSyncStatus('syncing', 'Syncing...');
-            await window.saveEvent();
-            updateSyncStatus('online', 'Connected');
-        }
-    };
-
-    // UI Helpers
-    window.showSpinner = function(message) {
-        const spinner = document.getElementById('spinner');
-        const spinnerText = document.getElementById('spinnerText');
-        if (spinner) {
-            spinner.classList.add('active');
-            if (spinnerText) spinnerText.textContent = message;
-        }
-    };
-
-    window.hideSpinner = function() {
-        const spinner = document.getElementById('spinner');
-        if (spinner) {
-            spinner.classList.remove('active');
-        }
-    };
-
-    window.showToast = function(message, type = 'info') {
-        const toast = document.getElementById('toast');
-        if (toast) {
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-    };
-
-    window.openSettings = function() {
-        document.getElementById('settingsModal').classList.add('active');
-    };
-
-    window.closeSettings = function() {
-        document.getElementById('settingsModal').classList.remove('active');
-    };
-
-    window.saveSettings = function() {
-        const interval = document.getElementById('autoSyncInterval')?.value || 30;
-        localStorage.setItem('autoSyncInterval', interval);
-        showToast('Settings saved', 'success');
-        closeSettings();
-    };
-
-    console.log('🚀 Enhancements loaded!');
-</script>
-    
     <!-- Floating Action Button -->
-<div class="fab-container" id="fabContainer">
-    <button class="fab-button" id="fabButton" onclick="toggleFabMenu()">+</button>
-    <div class="fab-tooltip">Add New</div>
-    <div class="fab-options" id="fabOptions">
-        <button class="fab-option" onclick="addStudentRow(); scrollToStudentForm(); hideFabMenu();">
-            <span>👤</span>
-            <span>Add Student</span>
-        </button>
-        <button class="fab-option" onclick="newEvent(); hideFabMenu();">
-            <span>📅</span>
-            <span>New Event</span>
-        </button>
-        <button class="fab-option" onclick="document.getElementById('studentSearch').focus(); hideFabMenu();">
-            <span>🔍</span>
-            <span>Search</span>
-        </button>
-        <button class="fab-option" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); hideFabMenu();">
-            <span>⬆️</span>
-            <span>Back to Top</span>
-        </button>
+    <div class="fab-container" id="fabContainer">
+        <button class="fab-button" id="fabButton" onclick="toggleFabMenu()">+</button>
+        <div class="fab-tooltip">Add New</div>
+        <div class="fab-options" id="fabOptions">
+            <button class="fab-option" onclick="addStudentRow(); scrollToStudentForm(); hideFabMenu();">
+                <span>👤</span>
+                <span>Add Student</span>
+            </button>
+            <button class="fab-option" onclick="newEvent(); hideFabMenu();">
+                <span>📅</span>
+                <span>New Event</span>
+            </button>
+            <button class="fab-option" onclick="document.getElementById('studentSearch').focus(); hideFabMenu();">
+                <span>🔍</span>
+                <span>Search</span>
+            </button>
+            <button class="fab-option" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); hideFabMenu();">
+                <span>⬆️</span>
+                <span>Back to Top</span>
+            </button>
+        </div>
     </div>
-</div>
- <!-- Auto-save indicator - will float at bottom-left -->
- <div class="auto-save-indicator" id="autoSaveIndicator" style="display: none;"></div>
+    
+    <div class="auto-save-indicator" id="autoSaveIndicator" style="display: none;"></div>
 </body>
 </html>
-
-
-
-
-
-
-
