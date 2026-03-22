@@ -328,61 +328,24 @@
                     </button>
                 </div>
                 
-                <!-- Scrollable Table Container - NO extra wrapper inside! -->
-                <div class="table-scroll-container" id="studentTableContainer">
-                    <table id="studentTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="min-width: 180px;">👤 Student Name</th>
-                                <th style="min-width: 80px;">📚 Form</th>
-                                <th style="min-width: 130px;">📞 Contact Number</th>
-                                <th style="min-width: 200px;">💊 Medical / Illness</th>
-                                <th style="min-width: 180px;">💉 Medication</th>
-                                <th style="width: 100px;">✅ Permission</th>
-                                <th style="width: 100px;">🎯 Present</th>
-                                <th style="width: 70px;">✖️ Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Initial empty row - will be populated by JavaScript -->
-                            <tr>
-                                <td>1</td>
-                                <td><input type="text" name="studentName[]" placeholder="Enter student name"></td>
-                                <td><input type="text" name="form[]" placeholder="e.g., 10A"></td>
-                                <td><input type="text" name="contact[]" placeholder="Parent/Guardian contact"></td>
-                                <td>
-                                    <select name="illness[]" class="student-illness">
-                                        <option value="None">None</option>
-                                        <option value="Asthma">Asthma</option>
-                                        <option value="Allergies – Mild">Allergies – Mild</option>
-                                        <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
-                                        <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
-                                        <option value="Diabetes">Diabetes</option>
-                                        <option value="Heart condition">Heart condition</option>
-                                        <option value="Other (specify)">Other (specify)</option>
-                                    </select>
-                                    <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
-                                </td>
-                                <td>
-                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                        <input type="checkbox" name="medication[]" class="medication-checkbox">
-                                        <span style="font-size: 0.85em;">Taking medication</span>
-                                    </label>
-                                    <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication name/details" style="display:none; margin-top: 5px; width: 100%;">
-                                </td>
-                                <td style="text-align: center;">
-                                    <input type="checkbox" name="permission[]" style="width: 20px; height: 20px;">
-                                </td>
-                                <td style="text-align: center;">
-                                    <input type="checkbox" name="present[]" style="width: 20px; height: 20px;">
-                                </td>
-                                <td style="text-align: center;">
-                                    <button type="button" class="delete-row" style="background: #ef4444; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 16px;">✖</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Scrollable Container - CSS Grid Version -->
+                <div class="grid-table-container" id="studentTableContainer">
+                    <div class="grid-table-wrapper">
+                        <div class="grid-header">
+                            <div class="grid-cell header-cell sticky-col-1">#</div>
+                            <div class="grid-cell header-cell sticky-col-2">👤 Student Name</div>
+                            <div class="grid-cell header-cell">📚 Form</div>
+                            <div class="grid-cell header-cell">📞 Contact Number</div>
+                            <div class="grid-cell header-cell">💊 Medical / Illness</div>
+                            <div class="grid-cell header-cell">💉 Medication</div>
+                            <div class="grid-cell header-cell">✅ Permission</div>
+                            <div class="grid-cell header-cell">🎯 Present</div>
+                            <div class="grid-cell header-cell">✖️ Remove</div>
+                        </div>
+                        <div id="gridStudentRows">
+                            <!-- Student rows will be added here dynamically -->
+                        </div>
+                    </div>
                     <div class="student-counter" id="studentCounter">
                         Total Students: 1
                     </div>
