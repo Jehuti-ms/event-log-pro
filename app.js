@@ -41,6 +41,38 @@ function initFirebaseRefs() {
 }
 
 // ============================================
+// SYNC STATUS FUNCTIONS - MUST BE DEFINED EARLY
+// ============================================
+
+window.updateSyncStatus = function(status, message) {
+    const indicator = document.getElementById('syncIndicator');
+    const statusText = document.getElementById('syncStatusText');
+    const lastSyncTime = document.getElementById('lastSyncTime');
+    
+    if (indicator) {
+        indicator.className = `sync-indicator ${status}`;
+    }
+    
+    if (statusText) {
+        if (status === 'online') {
+            statusText.textContent = message || 'Connected';
+        } else if (status === 'offline') {
+            statusText.textContent = message || 'Offline';
+        } else if (status === 'syncing') {
+            statusText.textContent = message || 'Syncing...';
+        } else {
+            statusText.textContent = message || status;
+        }
+    }
+    
+    if (lastSyncTime && status === 'online') {
+        lastSyncTime.textContent = new Date().toLocaleTimeString();
+    }
+    
+    console.log(`📡 Sync status: ${status} - ${message || ''}`);
+};
+
+// ============================================
 // FIREBASE SERVICE FUNCTIONS (Internal)
 // ============================================
 
@@ -1948,37 +1980,6 @@ window.generateReport = function() {
     }
 };
 
-// ============================================
-// SYNC STATUS FUNCTIONS - MUST BE DEFINED EARLY
-// ============================================
-
-window.updateSyncStatus = function(status, message) {
-    const indicator = document.getElementById('syncIndicator');
-    const statusText = document.getElementById('syncStatusText');
-    const lastSyncTime = document.getElementById('lastSyncTime');
-    
-    if (indicator) {
-        indicator.className = `sync-indicator ${status}`;
-    }
-    
-    if (statusText) {
-        if (status === 'online') {
-            statusText.textContent = message || 'Connected';
-        } else if (status === 'offline') {
-            statusText.textContent = message || 'Offline';
-        } else if (status === 'syncing') {
-            statusText.textContent = message || 'Syncing...';
-        } else {
-            statusText.textContent = message || status;
-        }
-    }
-    
-    if (lastSyncTime && status === 'online') {
-        lastSyncTime.textContent = new Date().toLocaleTimeString();
-    }
-    
-    console.log(`📡 Sync status: ${status} - ${message || ''}`);
-};
 
 // ============================================
 // COMPLETE TABLE FIX - WORKING VERSION
