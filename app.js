@@ -1949,40 +1949,36 @@ window.generateReport = function() {
 };
 
 // ============================================
-// COMPLETE TABLE FIX - VERTICAL STICKY + COUNTER + INITIAL ROW
+// STICKY COLUMN POSITION ADJUSTMENT - CLEAN VERSION
 // ============================================
 
-// Fix 1: Ensure vertical sticky header works
-function fixVerticalSticky() {
-    const thead = document.querySelector('#studentTable thead');
-    if (thead) {
-        thead.style.position = 'sticky';
-        thead.style.top = '0';
-        thead.style.zIndex = '20';
-    }
-    
-    const headers = document.querySelectorAll('#studentTable th');
-    headers.forEach(th => {
-        th.style.position = 'sticky';
-        th.style.top = '0';
-    });
+function setStickyColumnPosition() {
+    setTimeout(function() {
+        const firstCol = document.querySelector('#studentTable th:first-child');
+        if (firstCol) {
+            const width = firstCol.offsetWidth;
+            
+            let style = document.getElementById('sticky-position-style');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'sticky-position-style';
+                document.head.appendChild(style);
+            }
+            
+            style.textContent = `
+                #studentTable th:nth-child(2),
+                #studentTable td:nth-child(2) {
+                    left: ${width}px !important;
+                }
+            `;
+            console.log('✅ Second column position set to:', width + 'px');
+        }
+    }, 100);
 }
 
-// Fix 2: Ensure counter is visible and sticky at bottom
-function fixCounter() {
-    const container = document.querySelector('.table-scroll-container');
-    let counter = document.querySelector('.student-counter');
-    
-    if (!counter && container) {
-        // Create counter if missing
-        counter = document.createElement('div');
-        counter.className = 'student-counter';
-        counter.id = 'studentCounter';
-        counter.textContent = 'Total Students: 0';
-        container.appendChild(counter);
-        console.log('✅ Counter created');
-    }
-    
+// Fix counter visibility
+function fixCounterDisplay() {
+    const counter = document.getElementById('studentCounter');
     if (counter) {
         counter.style.position = 'sticky';
         counter.style.bottom = '0';
@@ -1993,7 +1989,6 @@ function fixCounter() {
         counter.style.textAlign = 'center';
         counter.style.zIndex = '15';
         
-        // Dark mode support
         if (document.body.classList.contains('dark')) {
             counter.style.backgroundColor = '#0f1720';
             counter.style.borderTopColor = '#1f2a37';
@@ -2002,114 +1997,42 @@ function fixCounter() {
     }
 }
 
-// Fix 3: Add initial row if table is empty
+// Ensure initial row exists
 function ensureInitialRow() {
     const tbody = document.querySelector('#studentTable tbody');
     if (tbody && tbody.children.length === 0) {
-        console.log('Adding initial empty row...');
         window.addStudentRow();
     }
 }
 
-// Fix 4: Complete sticky columns (horizontal + vertical)
-function fixAllSticky() {
-    // Fix vertical first
-    fixVerticalSticky();
-    
-    // Then fix horizontal
-    const firstCol = document.querySelector('#studentTable th:first-child');
-    if (firstCol) {
-        const width = firstCol.offsetWidth;
-        
-        const secondColElements = document.querySelectorAll('#studentTable th:nth-child(2), #studentTable td:nth-child(2)');
-        secondColElements.forEach(el => {
-            el.style.setProperty('left', width + 'px', 'important');
-            el.style.position = 'sticky';
-        });
-        
-        const firstColElements = document.querySelectorAll('#studentTable th:first-child, #studentTable td:first-child');
-        firstColElements.forEach(el => {
-            el.style.setProperty('left', '0', 'important');
-            el.style.position = 'sticky';
-        });
-        
-        console.log('✅ Sticky columns fixed - vertical and horizontal');
-    }
-}
-
 // Run all fixes
-function runAllTableFixes() {
-    console.log('🔧 Running all table fixes...');
-    fixCounter();
+function runStickyFixes() {
+    setStickyColumnPosition();
+    fixCounterDisplay();
     ensureInitialRow();
-    setTimeout(() => {
-        fixAllSticky();
-        if (window.updateCounts) window.updateCounts();
-    }, 100);
 }
-
-// Override the addStudentRow to reapply sticky after adding
-const originalAddStudentRow = window.addStudentRow;
-window.addStudentRow = function(studentData = null, index = null) {
-    originalAddStudentRow(studentData, index);
-    setTimeout(() => {
-        fixAllSticky();
-        if (window.updateCounts) window.updateCounts();
-    }, 50);
-};
-
-// Override loadEvent to reapply sticky after loading
-const originalLoadEvent = window.loadEvent;
-window.loadEvent = async function(eventId) {
-    await originalLoadEvent(eventId);
-    setTimeout(() => {
-        fixAllSticky();
-        if (window.updateCounts) window.updateCounts();
-    }, 100);
-};
-
-// Override deleteStudentRow to reapply sticky after deletion
-const originalDeleteStudentRow = window.deleteStudentRow;
-window.deleteStudentRow = function(button) {
-    originalDeleteStudentRow(button);
-    setTimeout(() => {
-        fixAllSticky();
-        if (window.updateCounts) window.updateCounts();
-    }, 50);
-};
 
 // Run on page load
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(runAllTableFixes, 200);
+    setTimeout(runStickyFixes, 200);
 });
 
 // Run on window resize
 window.addEventListener('resize', function() {
-    setTimeout(fixAllSticky, 100);
+    setTimeout(setStickyColumnPosition, 100);
 });
 
 // Run when dark mode toggles
-const observer = new MutationObserver(function(mutations) {
+const darkModeObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.attributeName === 'class') {
-            const counter = document.querySelector('.student-counter');
-            if (counter) {
-                if (document.body.classList.contains('dark')) {
-                    counter.style.backgroundColor = '#0f1720';
-                    counter.style.borderTopColor = '#1f2a37';
-                    counter.style.color = '#e5e7eb';
-                } else {
-                    counter.style.backgroundColor = '#f8f9fa';
-                    counter.style.borderTopColor = '#ddd';
-                    counter.style.color = '#333';
-                }
-            }
+            fixCounterDisplay();
         }
     });
 });
-observer.observe(document.body, { attributes: true });
+darkModeObserver.observe(document.body, { attributes: true });
 
-console.log('✅ Table fixes loaded - vertical sticky, counter, and initial row should work');
+console.log('✅ Sticky column fixes loaded');
 
 // Make functions globally available
 window.collectFormData = collectFormData;
