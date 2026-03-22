@@ -1625,6 +1625,87 @@ window.generateReport = function() {
                             font-size: 14px;
                         }
                     }
+
+                        .stats-horizontal {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 15px;
+                        justify-content: space-around;
+                        background: #f8f9fa;
+                        padding: 15px 20px;
+                        border-radius: 10px;
+                        margin: 20px 0;
+                    }
+                    
+                    .stat-item {
+                        text-align: center;
+                        flex: 1;
+                        min-width: 100px;
+                        padding: 10px 15px;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+                        transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    }
+                    
+                    .stat-item:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+                    }
+                    
+                    .stat-value {
+                        font-size: 1.4em;
+                        font-weight: 700;
+                        color: #667eea;
+                        margin-bottom: 5px;
+                        line-height: 1.2;
+                    }
+                    
+                    .stat-label {
+                        font-size: 0.7em;
+                        color: #6c757d;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        font-weight: 500;
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .stats-horizontal {
+                            gap: 10px;
+                            padding: 12px;
+                        }
+                        
+                        .stat-item {
+                            min-width: 80px;
+                            padding: 8px 10px;
+                        }
+                        
+                        .stat-value {
+                            font-size: 1.2em;
+                        }
+                        
+                        .stat-label {
+                            font-size: 0.65em;
+                        }
+                    }
+                    
+                    @media print {
+                        .stats-horizontal {
+                            background: none;
+                            padding: 10px 0;
+                            gap: 10px;
+                        }
+                        
+                        .stat-item {
+                            border: 1px solid #ddd;
+                            box-shadow: none;
+                            background: white;
+                        }
+                        
+                        .stat-value {
+                            color: #333;
+                        }
+                    }
                 </style>
             </head>
             <body>
@@ -1676,26 +1757,26 @@ window.generateReport = function() {
                         </div>
                     </div>
                     
-                    <div class="report-section">
-                        <h2 class="section-title">📊 Summary Statistics</h2>
-                        <div class="stats-grid">
-                            <div class="stat-card">
+                 <div class="report-section">
+                     <h2 class="section-title">📊 Summary Statistics</h2>
+                        <div class="stats-horizontal">
+                            <div class="stat-item">
                                 <div class="stat-value">${totalStudents}</div>
                                 <div class="stat-label">Total Students</div>
                             </div>
-                            <div class="stat-card">
+                            <div class="stat-item">
                                 <div class="stat-value">${presentCount}</div>
                                 <div class="stat-label">Present</div>
                             </div>
-                            <div class="stat-card">
+                            <div class="stat-item">
                                 <div class="stat-value">${permissionCount}</div>
                                 <div class="stat-label">Permission Slips</div>
                             </div>
-                            <div class="stat-card">
+                            <div class="stat-item">
                                 <div class="stat-value">${medicalCount}</div>
                                 <div class="stat-label">Medical Cases</div>
                             </div>
-                            <div class="stat-card">
+                            <div class="stat-item">
                                 <div class="stat-value">${medicationCount}</div>
                                 <div class="stat-label">On Medication</div>
                             </div>
