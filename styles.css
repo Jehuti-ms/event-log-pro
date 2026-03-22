@@ -1238,6 +1238,248 @@ body.dark .table-loading::after {
 }
 
 /* ============================================================================
+   STICKY TABLE HEADER - FIXED
+   ============================================================================ */
+
+/* Container for scrollable table */
+.table-scroll-container {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    position: relative;
+    background: white;
+}
+
+/* The inner container */
+.table-container {
+    width: 100%;
+    display: block;
+}
+
+/* Style the table */
+#studentTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px; /* Adjust based on your column count */
+}
+
+/* Style the header cells - WITH position sticky on th */
+#studentTable th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+    font-weight: 600;
+    padding: 16px 20px;
+    white-space: nowrap;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+/* Remove position sticky from thead - it doesn't need it */
+#studentTable thead {
+    /* No position sticky here */
+}
+
+/* Style the header row - just for background */
+#studentTable thead tr {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+/* Add a subtle shadow at the top when scrolling */
+.table-scroll-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), transparent);
+    pointer-events: none;
+    z-index: 11;
+}
+
+/* Dark mode styles */
+body.dark .table-scroll-container {
+    background: #1e293b;
+    border-color: #374151;
+}
+
+body.dark #studentTable th,
+body.dark #studentTable thead tr {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+body.dark #studentTable th {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    color: #f0fdf4;
+}
+
+/* Hover effect on headers */
+#studentTable th:hover {
+    background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+    cursor: default;
+}
+
+body.dark #studentTable th:hover {
+    background: linear-gradient(135deg, #047857 0%, #036b4b 100%);
+}
+
+/* Ensure the table cells align properly */
+#studentTable tbody td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+    background: white;
+}
+
+body.dark #studentTable tbody td {
+    border-bottom-color: #374151;
+    background: #1e293b;
+    color: #e5e7eb;
+}
+
+/* Zebra striping for better readability */
+#studentTable tbody tr:nth-child(even) td {
+    background-color: #f8fafc;
+}
+
+body.dark #studentTable tbody tr:nth-child(even) td {
+    background-color: #1f2937;
+}
+
+#studentTable tbody tr:hover td {
+    background-color: #e2e8f0;
+    transition: background-color 0.2s ease;
+}
+
+body.dark #studentTable tbody tr:hover td {
+    background-color: #2d3748;
+}
+
+/* Style inputs inside table */
+#studentTable tbody td input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+#studentTable tbody td input[type="text"]:focus {
+    outline: none;
+    border-color: #2ecc71;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+}
+
+body.dark #studentTable tbody td input[type="text"] {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+/* Style select dropdowns */
+#studentTable tbody td select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+}
+
+body.dark #studentTable tbody td select {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+/* Style checkboxes */
+#studentTable tbody td input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #2ecc71;
+}
+
+/* Style delete button */
+#studentTable tbody td .delete-row {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.2s ease;
+}
+
+#studentTable tbody td .delete-row:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+body.dark #studentTable tbody td .delete-row {
+    background: #dc2626;
+}
+
+/* Custom scrollbar for the container */
+.table-scroll-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #f1f3f4;
+    border-radius: 10px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #2ecc71;
+    border-radius: 10px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #27ae60;
+}
+
+body.dark .table-scroll-container::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+
+body.dark .table-scroll-container::-webkit-scrollbar-thumb {
+    background: #059669;
+}
+
+body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #047857;
+}
+
+/* Ensure the first column (numbers) is centered */
+#studentTable tbody td:first-child {
+    text-align: center;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+body.dark #studentTable tbody td:first-child {
+    color: #9ca3af;
+}
+
+/* ============================================================================
    AUTO-SAVE INDICATOR
    ============================================================================ */
 
@@ -1495,34 +1737,8 @@ header {
         margin: 0;
         flex-shrink: 0;
     }
-    
-/* ============================================================================
-   STUDENT TABLE SECTION STYLES
-   ============================================================================ */
 
-/* Search Controls */
-.search-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.search-group {
-    display: flex;
-    gap: 10px;
-}
-
-.search-input {
-    padding: 8px 12px;
-    width: 250px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-/* Table Container */
+/* Sticky Table Header - FIXED */
 .table-scroll-container {
     max-height: 500px;
     overflow-y: auto;
@@ -1534,20 +1750,21 @@ header {
     background: white;
 }
 
-/* Table Styles */
+/* Make the table full width */
 #studentTable {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1200px;
+    min-width: 1200px; /* Ensures horizontal scroll if needed */
 }
 
-/* Header Styles */
+/* Make the header sticky - THIS IS THE KEY */
 #studentTable thead {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 10;
 }
 
+/* Style the header cells */
 #studentTable th {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
@@ -1559,152 +1776,28 @@ header {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     font-size: 14px;
     letter-spacing: 0.5px;
-    text-align: left;
-    position: sticky;
-    top: 0;
 }
 
-/* Column Widths */
-#studentTable .col-sn { width: 50px; text-align: center; }
-#studentTable .col-name { min-width: 180px; }
-#studentTable .col-form { min-width: 80px; }
-#studentTable .col-contact { min-width: 130px; }
-#studentTable .col-medical { min-width: 200px; }
-#studentTable .col-medication { min-width: 180px; }
-#studentTable .col-permission { width: 100px; text-align: center; }
-#studentTable .col-present { width: 100px; text-align: center; }
-#studentTable .col-remove { width: 70px; text-align: center; }
-
-/* Sticky Columns */
-#studentTable th:first-child,
-#studentTable td:first-child {
-    position: sticky;
-    left: 0;
-    background-color: white;
-    z-index: 100;
-    text-align: center;
-}
-
-#studentTable th:first-child {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    z-index: 101;
-}
-
-#studentTable th:nth-child(2),
-#studentTable td:nth-child(2) {
-    position: sticky;
-    background-color: white;
-    z-index: 99;
-    box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
-}
-
-#studentTable th:nth-child(2) {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    z-index: 100;
-}
-
-/* Table Body Cells */
+/* Style the body cells */
 #studentTable td {
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
     vertical-align: middle;
-    background-color: white;
-}
-
-/* Input Fields */
-#studentTable td input[type="text"] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 13px;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-
-#studentTable td input[type="text"]:focus {
-    outline: none;
-    border-color: #2ecc71;
-    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
-}
-
-#studentTable td select {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 13px;
     background: white;
-    box-sizing: border-box;
 }
 
-#studentTable td input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #2ecc71;
-}
-
-/* Delete Button */
-#studentTable td .delete-row {
-    background: #ef4444;
-    color: white;
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    transition: all 0.2s ease;
-}
-
-#studentTable td .delete-row:hover {
-    background: #dc2626;
-    transform: scale(1.1);
-}
-
-/* Zebra Striping */
+/* Zebra striping */
 #studentTable tbody tr:nth-child(even) td {
     background-color: #f8fafc;
 }
 
-#studentTable tbody tr:nth-child(even) td:first-child,
-#studentTable tbody tr:nth-child(even) td:nth-child(2) {
-    background-color: #f8fafc;
-}
-
-/* Hover Effect */
+/* Hover effect */
 #studentTable tbody tr:hover td {
     background-color: #e2e8f0;
     transition: background-color 0.2s ease;
 }
 
-#studentTable tbody tr:hover td:first-child,
-#studentTable tbody tr:hover td:nth-child(2) {
-    background-color: #e2e8f0;
-}
-
-/* Student Counter */
-.student-counter {
-    position: sticky;
-    bottom: 0;
-    background: #f8f9fa;
-    padding: 12px;
-    border-top: 1px solid #ddd;
-    font-weight: bold;
-    text-align: center;
-    z-index: 15;
-    font-size: 14px;
-}
-
-/* ============================================================================
-   DARK MODE
-   ============================================================================ */
-
+/* Dark mode support */
 body.dark .table-scroll-container {
     background: #121922;
     border-color: #1f2a37;
@@ -1715,32 +1808,30 @@ body.dark #studentTable th {
 }
 
 body.dark #studentTable td {
-    background-color: #1e293b;
+    background: #1e293b;
     border-bottom-color: #374151;
     color: #e5e7eb;
-}
-
-body.dark #studentTable td:first-child,
-body.dark #studentTable td:nth-child(2) {
-    background-color: #1e293b;
-}
-
-body.dark #studentTable th:first-child,
-body.dark #studentTable th:nth-child(2) {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
 body.dark #studentTable tbody tr:nth-child(even) td {
     background-color: #1f2937;
 }
 
-body.dark #studentTable tbody tr:nth-child(even) td:first-child,
-body.dark #studentTable tbody tr:nth-child(even) td:nth-child(2) {
-    background-color: #1f2937;
-}
-
 body.dark #studentTable tbody tr:hover td {
     background-color: #2d3748;
+}
+
+/* Sticky counter at bottom */
+.student-counter {
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+    text-align: center;
+    z-index: 5;
+    font-size: 14px;
 }
 
 body.dark .student-counter {
@@ -1749,22 +1840,7 @@ body.dark .student-counter {
     color: #e5e7eb;
 }
 
-body.dark #studentTable td input[type="text"] {
-    background: #374151;
-    border-color: #4b5563;
-    color: #e5e7eb;
-}
-
-body.dark #studentTable td select {
-    background: #374151;
-    border-color: #4b5563;
-    color: #e5e7eb;
-}
-
-/* ============================================================================
-   SCROLLBAR
-   ============================================================================ */
-
+/* Custom scrollbar */
 .table-scroll-container::-webkit-scrollbar {
     width: 12px;
     height: 12px;
