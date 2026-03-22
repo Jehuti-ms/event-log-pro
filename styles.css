@@ -1425,19 +1425,36 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
 */
 
 /* ============================================================================
-   HEADER BUTTONS - MOBILE OPTIMIZATION
+   HEADER BUTTONS - BELOW LOGO (UPDATED)
    ============================================================================ */
 
+/* Desktop - controls below logo */
+.header-controls {
+    position: relative;
+    bottom: auto;
+    top: auto;
+    left: auto;
+    right: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px 0;
+}
+
+/* Tablet styles */
 @media (max-width: 768px) {
     .header-controls {
-        gap: 6px;
+        gap: 8px;
         flex-wrap: wrap;
-        justify-content: flex-end;
+        justify-content: center;
+        margin-top: 10px;
     }
     
     .settings-btn {
-        padding: 6px 10px;
-        font-size: 11px;
+        padding: 6px 12px;
+        font-size: 12px;
         white-space: nowrap;
     }
 }
@@ -1445,10 +1462,12 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
 /* Very small screens - show only icons */
 @media (max-width: 480px) {
     .header-controls {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        gap: 4px;
+        position: relative;
+        top: auto;
+        right: auto;
+        gap: 6px;
+        margin-top: 8px;
+        justify-content: center;
     }
     
     .settings-btn {
@@ -1524,3 +1543,4 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
         font-size: 14px !important;
     }
 }
+
