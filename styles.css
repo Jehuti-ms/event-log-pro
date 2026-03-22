@@ -1497,8 +1497,7 @@ header {
     }
     
 /* ============================================================================
-   STUDENT TABLE WITH STICKY HEADER AND STICKY NAME COLUMN
-   (Preserving Original Colors)
+   STUDENT TABLE WITH STICKY HEADER AND STICKY NAME COLUMN - COMPLETE WORKING VERSION
    ============================================================================ */
 
 .table-scroll-container {
@@ -1518,18 +1517,15 @@ header {
     min-width: 1200px;
 }
 
-/* Make the entire header row sticky vertically */
+/* Make the header sticky */
 #studentTable thead {
     position: sticky;
     top: 0;
     z-index: 20;
 }
 
-/* Style header cells - USING YOUR ORIGINAL COLORS */
+/* Header cells */
 #studentTable th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
     font-weight: 600;
@@ -1543,27 +1539,27 @@ header {
     text-align: left;
 }
 
-/* FIRST COLUMN (# column) - Sticky with left: 0 */
-#studentTable th:nth-child(1),
-#studentTable td:nth-child(1) {
+/* FIRST COLUMN (#) - Sticky */
+#studentTable th:first-child,
+#studentTable td:first-child {
     position: sticky;
     left: 0;
     z-index: 11;
     background: white;
     text-align: center;
-    min-width: 60px;
+    width: 50px;
 }
 
-#studentTable th:nth-child(1) {
+#studentTable th:first-child {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     z-index: 21;
 }
 
-/* SECOND COLUMN (Student Name) - Sticky with left: 60px */
+/* SECOND COLUMN (Student Name) - Sticky */
 #studentTable th:nth-child(2),
 #studentTable td:nth-child(2) {
     position: sticky;
-    left: 60px;
+    left: 50px;
     z-index: 10;
     background: white;
     box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
@@ -1575,7 +1571,7 @@ header {
     z-index: 20;
 }
 
-/* Style body cells */
+/* Table cells */
 #studentTable td {
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
@@ -1583,7 +1579,7 @@ header {
     background: white;
 }
 
-/* Input fields styling */
+/* Input fields */
 #studentTable td input[type="text"] {
     width: 100%;
     padding: 8px 10px;
@@ -1617,7 +1613,7 @@ header {
     accent-color: #2ecc71;
 }
 
-/* Delete button styling */
+/* Delete button */
 #studentTable td .delete-row {
     background: #ef4444;
     color: white;
@@ -1644,7 +1640,7 @@ header {
     background-color: #f8fafc;
 }
 
-#studentTable tbody tr:nth-child(even) td:nth-child(1),
+#studentTable tbody tr:nth-child(even) td:first-child,
 #studentTable tbody tr:nth-child(even) td:nth-child(2) {
     background-color: #f8fafc;
 }
@@ -1655,7 +1651,7 @@ header {
     transition: background-color 0.2s ease;
 }
 
-#studentTable tbody tr:hover td:nth-child(1),
+#studentTable tbody tr:hover td:first-child,
 #studentTable tbody tr:hover td:nth-child(2) {
     background-color: #e2e8f0;
 }
@@ -1673,10 +1669,7 @@ header {
     font-size: 14px;
 }
 
-/* ============================================================================
-   DARK MODE SUPPORT - PRESERVING YOUR ORIGINAL DARK MODE COLORS
-   ============================================================================ */
-
+/* Dark mode */
 body.dark .table-scroll-container {
     background: #121922;
     border-color: #1f2a37;
@@ -1692,12 +1685,12 @@ body.dark #studentTable td {
     color: #e5e7eb;
 }
 
-body.dark #studentTable td:nth-child(1),
+body.dark #studentTable td:first-child,
 body.dark #studentTable td:nth-child(2) {
     background: #1e293b;
 }
 
-body.dark #studentTable th:nth-child(1),
+body.dark #studentTable th:first-child,
 body.dark #studentTable th:nth-child(2) {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
@@ -1706,7 +1699,7 @@ body.dark #studentTable tbody tr:nth-child(even) td {
     background-color: #1f2937;
 }
 
-body.dark #studentTable tbody tr:nth-child(even) td:nth-child(1),
+body.dark #studentTable tbody tr:nth-child(even) td:first-child,
 body.dark #studentTable tbody tr:nth-child(even) td:nth-child(2) {
     background-color: #1f2937;
 }
@@ -1715,7 +1708,7 @@ body.dark #studentTable tbody tr:hover td {
     background-color: #2d3748;
 }
 
-body.dark #studentTable tbody tr:hover td:nth-child(1),
+body.dark #studentTable tbody tr:hover td:first-child,
 body.dark #studentTable tbody tr:hover td:nth-child(2) {
     background-color: #2d3748;
 }
@@ -1738,10 +1731,7 @@ body.dark #studentTable td select {
     color: #e5e7eb;
 }
 
-/* ============================================================================
-   CUSTOM SCROLLBAR
-   ============================================================================ */
-
+/* Scrollbar */
 .table-scroll-container::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -1772,6 +1762,7 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb {
 body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
 }
+    
     
     
     
