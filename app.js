@@ -841,11 +841,10 @@ function setStickyColumnPosition() {
     if (firstCol) {
         const width = firstCol.offsetWidth;
         const style = document.createElement('style');
-        style.id = 'dynamic-sticky-position';
+        style.id = 'sticky-position';
         
-        // Remove existing dynamic style if any
-        const existingStyle = document.getElementById('dynamic-sticky-position');
-        if (existingStyle) existingStyle.remove();
+        const existing = document.getElementById('sticky-position');
+        if (existing) existing.remove();
         
         style.textContent = `
             #studentTable th:nth-child(2),
@@ -854,9 +853,12 @@ function setStickyColumnPosition() {
             }
         `;
         document.head.appendChild(style);
-        console.log(`✅ Second column position set to ${width}px`);
     }
 }
+
+// Run on load and resize
+document.addEventListener('DOMContentLoaded', setStickyColumnPosition);
+window.addEventListener('resize', setStickyColumnPosition);
 
 // Run on page load and window resize
 document.addEventListener('DOMContentLoaded', function() {
