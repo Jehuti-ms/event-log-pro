@@ -318,30 +318,28 @@
                 <h2 class="form-title">👥 Student List</h2>
                 
                 <!-- Search and Controls -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="studentSearch" placeholder="🔍 Search by name, form, or contact..." style="padding: 8px 12px; width: 250px; border: 1px solid #ddd; border-radius: 6px;">
-                        <button type="button" class="btn-secondary" onclick="window.clearSearch()" style="padding: 8px 16px;">Clear</button>
+                <div class="search-controls">
+                    <div class="search-group">
+                        <input type="text" id="studentSearch" class="search-input" placeholder="🔍 Search by name, form, or contact...">
+                        <button type="button" class="btn-secondary" onclick="window.clearSearch()">Clear</button>
                     </div>
-                    <button type="button" class="btn-primary" onclick="window.addStudentRow()" style="padding: 8px 16px;">
-                        ➕ Add Student
-                    </button>
+                    <button type="button" class="btn-primary" onclick="window.addStudentRow()">➕ Add Student</button>
                 </div>
                 
-               <!-- Scrollable Table Container -->
+                <!-- Scrollable Table Container -->
                 <div class="table-scroll-container" id="studentTableContainer">
                     <table id="studentTable">
                         <thead>
                             <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="min-width: 180px;">👤 Student Name</th>
-                                <th style="min-width: 80px;">📚 Form</th>
-                                <th style="min-width: 130px;">📞 Contact Number</th>
-                                <th style="min-width: 200px;">💊 Medical / Illness</th>
-                                <th style="min-width: 180px;">💉 Medication</th>
-                                <th style="width: 100px;">✅ Permission</th>
-                                <th style="width: 100px;">🎯 Present</th>
-                                <th style="width: 70px;">✖️ Remove</th>
+                                <th class="col-sn">#</th>
+                                <th class="col-name">👤 Student Name</th>
+                                <th class="col-form">📚 Form</th>
+                                <th class="col-contact">📞 Contact Number</th>
+                                <th class="col-medical">💊 Medical / Illness</th>
+                                <th class="col-medication">💉 Medication</th>
+                                <th class="col-permission">✅ Permission</th>
+                                <th class="col-present">🎯 Present</th>
+                                <th class="col-remove">✖️ Remove</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
@@ -352,6 +350,7 @@
                         Total Students: 0
                     </div>
                 </div>
+            </div>
             
             <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
             
