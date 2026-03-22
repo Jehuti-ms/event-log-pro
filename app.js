@@ -1949,36 +1949,80 @@ window.generateReport = function() {
 };
 
 // ============================================
-// STICKY COLUMN POSITION ADJUSTMENT - CLEAN VERSION
+// COMPLETE TABLE FIX - PERMANENT VERSION
 // ============================================
 
-function setStickyColumnPosition() {
-    setTimeout(function() {
-        const firstCol = document.querySelector('#studentTable th:first-child');
-        if (firstCol) {
-            const width = firstCol.offsetWidth;
-            
-            let style = document.getElementById('sticky-position-style');
-            if (!style) {
-                style = document.createElement('style');
-                style.id = 'sticky-position-style';
-                document.head.appendChild(style);
-            }
-            
-            style.textContent = `
-                #studentTable th:nth-child(2),
-                #studentTable td:nth-child(2) {
-                    left: ${width}px !important;
-                }
-            `;
-            console.log('✅ Second column position set to:', width + 'px');
+function completeTableFix() {
+    console.log('🔧 Running complete table fix...');
+    
+    // 1. FIX CONTAINER
+    const container = document.querySelector('.table-scroll-container');
+    if (container) {
+        container.style.maxHeight = '500px';
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'auto';
+        container.style.position = 'relative';
+        container.style.display = 'block';
+    }
+    
+    // 2. FIX TABLE HEADER - VERTICAL STICKY
+    const thead = document.querySelector('#studentTable thead');
+    if (thead) {
+        thead.style.position = 'sticky';
+        thead.style.top = '0';
+        thead.style.zIndex = '200';
+    }
+    
+    // 3. FIX ALL HEADER CELLS
+    const allHeaders = document.querySelectorAll('#studentTable th');
+    allHeaders.forEach((th) => {
+        th.style.position = 'sticky';
+        th.style.top = '0';
+        th.style.zIndex = '150';
+        th.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+        th.style.color = 'white';
+    });
+    
+    // 4. FIX FIRST COLUMN - HORIZONTAL STICKY
+    const firstColCells = document.querySelectorAll('#studentTable th:first-child, #studentTable td:first-child');
+    firstColCells.forEach(cell => {
+        cell.style.position = 'sticky';
+        cell.style.left = '0';
+        cell.style.zIndex = '100';
+        cell.style.backgroundColor = cell.tagName === 'TH' ? 'transparent' : 'white';
+        if (cell.tagName === 'TH') {
+            cell.style.zIndex = '201';
+            cell.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
         }
-    }, 100);
-}
-
-// Fix counter visibility
-function fixCounterDisplay() {
-    const counter = document.getElementById('studentCounter');
+    });
+    
+    // 5. FIX SECOND COLUMN - Get exact width of first column
+    const firstCol = document.querySelector('#studentTable th:first-child');
+    const firstColWidth = firstCol ? firstCol.offsetWidth : 55;
+    
+    const secondColCells = document.querySelectorAll('#studentTable th:nth-child(2), #studentTable td:nth-child(2)');
+    secondColCells.forEach(cell => {
+        cell.style.position = 'sticky';
+        cell.style.left = firstColWidth + 'px';
+        cell.style.zIndex = '99';
+        cell.style.backgroundColor = cell.tagName === 'TH' ? 'transparent' : 'white';
+        if (cell.tagName === 'TH') {
+            cell.style.zIndex = '200';
+            cell.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+        }
+    });
+    
+    // 6. FIX COUNTER
+    let counter = document.getElementById('studentCounter');
+    const containerEl = document.querySelector('.table-scroll-container');
+    
+    if (!counter && containerEl) {
+        counter = document.createElement('div');
+        counter.id = 'studentCounter';
+        counter.className = 'student-counter';
+        containerEl.appendChild(counter);
+    }
+    
     if (counter) {
         counter.style.position = 'sticky';
         counter.style.bottom = '0';
@@ -1987,52 +2031,91 @@ function fixCounterDisplay() {
         counter.style.borderTop = '1px solid #ddd';
         counter.style.fontWeight = 'bold';
         counter.style.textAlign = 'center';
-        counter.style.zIndex = '15';
+        counter.style.zIndex = '1000';
+        counter.style.marginTop = 'auto';
         
-        if (document.body.classList.contains('dark')) {
-            counter.style.backgroundColor = '#0f1720';
-            counter.style.borderTopColor = '#1f2a37';
-            counter.style.color = '#e5e7eb';
-        }
+        // Update counter text
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+        let studentCount = 0;
+        rows.forEach(row => {
+            const nameInput = row.cells[1]?.querySelector('input');
+            if (nameInput && nameInput.value.trim()) {
+                studentCount++;
+            }
+        });
+        counter.textContent = `Total Students: ${studentCount}`;
     }
-}
-
-// Ensure initial row exists
-function ensureInitialRow() {
-    const tbody = document.querySelector('#studentTable tbody');
-    if (tbody && tbody.children.length === 0) {
-        window.addStudentRow();
+    
+    // 7. DARK MODE SUPPORT
+    if (document.body.classList.contains('dark') && counter) {
+        counter.style.backgroundColor = '#0f1720';
+        counter.style.borderTopColor = '#1f2a37';
+        counter.style.color = '#e5e7eb';
     }
+    
+    console.log('✅ Complete table fix applied');
 }
 
-// Run all fixes
-function runStickyFixes() {
-    setStickyColumnPosition();
-    fixCounterDisplay();
-    ensureInitialRow();
-}
-
-// Run on page load
+// Run the fix when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(runStickyFixes, 200);
+    setTimeout(completeTableFix, 100);
 });
+
+// Run the fix after adding/removing rows
+const originalAddStudentRowFinal = window.addStudentRow;
+window.addStudentRow = function(studentData = null, index = null) {
+    originalAddStudentRowFinal(studentData, index);
+    setTimeout(completeTableFix, 50);
+};
+
+// Run after loading events
+const originalLoadEventFinal = window.loadEvent;
+window.loadEvent = async function(eventId) {
+    await originalLoadEventFinal(eventId);
+    setTimeout(completeTableFix, 100);
+};
+
+// Run after deleting rows
+const originalDeleteStudentRowFinal = window.deleteStudentRow;
+window.deleteStudentRow = function(button) {
+    originalDeleteStudentRowFinal(button);
+    setTimeout(completeTableFix, 50);
+};
+
+// Run after reset form
+const originalResetForm = window.resetForm;
+window.resetForm = function() {
+    originalResetForm();
+    setTimeout(completeTableFix, 100);
+};
 
 // Run on window resize
 window.addEventListener('resize', function() {
-    setTimeout(setStickyColumnPosition, 100);
+    setTimeout(completeTableFix, 100);
 });
 
 // Run when dark mode toggles
-const darkModeObserver = new MutationObserver(function(mutations) {
+const darkModeObserverFinal = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.attributeName === 'class') {
-            fixCounterDisplay();
+            const counter = document.getElementById('studentCounter');
+            if (counter) {
+                if (document.body.classList.contains('dark')) {
+                    counter.style.backgroundColor = '#0f1720';
+                    counter.style.borderTopColor = '#1f2a37';
+                    counter.style.color = '#e5e7eb';
+                } else {
+                    counter.style.backgroundColor = '#f8f9fa';
+                    counter.style.borderTopColor = '#ddd';
+                    counter.style.color = '#333';
+                }
+            }
         }
     });
 });
-darkModeObserver.observe(document.body, { attributes: true });
+darkModeObserverFinal.observe(document.body, { attributes: true });
 
-console.log('✅ Sticky column fixes loaded');
+console.log('✅ Permanent table fix loaded');
 
 // Make functions globally available
 window.collectFormData = collectFormData;
