@@ -313,43 +313,65 @@
                 </div>
             </div>
 
-           <!-- Student Table Section -->
-            <div class="form-section">
-                <h2 class="form-title">👥 Student List</h2>
-                
-                <!-- Search and Controls -->
-                <div class="search-controls">
-                    <div class="search-group">
-                        <input type="text" id="studentSearch" class="search-input" placeholder="🔍 Search by name, form, or contact...">
-                        <button type="button" class="btn-secondary" onclick="window.clearSearch()">Clear</button>
-                    </div>
-                    <button type="button" class="btn-primary" onclick="window.addStudentRow()">➕ Add Student</button>
-                </div>
-                
-                <!-- Scrollable Table Container -->
-                <div class="table-scroll-container" id="studentTableContainer">
-                    <table id="studentTable">
-                        <thead>
-                            <tr>
-                                <th class="col-sn">#</th>
-                                <th class="col-name">👤 Student Name</th>
-                                <th class="col-form">📚 Form</th>
-                                <th class="col-contact">📞 Contact Number</th>
-                                <th class="col-medical">💊 Medical / Illness</th>
-                                <th class="col-medication">💉 Medication</th>
-                                <th class="col-permission">✅ Permission</th>
-                                <th class="col-present">🎯 Present</th>
-                                <th class="col-remove">✖️ Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentTableBody">
-                            <!-- Student rows will be added here -->
-                        </tbody>
-                    </table>
-                    <div class="student-counter" id="studentCounter">
-                        Total Students: 0
-                    </div>
-                </div>
+            <!-- Student List Section with Search and Scroll -->
+            <h4 style="margin-top: 30px; margin-bottom: 15px;">
+                Student List 
+                <span id="studentCountBadge" style="font-size: 0.7em; background: #0078d7; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 10px;">0 students</span>
+            </h4>
+
+            <!-- Search Bar -->
+            <div class="search-container" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="studentSearch" placeholder="🔍 Search students by name, form, or contact..." style="padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; flex: 1; font-size: 14px;">
+                <button onclick="clearSearch()" class="btn-secondary" style="padding: 10px 15px; white-space: nowrap;">Clear Search</button>
+            </div>
+
+           <!-- Scrollable Table Container - Simplified Structure -->
+            <div class="table-scroll-container" id="studentTableContainer">
+                <table id="studentTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>Form</th>
+                            <th>Contact Number</th>
+                            <th>Medical / Illness</th>
+                            <th>Medication</th>
+                            <th>Permission</th>
+                            <th>Present</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Your student rows -->
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" name="studentName[]"></td>
+                            <td><input type="text" name="form[]"></td>
+                            <td><input type="text" name="contact[]"></td>
+                            <td>
+                                <select name="illness[]" class="student-illness">
+                                    <option value="None">None</option>
+                                    <option value="Asthma">Asthma</option>
+                                    <option value="Allergies – Mild">Allergies – Mild</option>
+                                    <option value="Allergies – Severe / Anaphylaxis">Allergies – Severe / Anaphylaxis</option>
+                                    <option value="Epilepsy / Seizure disorder">Epilepsy / Seizure disorder</option>
+                                    <option value="Diabetes">Diabetes</option>
+                                    <option value="Heart condition">Heart condition</option>
+                                    <option value="Other (specify)">Other (specify)</option>
+                                </select>
+                                <input type="text" name="illnessOther[]" class="illness-other" placeholder="Describe other illness" style="display:none; margin-top: 5px; width: 100%;">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="medication[]" class="medication-checkbox">
+                                <input type="text" name="medicationDetails[]" class="medication-details" placeholder="Medication details" style="display:none; margin-top: 5px; width: 100%;">
+                            </td>
+                            <td><input type="checkbox" name="permission[]"></td>
+                            <td><input type="checkbox" name="present[]"></td>
+                            <td><button type="button" class="delete-row">✖</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="student-counter" id="studentCounter">Total Students: 1</div>
             </div>
             
             <button type="button" class="add-row" onclick="addStudentRow()">+ Add Student</button>
