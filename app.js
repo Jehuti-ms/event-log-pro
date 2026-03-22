@@ -836,6 +836,46 @@ function populateEventDropdown() {
 }
 
 // ============================================
+// STICKY COLUMN POSITION ADJUSTMENT
+// ============================================
+
+function setStickyColumnPosition() {
+    setTimeout(function() {
+        const firstCol = document.querySelector('#studentTable th:first-child');
+        if (firstCol) {
+            const width = firstCol.offsetWidth;
+            
+            // Create or update style for second column position
+            let style = document.getElementById('sticky-position-style');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'sticky-position-style';
+                document.head.appendChild(style);
+            }
+            
+            style.textContent = `
+                #studentTable th:nth-child(2),
+                #studentTable td:nth-child(2) {
+                    left: ${width}px !important;
+                }
+            `;
+            console.log('✅ Second column position set to:', width + 'px');
+        }
+    }, 100);
+}
+
+// Run on page load and window resize
+document.addEventListener('DOMContentLoaded', setStickyColumnPosition);
+window.addEventListener('resize', setStickyColumnPosition);
+
+// Also run after adding rows to ensure position stays correct
+const originalAddStudentRow = window.addStudentRow;
+window.addStudentRow = function(studentData = null, index = null) {
+    originalAddStudentRow(studentData, index);
+    setStickyColumnPosition();
+};
+
+// ============================================
 // UI HELPER FUNCTIONS
 // ============================================
 
