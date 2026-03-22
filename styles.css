@@ -1526,7 +1526,42 @@ header {
     z-index: 20;
 }
 
-/* YOUR ORIGINAL HEADER STYLES - KEPT EXACTLY AS IS */
+
+/* ============================================================================
+   COMPREHENSIVE FIX: STICKY HEADER + STICKY COLUMNS
+   ============================================================================ */
+
+/* Container for scrollable table */
+.table-scroll-container {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    position: relative;
+    background: white;
+}
+
+/* Table styling */
+#studentTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
+}
+
+/* ============================================================================
+   VERTICAL STICKY HEADER
+   ============================================================================ */
+
+/* Make the entire header row sticky vertically */
+#studentTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+/* Header cell styling */
 #studentTable th {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
@@ -1541,104 +1576,120 @@ header {
     text-align: left;
     position: sticky;
     top: 0;
-    z-index: 10;
 }
 
-/* FIRST COLUMN (#) - Sticky horizontally */
+/* ============================================================================
+   HORIZONTAL STICKY COLUMNS
+   ============================================================================ */
+
+/* FIRST COLUMN (# column) - Sticky horizontally */
 #studentTable th:first-child,
 #studentTable td:first-child {
     position: sticky;
     left: 0;
-    background: white;
-    z-index: 11;
-    text-align: center;
+    background-color: white;
+    z-index: 100;
 }
 
-/* Keep your original gradient on the first column header */
+/* Keep the gradient on first column header */
 #studentTable th:first-child {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    z-index: 21;
+    z-index: 201; /* Higher than other sticky elements */
 }
 
 /* SECOND COLUMN (Student Name) - Sticky horizontally */
 #studentTable th:nth-child(2),
 #studentTable td:nth-child(2) {
     position: sticky;
-    left: 50px;
-    background: white;
-    z-index: 10;
+    left: 55px; /* Width of first column (approx) - adjust if needed */
+    background-color: white;
+    z-index: 99;
     box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
 }
 
-/* Keep your original gradient on the second column header */
+/* Keep the gradient on second column header */
 #studentTable th:nth-child(2) {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    z-index: 20;
+    z-index: 200; /* Stays above horizontal content */
 }
 
-/* Style body cells - YOUR ORIGINAL STYLES */
-#studentTable tbody td {
+/* ============================================================================
+   BODY CELL STYLING
+   ============================================================================ */
+
+/* Table body cells */
+#studentTable td {
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
     vertical-align: middle;
-    background: white;
+    background-color: white;
 }
 
-/* Zebra striping - YOUR ORIGINAL STYLES */
+/* Zebra striping for better readability */
 #studentTable tbody tr:nth-child(even) td {
     background-color: #f8fafc;
 }
 
+/* Ensure sticky columns maintain zebra striping */
 #studentTable tbody tr:nth-child(even) td:first-child,
 #studentTable tbody tr:nth-child(even) td:nth-child(2) {
     background-color: #f8fafc;
 }
 
-/* Hover effect - YOUR ORIGINAL STYLES */
+/* Hover effect */
 #studentTable tbody tr:hover td {
     background-color: #e2e8f0;
     transition: background-color 0.2s ease;
 }
 
+/* Ensure sticky columns maintain hover effect */
 #studentTable tbody tr:hover td:first-child,
 #studentTable tbody tr:hover td:nth-child(2) {
     background-color: #e2e8f0;
 }
 
-/* Input fields styling - YOUR ORIGINAL STYLES */
-#studentTable tbody td input[type="text"] {
+/* ============================================================================
+   INPUT FIELD STYLES
+   ============================================================================ */
+
+/* Text inputs */
+#studentTable td input[type="text"] {
     width: 100%;
     padding: 8px 10px;
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 13px;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
-#studentTable tbody td input[type="text"]:focus {
+#studentTable td input[type="text"]:focus {
     outline: none;
     border-color: #2ecc71;
     box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
 }
 
-#studentTable tbody td select {
+/* Select dropdowns */
+#studentTable td select {
     width: 100%;
     padding: 8px 10px;
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 13px;
     background: white;
+    box-sizing: border-box;
 }
 
-#studentTable tbody td input[type="checkbox"] {
+/* Checkboxes */
+#studentTable td input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
     accent-color: #2ecc71;
 }
 
-/* Delete button styling - YOUR ORIGINAL STYLES */
-#studentTable tbody td .delete-row {
+/* Delete button */
+#studentTable td .delete-row {
     background: #ef4444;
     color: white;
     border: none;
@@ -1654,12 +1705,15 @@ header {
     transition: all 0.2s ease;
 }
 
-#studentTable tbody td .delete-row:hover {
+#studentTable td .delete-row:hover {
     background: #dc2626;
     transform: scale(1.1);
 }
 
-/* Student counter */
+/* ============================================================================
+   STUDENT COUNTER
+   ============================================================================ */
+
 .student-counter {
     position: sticky;
     bottom: 0;
@@ -1672,7 +1726,10 @@ header {
     font-size: 14px;
 }
 
-/* Dark mode - YOUR ORIGINAL DARK MODE STYLES */
+/* ============================================================================
+   DARK MODE SUPPORT
+   ============================================================================ */
+
 body.dark .table-scroll-container {
     background: #121922;
     border-color: #1f2a37;
@@ -1683,14 +1740,14 @@ body.dark #studentTable th {
 }
 
 body.dark #studentTable td {
-    background: #1e293b;
+    background-color: #1e293b;
     border-bottom-color: #374151;
     color: #e5e7eb;
 }
 
 body.dark #studentTable td:first-child,
 body.dark #studentTable td:nth-child(2) {
-    background: #1e293b;
+    background-color: #1e293b;
 }
 
 body.dark #studentTable th:first-child,
@@ -1722,48 +1779,80 @@ body.dark .student-counter {
     color: #e5e7eb;
 }
 
-body.dark #studentTable tbody td input[type="text"] {
+body.dark #studentTable td input[type="text"] {
     background: #374151;
     border-color: #4b5563;
     color: #e5e7eb;
 }
 
-body.dark #studentTable tbody td select {
+body.dark #studentTable td select {
     background: #374151;
     border-color: #4b5563;
     color: #e5e7eb;
 }
 
-/* Custom scrollbar - YOUR ORIGINAL STYLES */
+/* ============================================================================
+   CUSTOM SCROLLBAR
+   ============================================================================ */
+
 .table-scroll-container::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
 }
 
 .table-scroll-container::-webkit-scrollbar-track {
-    background: #f1f3f4;
-    border-radius: 10px;
-}
-
-.table-scroll-container::-webkit-scrollbar-thumb {
-    background: #2ecc71;
-    border-radius: 10px;
-}
-
-.table-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #27ae60;
+    background: #f1f1f1;
+    border-radius: 6px;
 }
 
 body.dark .table-scroll-container::-webkit-scrollbar-track {
-    background: #2d3748;
+    background: #1e293b;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 body.dark .table-scroll-container::-webkit-scrollbar-thumb {
-    background: #059669;
+    background: #4b5563;
 }
 
 body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #047857;
+    background: #6b7280;
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .table-scroll-container {
+        max-height: 400px;
+    }
+    
+    #studentTable th,
+    #studentTable td {
+        padding: 8px 12px;
+    }
+    
+    #studentTable th {
+        font-size: 12px;
+    }
+    
+    #studentTable td {
+        font-size: 12px;
+    }
+    
+    #studentTable td input[type="text"],
+    #studentTable td select {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
 }
     
     
