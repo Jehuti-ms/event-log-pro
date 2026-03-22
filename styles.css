@@ -1544,3 +1544,81 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     }
 }
 
+/* ============================================================================
+   SEARCH BAR - STACK ON MOBILE
+   ============================================================================ */
+
+/* Search controls container */
+.search-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.search-group {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+}
+
+#studentSearch {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Mobile stacking */
+@media (max-width: 768px) {
+    .search-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .search-group {
+        width: 100%;
+    }
+    
+    #studentSearch {
+        flex: 1;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .search-group .btn-secondary {
+        white-space: nowrap;
+        padding: 10px 16px;
+    }
+    
+    /* Add Student button full width on mobile */
+    .search-controls .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .search-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    #studentSearch {
+        width: 100%;
+        order: 1;
+    }
+    
+    .search-group .btn-secondary {
+        width: 100%;
+        order: 2;
+    }
+    
+    .search-controls .btn-primary {
+        order: 3;
+    }
+}
