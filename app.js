@@ -2130,6 +2130,46 @@ darkModeObserverFinal.observe(document.body, { attributes: true });
 
 console.log('✅ Permanent table fix loaded');
 
+// ============================================
+// SETTINGS AND SYNC FUNCTIONS
+// ============================================
+
+window.openSettings = function() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.add('active');
+    }
+};
+
+window.closeSettings = function() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+};
+
+window.saveSettings = function() {
+    const interval = document.getElementById('autoSyncInterval')?.value;
+    if (interval) {
+        localStorage.setItem('autoSyncInterval', interval);
+        window.showToast('Settings saved', 'success');
+    }
+    window.closeSettings();
+};
+
+window.forceSync = async function() {
+    if (typeof window.saveEvent === 'function') {
+        window.updateSyncStatus('syncing', 'Syncing...');
+        await window.saveEvent();
+        window.updateSyncStatus('online', 'Connected');
+        window.showToast('Sync completed', 'success');
+    } else {
+        window.showToast('Save event function not available', 'error');
+    }
+};
+
+console.log('✅ Settings and sync functions loaded');
+
 // Make functions globally available
 window.collectFormData = collectFormData;
 window.updateCounts = updateCounts;
