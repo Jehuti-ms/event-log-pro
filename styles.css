@@ -360,7 +360,7 @@ body.dark .stat-value {
 }
 
 /* ============================================================================
-   STUDENT TABLE - STICKY HEADER & COLUMNS (WORKING VERSION)
+   STICKY TABLE HEADER & COLUMNS - WORKING FIX
    ============================================================================ */
 
 .table-scroll-container {
@@ -420,9 +420,11 @@ body.dark .stat-value {
 }
 
 /* SECOND COLUMN (Student Name) - Sticky horizontally */
+/* Default position - will be adjusted by JavaScript */
 #studentTable th:nth-child(2),
 #studentTable td:nth-child(2) {
     position: sticky;
+    left: 55px; /* Default fallback */
     background-color: white;
     z-index: 99;
     box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
