@@ -1,4 +1,3 @@
-/* styles.css */
 * {
     margin: 0;
     padding: 0;
@@ -41,6 +40,7 @@ header {
     text-align: center;
     margin-bottom: 30px;
     position: relative;
+    padding-top: 60px;
 }
 
 h1 {
@@ -88,6 +88,7 @@ body.dark #eventIdDisplay {
     display: flex;
     align-items: center;
     gap: 15px;
+    z-index: 100;
 }
 
 .settings-btn {
@@ -155,6 +156,7 @@ body.dark #eventIdDisplay {
     transform: translateX(30px);
 }
 
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -243,6 +245,7 @@ body.dark .settings-section h3 {
     color: #60a5fa;
 }
 
+/* Form Styles */
 .form-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -317,6 +320,7 @@ body.dark .help-text {
     color: #9ca3af;
 }
 
+/* Summary Stats */
 .summary-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -355,57 +359,179 @@ body.dark .stat-value {
     color: #60a5fa;
 }
 
-.table-container {
+/* ============================================================================
+   STUDENT TABLE - STICKY HEADER & COLUMNS (WORKING VERSION)
+   ============================================================================ */
+
+.table-scroll-container {
+    max-height: 500px;
+    overflow-y: auto;
     overflow-x: auto;
     margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    position: relative;
+    background: white;
 }
 
-table {
+#studentTable {
     width: 100%;
     border-collapse: collapse;
+    min-width: 1200px;
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
+/* Make header sticky vertically */
+#studentTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+/* Header cells */
+#studentTable th {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+    font-weight: 600;
+    padding: 16px 20px;
+    white-space: nowrap;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+}
+
+/* FIRST COLUMN (#) - Sticky horizontally */
+#studentTable th:first-child,
+#studentTable td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: white;
+    z-index: 100;
     text-align: center;
 }
 
-body.dark th,
-body.dark td {
-    border: 1px solid #1f2a37;
+#studentTable th:first-child {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    z-index: 101;
 }
 
-th {
-    background: #f0f2f5;
-    font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.9em;
+/* SECOND COLUMN (Student Name) - Sticky horizontally */
+#studentTable th:nth-child(2),
+#studentTable td:nth-child(2) {
+    position: sticky;
+    background-color: white;
+    z-index: 99;
+    box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
 }
 
-body.dark th {
-    background: #162131;
-    color: #cfd8dc;
+#studentTable th:nth-child(2) {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    z-index: 100;
 }
 
-td input[type="text"] {
+/* Body cells */
+#studentTable td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+    background-color: white;
+}
+
+/* Zebra striping */
+#studentTable tbody tr:nth-child(even) td {
+    background-color: #f8fafc;
+}
+
+#studentTable tbody tr:nth-child(even) td:first-child,
+#studentTable tbody tr:nth-child(even) td:nth-child(2) {
+    background-color: #f8fafc;
+}
+
+/* Hover effect */
+#studentTable tbody tr:hover td {
+    background-color: #e2e8f0;
+    transition: background-color 0.2s ease;
+}
+
+#studentTable tbody tr:hover td:first-child,
+#studentTable tbody tr:hover td:nth-child(2) {
+    background-color: #e2e8f0;
+}
+
+/* Input fields */
+#studentTable td input[type="text"] {
     width: 100%;
-    padding: 6px;
-    border: 1px solid #ccc;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
     border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
-td select {
+#studentTable td input[type="text"]:focus {
+    outline: none;
+    border-color: #2ecc71;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+}
+
+#studentTable td select {
     width: 100%;
-    padding: 6px;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+    box-sizing: border-box;
 }
 
-.medication-details,
-.illness-other {
-    margin-top: 5px;
-    font-size: 0.9em;
+#studentTable td input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #2ecc71;
 }
 
+/* Delete button */
+#studentTable td .delete-row {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.2s ease;
+}
+
+#studentTable td .delete-row:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Student counter */
+.student-counter {
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+    text-align: center;
+    z-index: 15;
+    font-size: 14px;
+}
+
+/* Button Styles */
 button {
     padding: 10px 20px;
     border: none;
@@ -475,20 +601,6 @@ body.dark .add-row {
     color: #cfe4ff;
 }
 
-.delete-row {
-    background-color: #e74c3c;
-    color: white;
-    border-radius: 50%;
-    font-size: 14px;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-}
-
-.delete-row:hover {
-    background-color: #c0392b;
-}
-
 .form-actions {
     display: flex;
     gap: 10px;
@@ -497,6 +609,7 @@ body.dark .add-row {
     margin-top: 20px;
 }
 
+/* Spinner */
 .spinner {
     display: none;
     position: fixed;
@@ -541,6 +654,7 @@ body.dark .spinner-content {
     100% { transform: rotate(360deg); }
 }
 
+/* Toast */
 .toast {
     position: fixed;
     bottom: 20px;
@@ -578,37 +692,55 @@ body.dark .spinner-content {
     }
 }
 
-.connection-status {
-    padding: 15px;
-    margin: 15px 0;
+/* Sync Status Bar */
+.sync-status-bar {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
     border-radius: 6px;
+    padding: 10px 15px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 0.9em;
+    transition: all 0.3s ease;
 }
 
-.connection-status.success {
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
+body.dark .sync-status-bar {
+    background: #0d47a1;
+    border-color: #1976d2;
+    color: #e3f2fd;
 }
 
-.connection-status.error {
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
-    color: #721c24;
+.sync-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
 }
 
-body.dark .connection-status.success {
-    background: rgba(40, 167, 69, 0.2);
-    border-color: #28a745;
-    color: #4ade80;
+.sync-indicator.online {
+    background: #28a745;
+    box-shadow: 0 0 8px #28a745;
 }
 
-body.dark .connection-status.error {
-    background: rgba(220, 53, 69, 0.2);
-    border-color: #dc3545;
-    color: #f87171;
+.sync-indicator.offline {
+    background: #dc3545;
 }
 
+.sync-indicator.syncing {
+    background: #ffc107;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Landing Page */
 .landing-page {
     display: flex;
     position: fixed;
@@ -630,7 +762,6 @@ body.dark .connection-status.error {
     display: none !important;
 }
 
-/* Hide landing page initially if authenticated */
 body.authenticated .landing-page {
     display: none !important;
 }
@@ -735,754 +866,7 @@ body.dark .google-signin-btn {
     margin-bottom: 10px;
 }
 
-/* Autosync Styles */
-.sync-status {
-    transition: all 0.3s ease;
-}
-
-.sync-status.success {
-    background: #28a745 !important;
-}
-
-.sync-status.error {
-    background: #dc3545 !important;
-}
-
-.sync-status.info {
-    background: #17a2b8 !important;
-}
-
-.sync-indicator {
-    transition: background-color 0.3s ease;
-}
-
-.sync-indicator.success {
-    background: #28a745;
-}
-
-.sync-indicator.error {
-    background: #dc3545;
-    animation: pulse 2s infinite;
-}
-
-.sync-indicator.syncing {
-    background: #ffc107;
-    animation: spin 1s linear infinite;
-}
-
-.sync-indicator.offline {
-    background: #6c757d;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-.offline-warning {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: #dc3545;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    z-index: 10001;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 15px;
-        margin: 10px;
-    }
-
-    .header-controls {
-        position: static;
-        justify-content: center;
-        margin-top: 15px;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .form-actions button {
-        width: 100%;
-    }
-
-    table {
-        font-size: 0.85em;
-    }
-
-    th, td {
-        padding: 6px;
-    }
-}
-
-/* Sync Status Styles */
-.sync-status-bar {
-    background: #e3f2fd;
-    border: 1px solid #90caf9;
-    border-radius: 6px;
-    padding: 10px 15px;
-    margin: 15px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9em;
-    transition: all 0.3s ease;
-}
-
-body.dark .sync-status-bar {
-    background: #0d47a1;
-    border-color: #1976d2;
-    color: #e3f2fd;
-}
-
-.sync-status-bar.syncing {
-    background: #fff3e0;
-    border-color: #ffb74d;
-}
-
-body.dark .sync-status-bar.syncing {
-    background: #e65100;
-    border-color: #ff9800;
-}
-
-.sync-status-bar.error {
-    background: #ffebee;
-    border-color: #ef5350;
-}
-
-body.dark .sync-status-bar.error {
-    background: #b71c1c;
-    border-color: #f44336;
-}
-
-.sync-status-bar.success {
-    background: #e8f5e8;
-    border-color: #4caf50;
-}
-
-body.dark .sync-status-bar.success {
-    background: #1b5e20;
-    border-color: #4caf50;
-}
-
-#syncStatusText {
-    font-weight: 500;
-}
-
-#lastSyncTime {
-    font-size: 0.85em;
-    opacity: 0.8;
-}
-
-/* Sync Indicator */
-.sync-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 0 5px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
-}
-
-.sync-indicator.offline {
-    background: #6c757d;
-}
-
-.sync-indicator.syncing {
-    background: #ffc107;
-    animation: pulse 1.5s infinite;
-}
-
-.sync-indicator.success {
-    background: #28a745;
-}
-
-.sync-indicator.error {
-    background: #dc3545;
-    animation: pulse 2s infinite;
-}
-
-/* Sync Button States */
-#syncButton.syncing {
-    background: #ffc107;
-    animation: pulse 1.5s infinite;
-}
-
-#syncButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Network Status */
-.network-status {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: #dc3545;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    z-index: 10001;
-    animation: slideDown 0.3s ease-out;
-}
-
-.network-status.online {
-    background: #28a745;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-/* Student Table Scroll Styles */
-.table-scroll-container {
-    max-height: 500px; /* Adjust this value as needed */
-    overflow-y: auto;
-    overflow-x: auto;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    position: relative;
-}
-
-body.dark .table-scroll-container {
-    border-color: #1f2a37;
-    background: #121922;
-}
-
-/* Custom scrollbar styling */
-.table-scroll-container::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
-}
-
-.table-scroll-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 6px;
-}
-
-body.dark .table-scroll-container::-webkit-scrollbar-track {
-    background: #1e293b;
-}
-
-.table-scroll-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 6px;
-    border: 2px solid #f1f1f1;
-}
-
-.table-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-body.dark .table-scroll-container::-webkit-scrollbar-thumb {
-    background: #4b5563;
-    border: 2px solid #1e293b;
-}
-
-body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
-}
-
-/* Fixed header styles */
-.sticky-header {
-    position: sticky;
-    top: 0;
-    background: #f0f2f5;
-    z-index: 10;
-}
-
-body.dark .sticky-header {
-    background: #162131;
-}
-
-/* Table adjustments for scroll */
-#studentTable {
-    margin-bottom: 0;
-}
-
-#studentTable thead {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-}
-
-/* Student counter */
-.student-counter {
-    position: sticky;
-    bottom: 0;
-    background: #f8f9fa;
-    padding: 10px;
-    border-top: 1px solid #ddd;
-    font-weight: bold;
-    text-align: center;
-    z-index: 5;
-}
-
-body.dark .student-counter {
-    background: #0f1720;
-    border-top-color: #1f2a37;
-    color: #e5e7eb;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .table-scroll-container {
-        max-height: 400px;
-        font-size: 0.8em;
-    }
-    
-    .table-scroll-container::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-}
-
-/* Loading state */
-.table-loading {
-    position: relative;
-    min-height: 100px;
-}
-
-.table-loading::after {
-    content: "Loading students...";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #666;
-}
-
-body.dark .table-loading::after {
-    color: #9ca3af;
-}
-
-/* ============================================================================
-   FLOATING ACTION BUTTON (FAB)
-   ============================================================================ */
-
-.fab-container {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.fab-button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 10000;
-}
-
-.fab-button:hover {
-    transform: scale(1.1) rotate(90deg);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
-}
-
-.fab-button:active {
-    transform: scale(0.95);
-}
-
-.fab-tooltip {
-    position: absolute;
-    right: 75px;
-    background: #333;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.fab-tooltip::after {
-    content: '';
-    position: absolute;
-    right: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 8px 0 8px 8px;
-    border-style: solid;
-    border-color: transparent transparent transparent #333;
-}
-
-.fab-button:hover + .fab-tooltip {
-    opacity: 1;
-    visibility: visible;
-    right: 85px;
-}
-
-/* FAB options menu */
-.fab-options {
-    position: absolute;
-    bottom: 80px;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-}
-
-.fab-container.active .fab-options {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.fab-option {
-    background: white;
-    color: #333;
-    padding: 12px 20px;
-    border-radius: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    border: none;
-    min-width: 180px;
-    justify-content: flex-start;
-}
-
-.fab-option:hover {
-    transform: translateX(-10px);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-.fab-option i, .fab-option span:first-child {
-    font-size: 20px;
-    width: 24px;
-    text-align: center;
-}
-
-/* Responsive FAB */
-@media (max-width: 768px) {
-    .fab-container {
-        bottom: 20px;
-        right: 20px;
-    }
-    
-    .fab-button {
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
-    }
-    
-    .fab-option {
-        min-width: 150px;
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    .fab-container {
-        bottom: 15px;
-        right: 15px;
-    }
-    
-    .fab-tooltip {
-        display: none;
-    }
-}
-
-/* ============================================================================
-   STICKY TABLE HEADER - FIXED
-   ============================================================================ */
-
-/* Container for scrollable table */
-.table-scroll-container {
-    max-height: 500px;
-    overflow-y: auto;
-    overflow-x: auto;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    position: relative;
-    background: white;
-}
-
-/* The inner container */
-.table-container {
-    width: 100%;
-    display: block;
-}
-
-/* Style the table */
-#studentTable {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1200px; /* Adjust based on your column count */
-}
-
-/* Style the header cells - WITH position sticky on th */
-#studentTable th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-    color: white;
-    font-weight: 600;
-    padding: 16px 20px;
-    white-space: nowrap;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    letter-spacing: 0.5px;
-}
-
-/* Remove position sticky from thead - it doesn't need it */
-#studentTable thead {
-    /* No position sticky here */
-}
-
-/* Style the header row - just for background */
-#studentTable thead tr {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-}
-
-/* Add a subtle shadow at the top when scrolling */
-.table-scroll-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.1), transparent);
-    pointer-events: none;
-    z-index: 11;
-}
-
-/* Dark mode styles */
-body.dark .table-scroll-container {
-    background: #1e293b;
-    border-color: #374151;
-}
-
-body.dark #studentTable th,
-body.dark #studentTable thead tr {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-}
-
-body.dark #studentTable th {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    color: #f0fdf4;
-}
-
-/* Hover effect on headers */
-#studentTable th:hover {
-    background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
-    cursor: default;
-}
-
-body.dark #studentTable th:hover {
-    background: linear-gradient(135deg, #047857 0%, #036b4b 100%);
-}
-
-/* Ensure the table cells align properly */
-#studentTable tbody td {
-    padding: 12px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    vertical-align: middle;
-    background: white;
-}
-
-body.dark #studentTable tbody td {
-    border-bottom-color: #374151;
-    background: #1e293b;
-    color: #e5e7eb;
-}
-
-/* Zebra striping for better readability */
-#studentTable tbody tr:nth-child(even) td {
-    background-color: #f8fafc;
-}
-
-body.dark #studentTable tbody tr:nth-child(even) td {
-    background-color: #1f2937;
-}
-
-#studentTable tbody tr:hover td {
-    background-color: #e2e8f0;
-    transition: background-color 0.2s ease;
-}
-
-body.dark #studentTable tbody tr:hover td {
-    background-color: #2d3748;
-}
-
-/* Style inputs inside table */
-#studentTable tbody td input[type="text"] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 13px;
-    transition: all 0.2s ease;
-}
-
-#studentTable tbody td input[type="text"]:focus {
-    outline: none;
-    border-color: #2ecc71;
-    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
-}
-
-body.dark #studentTable tbody td input[type="text"] {
-    background: #374151;
-    border-color: #4b5563;
-    color: #e5e7eb;
-}
-
-/* Style select dropdowns */
-#studentTable tbody td select {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 13px;
-    background: white;
-}
-
-body.dark #studentTable tbody td select {
-    background: #374151;
-    border-color: #4b5563;
-    color: #e5e7eb;
-}
-
-/* Style checkboxes */
-#studentTable tbody td input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #2ecc71;
-}
-
-/* Style delete button */
-#studentTable tbody td .delete-row {
-    background: #ef4444;
-    color: white;
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    transition: all 0.2s ease;
-}
-
-#studentTable tbody td .delete-row:hover {
-    background: #dc2626;
-    transform: scale(1.1);
-}
-
-body.dark #studentTable tbody td .delete-row {
-    background: #dc2626;
-}
-
-/* Custom scrollbar for the container */
-.table-scroll-container::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-.table-scroll-container::-webkit-scrollbar-track {
-    background: #f1f3f4;
-    border-radius: 10px;
-}
-
-.table-scroll-container::-webkit-scrollbar-thumb {
-    background: #2ecc71;
-    border-radius: 10px;
-}
-
-.table-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #27ae60;
-}
-
-body.dark .table-scroll-container::-webkit-scrollbar-track {
-    background: #2d3748;
-}
-
-body.dark .table-scroll-container::-webkit-scrollbar-thumb {
-    background: #059669;
-}
-
-body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #047857;
-}
-
-/* Ensure the first column (numbers) is centered */
-#studentTable tbody td:first-child {
-    text-align: center;
-    font-weight: 600;
-    color: #4b5563;
-}
-
-body.dark #studentTable tbody td:first-child {
-    color: #9ca3af;
-}
-
-/* ============================================================================
-   AUTO-SAVE INDICATOR
-   ============================================================================ */
-
+/* Auto-save Indicator */
 .auto-save-indicator {
     position: fixed;
     bottom: 20px;
@@ -1547,7 +931,6 @@ body.dark #studentTable tbody td:first-child {
     }
 }
 
-/* Dark mode support */
 body.dark .auto-save-indicator {
     background: #1e293b;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -1573,231 +956,118 @@ body.dark .auto-save-indicator.error {
     color: #fecaca;
 }
 
-/* Add to styles.css - Fix for mobile header controls */
-
-header {
-    text-align: center;
-    margin-bottom: 30px;
-    position: relative;
-    padding-top: 60px; /* Add space for controls on mobile */
+/* FAB (Floating Action Button) */
+.fab-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
-.header-controls {
-    position: absolute;
-    top: 0;
-    right: 0;
+.fab-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 15px;
-    z-index: 100;
-}
-
-/* Mobile styles - fix for header controls */
-@media (max-width: 768px) {
-    header {
-        padding-top: 80px; /* More space for controls on mobile */
-        margin-bottom: 20px;
-    }
-    
-    .header-controls {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        left: auto;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        max-width: 100%;
-    }
-    
-    .settings-btn {
-        padding: 6px 12px;
-        font-size: 0.8em;
-        white-space: nowrap;
-    }
-    
-    .theme-toggle-wrapper {
-        position: relative;
-        white-space: nowrap;
-    }
-    
-    .toggle-text {
-        font-size: 0.7em;
-    }
-    
-    .toggle-label {
-        width: 50px;
-        height: 26px;
-    }
-    
-    .toggle-ball {
-        width: 20px;
-        height: 20px;
-        top: 3px;
-        left: 3px;
-    }
-    
-    .theme-toggle input:checked + .toggle-label .toggle-ball {
-        transform: translateX(24px);
-    }
-    
-    h1 {
-        font-size: 1.5em;
-        margin-top: 10px;
-    }
-    
-    h2 {
-        font-size: 1em;
-    }
-    
-    .form-title {
-        font-size: 1.2em;
-    }
-}
-
-/* Even smaller screens */
-@media (max-width: 480px) {
-    header {
-        padding-top: 100px;
-    }
-    
-    .header-controls {
-        gap: 5px;
-    }
-    
-    .settings-btn {
-        padding: 5px 10px;
-        font-size: 0.7em;
-    }
-    
-    .settings-btn span {
-        display: none; /* Hide text, show only emoji on very small screens */
-    }
-    
-    .settings-btn {
-        font-size: 1.2em;
-        padding: 8px 10px;
-    }
-    
-    .toggle-text {
-        display: none; /* Hide "Dark Mode" text on very small screens */
-    }
-    
-    .theme-toggle-wrapper {
-        gap: 3px;
-    }
-    
-    .toggle-label {
-        width: 44px;
-        height: 24px;
-    }
-    
-    .toggle-ball {
-        width: 18px;
-        height: 18px;
-        top: 3px;
-        left: 3px;
-    }
-    
-    .theme-toggle input:checked + .toggle-label .toggle-ball {
-        transform: translateX(20px);
-    }
-    
-    .toggle-icon {
-        font-size: 10px;
-    }
-}
-
-/* Fix for the header controls to ensure they stay within viewport */
-@media (max-width: 600px) {
-    .container {
-        overflow-x: hidden;
-    }
-    
-    header {
-        width: 100%;
-        overflow: hidden;
-    }
-    
-    .header-controls {
-        position: absolute;
-        top: 5px;
-        right: 10px;
-        left: auto;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        background: transparent;
-        padding: 0;
-        max-width: calc(100% - 20px);
-    }
-    
-    /* Make sure buttons don't overflow */
-    .settings-btn {
-        margin: 0;
-        flex-shrink: 0;
-    }
-
-/* Sticky Table Header - FIXED */
-.table-scroll-container {
-    max-height: 500px;
-    overflow-y: auto;
-    overflow-x: auto;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    transition: all 0.3s ease;
     position: relative;
-    background: white;
+    z-index: 10000;
 }
 
-/* Make the table full width */
-#studentTable {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1200px; /* Ensures horizontal scroll if needed */
+.fab-button:hover {
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
 }
 
-/* Make the header sticky - THIS IS THE KEY */
-#studentTable thead {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-/* Style the header cells */
-#studentTable th {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+.fab-tooltip {
+    position: absolute;
+    right: 75px;
+    background: #333;
     color: white;
-    font-weight: 600;
-    padding: 16px 20px;
-    white-space: nowrap;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
     font-size: 14px;
-    letter-spacing: 0.5px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* Style the body cells */
-#studentTable td {
-    padding: 12px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    vertical-align: middle;
+.fab-tooltip::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 8px 0 8px 8px;
+    border-style: solid;
+    border-color: transparent transparent transparent #333;
+}
+
+.fab-button:hover + .fab-tooltip {
+    opacity: 1;
+    visibility: visible;
+    right: 85px;
+}
+
+.fab-options {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.fab-container.active .fab-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.fab-option {
     background: white;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 180px;
+    justify-content: flex-start;
 }
 
-/* Zebra striping */
-#studentTable tbody tr:nth-child(even) td {
-    background-color: #f8fafc;
+.fab-option:hover {
+    transform: translateX(-10px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* Hover effect */
-#studentTable tbody tr:hover td {
-    background-color: #e2e8f0;
-    transition: background-color 0.2s ease;
-}
-
-/* Dark mode support */
+/* Dark Mode Support for Table */
 body.dark .table-scroll-container {
     background: #121922;
     border-color: #1f2a37;
@@ -1813,25 +1083,27 @@ body.dark #studentTable td {
     color: #e5e7eb;
 }
 
+body.dark #studentTable td:first-child,
+body.dark #studentTable td:nth-child(2) {
+    background: #1e293b;
+}
+
+body.dark #studentTable th:first-child,
+body.dark #studentTable th:nth-child(2) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
 body.dark #studentTable tbody tr:nth-child(even) td {
+    background-color: #1f2937;
+}
+
+body.dark #studentTable tbody tr:nth-child(even) td:first-child,
+body.dark #studentTable tbody tr:nth-child(even) td:nth-child(2) {
     background-color: #1f2937;
 }
 
 body.dark #studentTable tbody tr:hover td {
     background-color: #2d3748;
-}
-
-/* Sticky counter at bottom */
-.student-counter {
-    position: sticky;
-    bottom: 0;
-    background: #f8f9fa;
-    padding: 12px;
-    border-top: 1px solid #ddd;
-    font-weight: bold;
-    text-align: center;
-    z-index: 5;
-    font-size: 14px;
 }
 
 body.dark .student-counter {
@@ -1840,7 +1112,19 @@ body.dark .student-counter {
     color: #e5e7eb;
 }
 
-/* Custom scrollbar */
+body.dark #studentTable td input[type="text"] {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+body.dark #studentTable td select {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+/* Custom Scrollbar */
 .table-scroll-container::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -1871,4 +1155,61 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb {
 body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .header-controls {
+        position: static;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .table-scroll-container {
+        max-height: 400px;
+        font-size: 0.8em;
+    }
     
+    th, td {
+        padding: 8px;
+    }
+    
+    .fab-container {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .fab-button {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+    
+    .fab-option {
+        min-width: 150px;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fab-tooltip {
+        display: none;
+    }
+}
