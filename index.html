@@ -143,11 +143,7 @@
             <span id="lastSyncTime"></span>
         </div>
 
-        <!-- Add this after your sync status bar -->
-        <div id="offlineStatus" style="display: none; background: #ffc107; color: #333; text-align: center; padding: 5px; font-size: 12px;">
-            📡 You're offline. Changes will sync when connection is restored.
-        </div>
-        
+               
         <form id="eventForm">
             <input type="hidden" id="eventId" name="eventId">
 
@@ -279,78 +275,58 @@
         </form>
     </div>
 
-<!-- Firebase and App Scripts -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { 
-        getFirestore, 
-        collection, 
-        getDocs, 
-        query, 
-        where, 
-        orderBy, 
-        setDoc, 
-        deleteDoc, 
-        doc, 
-        serverTimestamp,
-        initializeFirestore,
-        persistentLocalCache,
-        persistentMultipleTabManager
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    
-    const firebaseConfig = {
-        apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
-        authDomain: "eventlog-e2243.firebaseapp.com",
-        projectId: "eventlog-e2243",
-        storageBucket: "eventlog-e2243.firebasestorage.app",
-        messagingSenderId: "95089726888",
-        appId: "1:95089726888:web:a7a577456aeebe10f4399d",
-        measurementId: "G-RM4V4410ZN"
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    
-    // Initialize Firestore with offline persistence
-    const db = initializeFirestore(app, {
-        localCache: persistentLocalCache({
-            tabManager: persistentMultipleTabManager()
-        })
-    });
-    
-    window.firebaseAuth = auth;
-    window.firebaseDb = db;
-    window.firebaseFirestore = {
-        collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp
-    };
-    
-    console.log('🔥 Firebase initialized with offline persistence');
-    
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log('✅ User signed in:', user.email);
-            localStorage.setItem('isAuthenticated', 'true');
-            if (window.updateUIBasedOnAuth) window.updateUIBasedOnAuth(user);
-        } else {
-            console.log('🔐 User signed out');
-            localStorage.removeItem('isAuthenticated');
-            if (!window.location.pathname.includes('auth.html')) {
-                window.location.href = 'auth.html';
+ <!-- Firebase and App Scripts -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAH4AAMhfBU52qLg6mjL0VHFAGx1OR4SAk",
+            authDomain: "eventlog-e2243.firebaseapp.com",
+            projectId: "eventlog-e2243",
+            storageBucket: "eventlog-e2243.firebasestorage.app",
+            messagingSenderId: "95089726888",
+            appId: "1:95089726888:web:a7a577456aeebe10f4399d",
+            measurementId: "G-RM4V4410ZN"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseFirestore = {
+            collection, getDocs, query, where, orderBy, setDoc, deleteDoc, doc, serverTimestamp
+        };
+        
+        console.log('🔥 Firebase initialized');
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ User signed in:', user.email);
+                localStorage.setItem('isAuthenticated', 'true');
+                if (window.updateUIBasedOnAuth) window.updateUIBasedOnAuth(user);
+            } else {
+                console.log('🔐 User signed out');
+                localStorage.removeItem('isAuthenticated');
+                if (!window.location.pathname.includes('auth.html')) {
+                    window.location.href = 'auth.html';
+                }
             }
-        }
-    });
+        });
+        
+        window.handleLogout = async function() {
+            try {
+                await auth.signOut();
+                window.location.href = 'auth.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+    </script>
     
-    window.handleLogout = async function() {
-        try {
-            await auth.signOut();
-            window.location.href = 'auth.html';
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    };
-</script>
-
     <script src="app.js"></script>
     <script src="autosync.js"></script>
 
