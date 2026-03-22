@@ -360,7 +360,7 @@ body.dark .stat-value {
 }
 
 /* ============================================================================
-   STICKY TABLE HEADER & COLUMNS - WORKING FIX
+   STICKY TABLE HEADER & COLUMNS - COMPLETE FIX
    ============================================================================ */
 
 .table-scroll-container {
@@ -380,14 +380,14 @@ body.dark .stat-value {
     min-width: 1200px;
 }
 
-/* Make header sticky vertically */
+/* Make header sticky vertically - CRITICAL */
 #studentTable thead {
     position: sticky;
     top: 0;
     z-index: 20;
 }
 
-/* Header cells */
+/* All header cells - vertical sticky */
 #studentTable th {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
@@ -404,38 +404,42 @@ body.dark .stat-value {
     top: 0;
 }
 
-/* FIRST COLUMN (#) - Sticky horizontally */
+/* FIRST COLUMN (#) - Sticky horizontally AND vertically */
 #studentTable th:first-child,
 #studentTable td:first-child {
     position: sticky;
     left: 0;
     background-color: white;
-    z-index: 100;
     text-align: center;
+    z-index: 100;
 }
 
+/* Need higher z-index for header cells to stay above data cells */
 #studentTable th:first-child {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     z-index: 101;
+    position: sticky;
+    top: 0;
 }
 
-/* SECOND COLUMN (Student Name) - Sticky horizontally */
-/* Default position - will be adjusted by JavaScript */
+/* SECOND COLUMN (Student Name) - Sticky horizontally AND vertically */
 #studentTable th:nth-child(2),
 #studentTable td:nth-child(2) {
     position: sticky;
-    left: 55px; /* Default fallback */
     background-color: white;
     z-index: 99;
     box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
 }
 
+/* Header for second column needs higher z-index and vertical sticky */
 #studentTable th:nth-child(2) {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     z-index: 100;
+    position: sticky;
+    top: 0;
 }
 
-/* Body cells */
+/* Data cells need proper background */
 #studentTable td {
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
