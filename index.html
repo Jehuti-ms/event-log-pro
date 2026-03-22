@@ -328,26 +328,28 @@
                     </button>
                 </div>
                 
-                <!-- Scrollable Container - CSS Grid Version -->
-                <div class="grid-table-container" id="studentTableContainer">
-                    <div class="grid-table-wrapper">
-                        <div class="grid-header">
-                            <div class="grid-cell header-cell sticky-col-1">#</div>
-                            <div class="grid-cell header-cell sticky-col-2">👤 Student Name</div>
-                            <div class="grid-cell header-cell">📚 Form</div>
-                            <div class="grid-cell header-cell">📞 Contact Number</div>
-                            <div class="grid-cell header-cell">💊 Medical / Illness</div>
-                            <div class="grid-cell header-cell">💉 Medication</div>
-                            <div class="grid-cell header-cell">✅ Permission</div>
-                            <div class="grid-cell header-cell">🎯 Present</div>
-                            <div class="grid-cell header-cell">✖️ Remove</div>
-                        </div>
-                        <div id="gridStudentRows">
-                            <!-- Student rows will be added here dynamically -->
-                        </div>
-                    </div>
+                <!-- Scrollable Table Container - ORIGINAL TABLE VERSION -->
+                <div class="table-scroll-container" id="studentTableContainer">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th style="min-width: 180px;">👤 Student Name</th>
+                                <th style="min-width: 80px;">📚 Form</th>
+                                <th style="min-width: 130px;">📞 Contact Number</th>
+                                <th style="min-width: 200px;">💊 Medical / Illness</th>
+                                <th style="min-width: 180px;">💉 Medication</th>
+                                <th style="width: 100px;">✅ Permission</th>
+                                <th style="width: 100px;">🎯 Present</th>
+                                <th style="width: 70px;">✖️ Remove</th>
+                             </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- Student rows will be added here by JavaScript -->
+                        </tbody>
+                    </table>
                     <div class="student-counter" id="studentCounter">
-                        Total Students: 1
+                        Total Students: 0
                     </div>
                 </div>
             </div>
