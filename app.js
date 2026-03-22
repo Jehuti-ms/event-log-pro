@@ -44,7 +44,7 @@ function initFirebaseRefs() {
 // OFFLINE DETECTION AND STATUS
 // ============================================
 
-function updateOfflineStatus() {
+/*function updateOfflineStatus() {
     const offlineStatus = document.getElementById('offlineStatus');
     if (!offlineStatus) return;
     
@@ -82,6 +82,7 @@ window.saveEvent = async function() {
 };
 
 console.log('✅ Offline support enabled');
+*/
 
 // ============================================
 // SYNC STATUS FUNCTIONS - MUST BE DEFINED EARLY
