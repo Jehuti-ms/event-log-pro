@@ -1949,7 +1949,7 @@ window.generateReport = function() {
 };
 
 // ============================================
-// COMPLETE TABLE FIX - PERMANENT VERSION
+// COMPLETE TABLE FIX - WORKING VERSION
 // ============================================
 
 function completeTableFix() {
@@ -2012,7 +2012,7 @@ function completeTableFix() {
         }
     });
     
-    // 6. FIX COUNTER
+    // 6. FIX COUNTER - WITH HORIZONTAL STICKY
     let counter = document.getElementById('studentCounter');
     const containerEl = document.querySelector('.table-scroll-container');
     
@@ -2026,6 +2026,9 @@ function completeTableFix() {
     if (counter) {
         counter.style.position = 'sticky';
         counter.style.bottom = '0';
+        counter.style.left = '0';
+        counter.style.right = '0';
+        counter.style.width = '100%';
         counter.style.backgroundColor = '#f8f9fa';
         counter.style.padding = '12px';
         counter.style.borderTop = '1px solid #ddd';
@@ -2033,6 +2036,7 @@ function completeTableFix() {
         counter.style.textAlign = 'center';
         counter.style.zIndex = '1000';
         counter.style.marginTop = 'auto';
+        counter.style.boxSizing = 'border-box';
         
         // Update counter text
         const rows = document.querySelectorAll('#studentTable tbody tr');
@@ -2046,7 +2050,16 @@ function completeTableFix() {
         counter.textContent = `Total Students: ${studentCount}`;
     }
     
-    // 7. DARK MODE SUPPORT
+    // 7. ADD INITIAL ROW IF EMPTY
+    const tbody = document.querySelector('#studentTable tbody');
+    if (tbody && tbody.children.length === 0) {
+        console.log('Adding initial empty row...');
+        if (window.addStudentRow) {
+            window.addStudentRow();
+        }
+    }
+    
+    // 8. DARK MODE SUPPORT
     if (document.body.classList.contains('dark') && counter) {
         counter.style.backgroundColor = '#0f1720';
         counter.style.borderTopColor = '#1f2a37';
