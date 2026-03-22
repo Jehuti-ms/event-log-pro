@@ -1949,10 +1949,50 @@ window.generateReport = function() {
 };
 
 // ============================================
-// COMPLETE TABLE FIX - WORKING VERSION
+// SETTINGS AND SYNC FUNCTIONS
 // ============================================
 
+window.openSettings = function() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.add('active');
+    }
+};
+
+window.closeSettings = function() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+};
+
+window.saveSettings = function() {
+    const interval = document.getElementById('autoSyncInterval')?.value;
+    if (interval) {
+        localStorage.setItem('autoSyncInterval', interval);
+        window.showToast('Settings saved', 'success');
+    }
+    window.closeSettings();
+};
+
+window.forceSync = async function() {
+    if (typeof window.saveEvent === 'function') {
+        window.updateSyncStatus('syncing', 'Syncing...');
+        await window.saveEvent();
+        window.updateSyncStatus('online', 'Connected');
+        window.showToast('Sync completed', 'success');
+    } else {
+        window.showToast('Save event function not available', 'error');
+    }
+};
+
+// Add debouncer to prevent infinite loops
+let fixRunning = false;
+
 function completeTableFix() {
+    if (fixRunning) return;
+    fixRunning = true;
+    
     console.log('🔧 Running complete table fix...');
     
     // 1. FIX CONTAINER
@@ -2067,68 +2107,14 @@ function completeTableFix() {
     }
     
     console.log('✅ Complete table fix applied');
+    fixRunning = false;
 }
 
-// Run the fix when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(completeTableFix, 100);
-});
-
-// Run the fix after adding/removing rows
-const originalAddStudentRowFinal = window.addStudentRow;
-window.addStudentRow = function(studentData = null, index = null) {
-    originalAddStudentRowFinal(studentData, index);
-    setTimeout(completeTableFix, 50);
-};
-
-// Run after loading events
-const originalLoadEventFinal = window.loadEvent;
-window.loadEvent = async function(eventId) {
-    await originalLoadEventFinal(eventId);
-    setTimeout(completeTableFix, 100);
-};
-
-// Run after deleting rows
-const originalDeleteStudentRowFinal = window.deleteStudentRow;
-window.deleteStudentRow = function(button) {
-    originalDeleteStudentRowFinal(button);
-    setTimeout(completeTableFix, 50);
-};
-
-// Run after reset form
-const originalResetForm = window.resetForm;
-window.resetForm = function() {
-    originalResetForm();
-    setTimeout(completeTableFix, 100);
-};
-
-// Run on window resize
-window.addEventListener('resize', function() {
-    setTimeout(completeTableFix, 100);
-});
-
-// Run when dark mode toggles
-const darkModeObserverFinal = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-        if (mutation.attributeName === 'class') {
-            const counter = document.getElementById('studentCounter');
-            if (counter) {
-                if (document.body.classList.contains('dark')) {
-                    counter.style.backgroundColor = '#0f1720';
-                    counter.style.borderTopColor = '#1f2a37';
-                    counter.style.color = '#e5e7eb';
-                } else {
-                    counter.style.backgroundColor = '#f8f9fa';
-                    counter.style.borderTopColor = '#ddd';
-                    counter.style.color = '#333';
-                }
-            }
-        }
-    });
-});
-darkModeObserverFinal.observe(document.body, { attributes: true });
-
-console.log('✅ Permanent table fix loaded');
+// Make sure functions are available globally
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+window.saveSettings = saveSettings;
+window.forceSync = forceSync;
 
 // Make functions globally available
 window.collectFormData = collectFormData;
