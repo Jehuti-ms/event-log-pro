@@ -1622,3 +1622,117 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
         order: 3;
     }
 }
+
+/* ============================================================================
+   ORIENTATION RESPONSIVE STYLES
+   ============================================================================ */
+
+/* Landscape mode (mobile/tablet) */
+@media (orientation: landscape) and (max-width: 896px) {
+    .table-scroll-container {
+        max-height: 300px; /* Smaller height in landscape to see more */
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(2, 1fr); /* Two columns in landscape */
+    }
+    
+    .form-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .form-actions button {
+        width: auto;
+        flex: 1;
+        min-width: 80px;
+    }
+    
+    .search-controls {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .search-group {
+        width: auto;
+        flex: 1;
+    }
+    
+    .search-controls .btn-primary {
+        width: auto;
+    }
+    
+    .header-controls {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        margin-top: 0;
+    }
+    
+    .summary-stats {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .stat-value {
+        font-size: 1.1em;
+    }
+    
+    .stat-label {
+        font-size: 0.7em;
+    }
+}
+
+/* Portrait mode (mobile/tablet) */
+@media (orientation: portrait) and (max-width: 896px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions button {
+        width: 100%;
+    }
+    
+    .search-controls {
+        flex-direction: column;
+    }
+    
+    .search-group {
+        width: 100%;
+    }
+    
+    .search-controls .btn-primary {
+        width: 100%;
+    }
+    
+    .summary-stats {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+}
+
+/* Tablet landscape */
+@media (orientation: landscape) and (min-width: 768px) and (max-width: 1024px) {
+    .table-scroll-container {
+        max-height: 400px;
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Desktop (no orientation restrictions) */
+@media (min-width: 1025px) {
+    .form-row {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .table-scroll-container {
+        max-height: 500px;
+    }
+}
