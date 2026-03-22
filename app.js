@@ -41,6 +41,49 @@ function initFirebaseRefs() {
 }
 
 // ============================================
+// OFFLINE DETECTION AND STATUS
+// ============================================
+
+function updateOfflineStatus() {
+    const offlineStatus = document.getElementById('offlineStatus');
+    if (!offlineStatus) return;
+    
+    if (!navigator.onLine) {
+        offlineStatus.style.display = 'block';
+        window.updateSyncStatus('offline', 'Offline mode - changes saved locally');
+        console.log('📡 App is offline');
+    } else {
+        offlineStatus.style.display = 'none';
+        console.log('📡 App is online');
+    }
+}
+
+// Listen for online/offline events
+window.addEventListener('online', () => {
+    updateOfflineStatus();
+    window.updateSyncStatus('syncing', 'Back online - syncing...');
+    // Trigger auto-save to push pending changes
+    if (window.forceAutoSave) window.forceAutoSave();
+});
+
+window.addEventListener('offline', updateOfflineStatus);
+
+// Check initial status
+updateOfflineStatus();
+
+// Override saveEvent to handle offline gracefully
+const originalSaveEvent = window.saveEvent;
+window.saveEvent = async function() {
+    if (!navigator.onLine) {
+        window.showToast('You are offline. Changes will be saved locally and sync when back online.', 'warning');
+        // Still collect data and save locally via Firebase's offline persistence
+    }
+    return originalSaveEvent();
+};
+
+console.log('✅ Offline support enabled');
+
+// ============================================
 // SYNC STATUS FUNCTIONS - MUST BE DEFINED EARLY
 // ============================================
 
