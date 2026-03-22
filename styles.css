@@ -1756,7 +1756,7 @@ header {
 #studentTable {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1200px;
+    min-width: 1200px; /* Ensures horizontal scroll */
 }
 
 /* Make the entire header row sticky vertically */
@@ -1778,6 +1778,7 @@ header {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     font-size: 14px;
     letter-spacing: 0.5px;
+    text-align: left;
 }
 
 /* Make the NAME COLUMN sticky horizontally */
@@ -1796,7 +1797,7 @@ header {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
 }
 
-/* Optional: Make the # column sticky too */
+/* Make the # column sticky too */
 #studentTable th:nth-child(1),
 #studentTable td:nth-child(1) {
     position: sticky;
@@ -1804,6 +1805,7 @@ header {
     z-index: 9;
     background: white;
     box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 #studentTable th:nth-child(1) {
@@ -1816,6 +1818,61 @@ header {
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
     vertical-align: middle;
+    background: white;
+}
+
+/* Input fields styling */
+#studentTable td input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+#studentTable td input[type="text"]:focus {
+    outline: none;
+    border-color: #2ecc71;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+}
+
+#studentTable td select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+}
+
+#studentTable td input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #2ecc71;
+}
+
+/* Delete button styling */
+#studentTable td .delete-row {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.2s ease;
+}
+
+#studentTable td .delete-row:hover {
+    background: #dc2626;
+    transform: scale(1.1);
 }
 
 /* Zebra striping */
@@ -1849,7 +1906,10 @@ header {
     font-size: 14px;
 }
 
-/* Dark mode support */
+/* ============================================================================
+   DARK MODE SUPPORT
+   ============================================================================ */
+
 body.dark .table-scroll-container {
     background: #121922;
     border-color: #1f2a37;
@@ -1889,7 +1949,22 @@ body.dark .student-counter {
     color: #e5e7eb;
 }
 
-/* Custom scrollbar */
+body.dark #studentTable td input[type="text"] {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+body.dark #studentTable td select {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+/* ============================================================================
+   CUSTOM SCROLLBAR
+   ============================================================================ */
+
 .table-scroll-container::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -1920,6 +1995,4 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb {
 body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
 }
-    
-
     
