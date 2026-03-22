@@ -1423,3 +1423,104 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     }
 }
 */
+
+/* ============================================================================
+   HEADER BUTTONS - MOBILE OPTIMIZATION
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .header-controls {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    
+    .settings-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+}
+
+/* Very small screens - show only icons */
+@media (max-width: 480px) {
+    .header-controls {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        gap: 4px;
+    }
+    
+    .settings-btn {
+        font-size: 0;
+        padding: 8px 10px;
+        min-width: 36px;
+        min-height: 36px;
+    }
+    
+    /* Logout button - door icon */
+    .settings-btn[onclick*="Logout"]::before {
+        content: "🚪";
+        font-size: 16px;
+        display: inline-block;
+    }
+    
+    /* Settings button - gear icon */
+    .settings-btn[onclick*="openSettings"]::before {
+        content: "⚙️";
+        font-size: 16px;
+        display: inline-block;
+    }
+    
+    /* Sync button - refresh icon */
+    .settings-btn[onclick*="forceSync"]::before {
+        content: "🔄";
+        font-size: 16px;
+        display: inline-block;
+    }
+    
+    /* Hide the text on all settings buttons */
+    .settings-btn span {
+        display: none;
+    }
+    
+    /* Dark mode toggle - make more compact */
+    .theme-toggle-wrapper {
+        margin-left: 0;
+    }
+    
+    .toggle-text {
+        display: none;
+    }
+    
+    .toggle-label {
+        width: 44px;
+        height: 24px;
+    }
+    
+    .toggle-ball {
+        width: 18px;
+        height: 18px;
+        top: 3px;
+        left: 3px;
+    }
+    
+    .theme-toggle input:checked + .toggle-label .toggle-ball {
+        transform: translateX(20px);
+    }
+    
+    .toggle-icon {
+        font-size: 10px;
+    }
+}
+
+/* Even smaller screens - compact buttons */
+@media (max-width: 380px) {
+    .settings-btn {
+        padding: 6px 8px;
+    }
+    
+    .settings-btn::before {
+        font-size: 14px !important;
+    }
+}
