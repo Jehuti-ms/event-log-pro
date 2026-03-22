@@ -835,6 +835,35 @@ function populateEventDropdown() {
     });
 }
 
+// Set exact second column position based on first column width
+function setStickyColumnPosition() {
+    const firstCol = document.querySelector('#studentTable th:first-child');
+    if (firstCol) {
+        const width = firstCol.offsetWidth;
+        const style = document.createElement('style');
+        style.id = 'dynamic-sticky-position';
+        
+        // Remove existing dynamic style if any
+        const existingStyle = document.getElementById('dynamic-sticky-position');
+        if (existingStyle) existingStyle.remove();
+        
+        style.textContent = `
+            #studentTable th:nth-child(2),
+            #studentTable td:nth-child(2) {
+                left: ${width}px !important;
+            }
+        `;
+        document.head.appendChild(style);
+        console.log(`✅ Second column position set to ${width}px`);
+    }
+}
+
+// Run on page load and window resize
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(setStickyColumnPosition, 100);
+});
+window.addEventListener('resize', setStickyColumnPosition);
+
 // ============================================
 // UI HELPER FUNCTIONS
 // ============================================
