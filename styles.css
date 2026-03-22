@@ -1737,8 +1737,11 @@ header {
         margin: 0;
         flex-shrink: 0;
     }
+    
+/* ============================================================================
+   STUDENT TABLE WITH STICKY HEADER AND STICKY NAME COLUMN
+   ============================================================================ */
 
-/* Sticky Table Header - FIXED */
 .table-scroll-container {
     max-height: 500px;
     overflow-y: auto;
@@ -1750,21 +1753,20 @@ header {
     background: white;
 }
 
-/* Make the table full width */
 #studentTable {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1200px; /* Ensures horizontal scroll if needed */
+    min-width: 1200px;
 }
 
-/* Make the header sticky - THIS IS THE KEY */
+/* Make the entire header row sticky vertically */
 #studentTable thead {
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
 }
 
-/* Style the header cells */
+/* Style header cells */
 #studentTable th {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
@@ -1778,12 +1780,42 @@ header {
     letter-spacing: 0.5px;
 }
 
-/* Style the body cells */
+/* Make the NAME COLUMN sticky horizontally */
+#studentTable th:nth-child(2),
+#studentTable td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: white;
+    box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure the header for name column has higher z-index */
+#studentTable th:nth-child(2) {
+    z-index: 21;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+/* Optional: Make the # column sticky too */
+#studentTable th:nth-child(1),
+#studentTable td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 9;
+    background: white;
+    box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+}
+
+#studentTable th:nth-child(1) {
+    z-index: 21;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+/* Style body cells */
 #studentTable td {
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
     vertical-align: middle;
-    background: white;
 }
 
 /* Zebra striping */
@@ -1795,6 +1827,26 @@ header {
 #studentTable tbody tr:hover td {
     background-color: #e2e8f0;
     transition: background-color 0.2s ease;
+}
+
+/* Input styles inside sticky cells */
+#studentTable td:nth-child(1) input,
+#studentTable td:nth-child(2) input {
+    background: transparent;
+    width: 100%;
+}
+
+/* Student counter */
+.student-counter {
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+    text-align: center;
+    z-index: 15;
+    font-size: 14px;
 }
 
 /* Dark mode support */
@@ -1813,25 +1865,22 @@ body.dark #studentTable td {
     color: #e5e7eb;
 }
 
+body.dark #studentTable td:nth-child(1),
+body.dark #studentTable td:nth-child(2) {
+    background: #1e293b;
+}
+
+body.dark #studentTable th:nth-child(1),
+body.dark #studentTable th:nth-child(2) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
 body.dark #studentTable tbody tr:nth-child(even) td {
     background-color: #1f2937;
 }
 
 body.dark #studentTable tbody tr:hover td {
     background-color: #2d3748;
-}
-
-/* Sticky counter at bottom */
-.student-counter {
-    position: sticky;
-    bottom: 0;
-    background: #f8f9fa;
-    padding: 12px;
-    border-top: 1px solid #ddd;
-    font-weight: bold;
-    text-align: center;
-    z-index: 5;
-    font-size: 14px;
 }
 
 body.dark .student-counter {
@@ -1871,4 +1920,6 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb {
 body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
 }
+    
+
     
