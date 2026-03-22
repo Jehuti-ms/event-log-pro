@@ -1497,7 +1497,8 @@ header {
     }
     
 /* ============================================================================
-   STUDENT TABLE WITH STICKY HEADER AND STICKY NAME COLUMN - FIXED
+   STUDENT TABLE WITH STICKY HEADER AND STICKY NAME COLUMN
+   (Preserving Original Colors)
    ============================================================================ */
 
 .table-scroll-container {
@@ -1514,7 +1515,7 @@ header {
 #studentTable {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1200px; /* Ensures horizontal scroll */
+    min-width: 1200px;
 }
 
 /* Make the entire header row sticky vertically */
@@ -1524,8 +1525,11 @@ header {
     z-index: 20;
 }
 
-/* Style header cells */
+/* Style header cells - USING YOUR ORIGINAL COLORS */
 #studentTable th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
     color: white;
     font-weight: 600;
@@ -1555,11 +1559,11 @@ header {
     z-index: 21;
 }
 
-/* SECOND COLUMN (Student Name) - Sticky with left: 60px (width of first column) */
+/* SECOND COLUMN (Student Name) - Sticky with left: 60px */
 #studentTable th:nth-child(2),
 #studentTable td:nth-child(2) {
     position: sticky;
-    left: 60px; /* Match the width of first column */
+    left: 60px;
     z-index: 10;
     background: white;
     box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
@@ -1670,7 +1674,7 @@ header {
 }
 
 /* ============================================================================
-   DARK MODE SUPPORT
+   DARK MODE SUPPORT - PRESERVING YOUR ORIGINAL DARK MODE COLORS
    ============================================================================ */
 
 body.dark .table-scroll-container {
@@ -1768,5 +1772,6 @@ body.dark .table-scroll-container::-webkit-scrollbar-thumb {
 body.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
 }
+    
     
     
