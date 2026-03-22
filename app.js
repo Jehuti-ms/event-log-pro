@@ -541,6 +541,128 @@ window.generateReport = function() {
     reportWindow.document.close();
 };
 
+// ============================================
+// TOOLTIPS FOR ICON BUTTONS - HOVER + LONG PRESS
+// ============================================
+
+// Create tooltip element once
+let tooltipTimer;
+let activeTooltip = null;
+
+function showTooltip(text, element) {
+    // Remove existing tooltip
+    if (activeTooltip) {
+        activeTooltip.remove();
+        activeTooltip = null;
+    }
+    
+    // Create new tooltip
+    const tooltip = document.createElement('div');
+    tooltip.textContent = text;
+    
+    // Get element position
+    const rect = element.getBoundingClientRect();
+    
+    tooltip.style.cssText = `
+        position: fixed;
+        top: ${rect.top - 40}px;
+        left: ${rect.left + rect.width / 2}px;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-family: 'Poppins', sans-serif;
+        z-index: 10001;
+        white-space: nowrap;
+        pointer-events: none;
+        animation: tooltipFadeIn 0.2s ease;
+    `;
+    
+    // Add arrow
+    tooltip.style.setProperty('--arrow', 'after');
+    
+    document.body.appendChild(tooltip);
+    activeTooltip = tooltip;
+    
+    // Auto hide after 2 seconds
+    setTimeout(() => {
+        if (activeTooltip) {
+            activeTooltip.remove();
+            activeTooltip = null;
+        }
+    }, 2000);
+}
+
+function hideTooltip() {
+    if (activeTooltip) {
+        activeTooltip.remove();
+        activeTooltip = null;
+    }
+}
+
+// Define buttons with tooltips
+const tooltipButtons = [
+    { selector: '.settings-btn[onclick*="Logout"]', text: 'Logout' },
+    { selector: '.settings-btn[onclick*="openSettings"]', text: 'Settings' },
+    { selector: '.settings-btn[onclick*="forceSync"]', text: 'Sync Now' },
+    { selector: '.theme-toggle-wrapper', text: 'Dark Mode' }
+];
+
+// Add both hover (desktop) and touch (mobile) support
+tooltipButtons.forEach(btn => {
+    const element = document.querySelector(btn.selector);
+    if (!element) return;
+    
+    // Hover for desktop
+    element.addEventListener('mouseenter', () => {
+        // Only show on screens where text is hidden
+        if (window.innerWidth <= 480) {
+            showTooltip(btn.text, element);
+        }
+    });
+    
+    element.addEventListener('mouseleave', () => {
+        hideTooltip();
+    });
+    
+    // Touch/long press for mobile
+    let touchTimer;
+    
+    element.addEventListener('touchstart', (e) => {
+        touchTimer = setTimeout(() => {
+            showTooltip(btn.text, element);
+        }, 500);
+    });
+    
+    element.addEventListener('touchend', () => {
+        clearTimeout(touchTimer);
+        hideTooltip();
+    });
+    
+    element.addEventListener('touchcancel', () => {
+        clearTimeout(touchTimer);
+        hideTooltip();
+    });
+});
+
+// Add CSS animation
+const tooltipStyle = document.createElement('style');
+tooltipStyle.textContent = `
+    @keyframes tooltipFadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+`;
+document.head.appendChild(tooltipStyle);
+
 // ============================================================================
 // FLOATING ACTION BUTTON (FAB) FUNCTIONS
 // ============================================================================
